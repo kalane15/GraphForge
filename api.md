@@ -25,27 +25,19 @@ Authenticate user via GitHub OAuth.
 
 ## CRUD
 
-### Get current user
-
-    GET /users/me
-
-Get authenticated user's information.
+    GET /users/{id}
 
 ---
 
 ### Update profile
 
-    PUT /users/me
-
-Update user profile information.
+    PUT /users/{id}
 
 ---
 
 ### Delete account
 
-    DELETE /users/me
-
-Delete user account.
+    DELETE /users/{id}
 
 ---
 
@@ -123,7 +115,7 @@ Get all graphs inside a project.
 
 ### Get graph
 
-    GET /graphs/{graphId}
+    GET /projects/{projectId}/graphs/{graphId}
 
 Get graph data.
 
@@ -131,7 +123,7 @@ Get graph data.
 
 ## Update
 
-    PUT /graphs/{graphId}
+    PUT /projects/{projectId}/graphs/{graphId}
 
 Save graph changes.
 
@@ -139,7 +131,7 @@ Save graph changes.
 
 ## Delete
 
-    DELETE /graphs/{graphId}
+    DELETE /projects/{projectId}/graphs/{graphId}
 
 Delete graph.
 

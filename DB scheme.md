@@ -7,7 +7,8 @@ hide stereotypes
 entity "users" as users {
     * id : uuid <<PK>>
     --
-    login : varchar
+    email : varchar
+    created_at : timestamp
 }
 
 entity "projects" as projects {
@@ -30,10 +31,20 @@ entity "graph_documents" as graphs {
     updated_at : timestamp
 }
 
+entity "node_schemas" as schemas {
+    * id : uuid <<PK>>
+    --
+    project_id : uuid <<FK>>
+    name : varchar
+    schema : jsonb
+    created_at : timestamp
+}
+
 users ||--o{ projects : owns
 
 projects ||--o{ graphs : contains
 
+projects ||--o{ schemas : defines
 
 
 @enduml
