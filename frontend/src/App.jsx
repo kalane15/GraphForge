@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router";
 import Header from "@/components/Header/Header";
-import HomePage from "@/pages/HomePage";
+import HomePage from "@/pages/HomePage/HomePage";
 
 
 function App() {
