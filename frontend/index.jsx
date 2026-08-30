@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import MainMenuImage from "./src/components/MainPageImage"
 import { Component } from "react";
 
 class ClickButton extends Component {
@@ -16,11 +17,11 @@ class ClickButton extends Component {
     }
 }
 
-const rootNode = document.getElementById("app");
+const rootNode = document.getElementById("image-container");
 const root = ReactDOM.createRoot(rootNode);
 
 root.render(
-    <ClickButton />
+    <MainMenuImage />
 );
 
 
