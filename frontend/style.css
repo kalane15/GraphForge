@@ -1,0 +1,40 @@
+html,
+body {
+    margin: 0;
+    height: 100%;
+}
+
+body {
+    display: grid;
+    grid-template-rows: 1fr 10fr;
+}
+
+#header {
+    border: 5px solid black;
+    box-sizing: border-box;
+    background-color: red;
+}
+
+#main {
+    display: grid;
+    grid-template-columns: 1fr 2.5fr;
+    background-color: green;
+}
+
+#left-col {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+}
+
+#description,
+#signin,
+#image-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.border-container {
+    border: 5px solid black;
+    box-sizing: border-box;
+}
