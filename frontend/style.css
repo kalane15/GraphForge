@@ -1,20 +1,19 @@
 html,
-body {
+body,
+#root {
     margin: 0;
     height: 100%;
     width: 100%;
 }
 
 body {
-    display: grid;
-    grid-template-rows: 80px minmax(0, 1fr);
     background-image: url("./src/assets/background.png");
     background-size: cover;
 }
 
-#header {
-    border: 5px solid black;
-    box-sizing: border-box;
+#root {
+    display: grid;
+    grid-template-rows: 80px minmax(0, 1fr);
 }
 
 #main {
