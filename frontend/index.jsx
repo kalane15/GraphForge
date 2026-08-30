@@ -1,6 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import MainMenuImage from "./src/components/MainPageImage"
+import MainPageDescription from "./src/components/MainPageDescription"
+import SignInButton from "./src/components/SignInButton"
 import { Component } from "react";
 
 class ClickButton extends Component {
@@ -17,11 +19,21 @@ class ClickButton extends Component {
     }
 }
 
-const rootNode = document.getElementById("image-container");
-const root = ReactDOM.createRoot(rootNode);
-
+let rootNode = document.getElementById("image-container");
+let root = ReactDOM.createRoot(rootNode);
 root.render(
     <MainMenuImage />
 );
 
+rootNode = document.getElementById("description");
+root = ReactDOM.createRoot(rootNode);
+root.render(
+    <MainPageDescription />
+);
+
+rootNode = document.getElementById("sign-in");
+root = ReactDOM.createRoot(rootNode);
+root.render(
+    <SignInButton />
+);
 

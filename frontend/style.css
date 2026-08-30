@@ -28,7 +28,7 @@ body {
 }
 
 #description,
-#signin,
+#sign-in,
 #image-container {
     display: flex;
     justify-content: center;
