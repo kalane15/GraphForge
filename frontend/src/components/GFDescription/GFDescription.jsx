@@ -1,3 +1,5 @@
+import "@/styles/common.css";
+
 const mainPageDescription = `
     GraphForge is a visual editor for creating and managing structured graphs.
 
@@ -7,7 +9,11 @@ const mainPageDescription = `
 `;
 
 function MainPageDescription() {
-    return <h2>{mainPageDescription}</h2>;
+    return (
+        <div className="centered-container border-container">
+            <h2>{ mainPageDescription }</h2>
+        </div>
+    );
 }
 
 export default MainPageDescription;
