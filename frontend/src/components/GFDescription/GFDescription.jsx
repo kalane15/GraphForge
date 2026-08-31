@@ -1,17 +1,17 @@
 import "@/styles/common.css";
 
-const mainPageDescription = `
+const description = `
     GraphForge is a visual editor for creating and managing structured graphs.
 
     Design nodes, connect them, define custom data, and export your graphs for use in your applications. From dialogue systems and quest trees to workflows and game logic, GraphForge provides a flexible foundation without tying you to a specific use case.
 `;
 
-function MainPageDescription() {
+function GFDescription() {
     return (
         <div className="centered-container border-container">
-            <h2>{ mainPageDescription }</h2>
+            <h2>{ description }</h2>
         </div>
     );
 }
 
-export default MainPageDescription;
+export default GFDescription;

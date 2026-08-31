@@ -1,0 +1,6 @@
+/backend/bin
+/backend/.vs
+/backend/obj
+/.vs
+.env
+/frontend/.vs

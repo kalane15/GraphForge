@@ -1,7 +1,11 @@
 import "@/styles/common.css";
+import { useNavigate } from "react-router";
+
 function SignInButton() {
+    const navigate = useNavigate();
+    const authPath = "/auth";
     function handleClick() {
-        console.log("Button clicked");
+        navigate(authPath);
     }
 
     return (
