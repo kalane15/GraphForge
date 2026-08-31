@@ -1,0 +1,17 @@
+html,
+body,
+#root {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    background-image: url("./src/assets/background.png");
+    background-size: cover;
+}
+
+#root {
+    display: grid;
+    grid-template-rows: 80px minmax(0, 1fr);
+}
