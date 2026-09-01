@@ -4,12 +4,21 @@
 hide methods
 hide stereotypes
 
+entity "sessions" as sessions{
+    * id : uuid <<PK>>
+    --
+    expires_at : timestamptz
+	revoked_at : timestamptz
+	refresh_token_hash : varchar
+}
+
 entity "users" as users {
     * id : uuid <<PK>>
     --
     login : varchar
+	session_id : uuid <<FK>>
 	password_hash: varchar
-    created_at : timestamp
+    created_at : timestamptz
 }
 
 entity "projects" as projects {
@@ -18,8 +27,8 @@ entity "projects" as projects {
     owner_id : uuid <<FK>>
     name : varchar
     description : text
-    created_at : timestamp
-    updated_at : timestamp
+    created_at : timestamptz
+    updated_at : timestamptz
 }
 
 entity "graph_documents" as graphs {
@@ -28,8 +37,8 @@ entity "graph_documents" as graphs {
     project_id : uuid <<FK>>
     name : varchar
     content : jsonb
-    created_at : timestamp
-    updated_at : timestamp
+    created_at : timestamptz
+    updated_at : timestamptz
 }
 
 entity "node_schemas" as schemas {
@@ -38,7 +47,7 @@ entity "node_schemas" as schemas {
     project_id : uuid <<FK>>
     name : varchar
     schema : jsonb
-    created_at : timestamp
+    created_at : timestamptz
 }
 
 users ||--o{ projects : owns

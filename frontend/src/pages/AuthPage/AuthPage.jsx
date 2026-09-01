@@ -17,10 +17,10 @@ function AuthPage() {
     return (
         <div id="auth" className="centered-container">
             <div>
-                {isSignInForm ? <SignInForm from={from} /> : <SignUpForm from={from} />}
+                {isSignInForm ? <SignInForm from={ from } /> : <SignUpForm from={ from } />}
             </div>
             <div>
-                <button onClick={() => setIsSignInForm(!isSignInForm)}>Change to {isSignInForm ? "sign up" : "sign in"}</button>
+                <button onClick={ () => setIsSignInForm(!isSignInForm) }>Change to { isSignInForm ? "sign up" : "sign in" }</button>
             </div>
         </div>
     );
