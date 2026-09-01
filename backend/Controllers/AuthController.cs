@@ -151,11 +151,17 @@ public class AuthController : ControllerBase
 
         Session? session = await _db.Sessions
             .FirstOrDefaultAsync(s =>
-                s.RefreshTokenHash == hash &&
-                s.ExpiresAt > DateTimeOffset.UtcNow);
+                s.RefreshTokenHash == hash);
 
         if (session is null)
         {
+            return Unauthorized();
+        }
+
+        if (session.ExpiresAt >= DateTimeOffset.UtcNow)
+        {
+            _db.Sessions.Remove(session);
+            await _db.SaveChangesAsync();
             return Unauthorized();
         }
 
