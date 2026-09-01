@@ -120,7 +120,7 @@ public class AuthController : ControllerBase
         return Ok();
     }
 
-    [HttpGet("refresh")]
+    [HttpPost("refresh")]
     public async Task<IActionResult> Refresh()
     {
         string? refreshToken = Request.Cookies["refresh_token"];
@@ -222,7 +222,7 @@ public class AuthController : ControllerBase
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Lax,
-                Expires = DateTimeOffset.UtcNow.AddDays(30)
+                Expires = DateTimeOffset.UtcNow.AddMinutes(RefreshTokenExpirationTimeMinutes)
             });
     }
 
