@@ -1,6 +1,6 @@
 import GFDescription from "@/components/GFDescription/GFDescription";
 import SignInButton from "@/components/SignInButton/SignInButton";
-import HomePageImage from "./HomePageImage/HomePageImage";
+import HomePageImage from "./HomePageImage";
 import "./HomePage.css";
 
 function HomePage() {

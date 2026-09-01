@@ -1,17 +1,12 @@
-﻿using GraphForge.Api.Auth;
-using GraphForge.Api.Database;
+﻿using GraphForge.Api.Database;
 using GraphForge.Api.DTOs;
 using GraphForge.Api.Models;
+using GraphForge.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace GraphForge.Api.Controllers;
 
@@ -19,22 +14,18 @@ namespace GraphForge.Api.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private const int AccessTokenExpirationTimeMinutes = 15;
-    private const int RefreshTokenExpirationTimeMinutes = 30 * 24 * 60;
-
     private readonly AppDbContext _db;
     private readonly IPasswordHasher<User> _passwordHasher;
-
-    private readonly AuthOptions _authOptions;
+    private readonly IAuthService _authService;
 
     public AuthController(
        AppDbContext db,
        IPasswordHasher<User> passwordHasher,
-       AuthOptions authOptions)
+       IAuthService authService)
     {
         _db = db;
         _passwordHasher = passwordHasher;
-        _authOptions = authOptions;
+        _authService = authService;
     }
 
 
@@ -63,10 +54,8 @@ public class AuthController : ControllerBase
             });
         }
 
-        ProvideAccessToken(user);
-        await CreateSession(user.Id);
-
-        await _db.SaveChangesAsync();
+        await _authService.ProvideAccessTokenAsync(user);
+        await _authService.ProvideSessionAsync(user);
 
         return Ok(new
         {
@@ -100,11 +89,10 @@ public class AuthController : ControllerBase
             _passwordHasher.HashPassword(user, request.Password);
 
         _db.Users.Add(user);
-
-        ProvideAccessToken(user);
-        await CreateSession(user.Id);
-
         await _db.SaveChangesAsync();
+
+        await _authService.ProvideAccessTokenAsync(user);
+        await _authService.ProvideSessionAsync(user);
 
         return Ok(new
         {
@@ -115,24 +103,7 @@ public class AuthController : ControllerBase
     [HttpPost("signout")]
     public async Task<IActionResult> LogOut()
     {
-        string? refreshToken = Request.Cookies["refresh_token"];
-
-        if (refreshToken is not null)
-        {
-            string hash = HashRefreshToken(refreshToken);
-
-            Session? session = await _db.Sessions
-                .FirstOrDefaultAsync(s => s.RefreshTokenHash == hash);
-
-            if (session is not null)
-            {
-                _db.Sessions.Remove(session);
-                await _db.SaveChangesAsync();
-            }
-        }
-
-        Response.Cookies.Delete("access_token");
-        Response.Cookies.Delete("refresh_token");
+        await _authService.EndCurrentSessionAsync();
 
         return Ok();
     }
@@ -140,41 +111,14 @@ public class AuthController : ControllerBase
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh()
     {
-        string? refreshToken = Request.Cookies["refresh_token"];
+        bool refreshed = await _authService.RefreshAccessTokenAsync();
 
-        if (refreshToken is null)
-        {
-            return Unauthorized();
-        }
-
-        string hash = HashRefreshToken(refreshToken);
-
-        Session? session = await _db.Sessions
-            .FirstOrDefaultAsync(s =>
-                s.RefreshTokenHash == hash);
-
-        if (session is null)
-        {
-            return Unauthorized();
-        }
-
-        if (session.ExpiresAt >= DateTimeOffset.UtcNow)
-        {
-            _db.Sessions.Remove(session);
-            await _db.SaveChangesAsync();
-            return Unauthorized();
-        }
-
-        User user = await _db.Users.SingleAsync((u) => u.Id == session.UserId);
-
-        ProvideAccessToken(user);
-
-        return Ok();
+        return refreshed ? Ok() : Unauthorized();
     }
 
     [Authorize]
     [HttpGet("me")]
-    public IActionResult Me()
+    public async Task<IActionResult> Me()
     {
         if (User.Identity?.Name == null)
         {
@@ -184,78 +128,29 @@ public class AuthController : ControllerBase
             });
         }
 
+        string? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userIdClaim, out Guid userId))
+        {
+            return StatusCode(500, new
+            {
+                message = "User claim does not exist"
+            });
+        }
+
+        bool userExists = await _db.Users.AnyAsync(u => u.Id == userId);
+
+        if (!userExists) { 
+            return Unauthorized(new
+            {
+                message = "User not found"
+            });
+        }
+        
+
         return Ok(new
         {
             login = User.Identity?.Name
         });
-    }
-
-    private void ProvideAccessToken(User user)
-    {
-
-        var claims = new List<Claim> {
-            new Claim(ClaimTypes.Name, user.Login),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Role, "user"),
-        };
-
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_authOptions.Key)
-        );
-
-        JwtSecurityToken jwtToken = new JwtSecurityToken(
-                issuer: _authOptions.Issuer,
-                audience: _authOptions.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(AccessTokenExpirationTimeMinutes)),
-                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
-
-        string token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
-        Response.Cookies.Append("access_token", token, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Lax,
-            Expires = DateTimeOffset.UtcNow.AddMinutes(AccessTokenExpirationTimeMinutes)
-        });
-    }
-
-    private async Task CreateSession(Guid userId)
-    {
-        byte[] bytes = RandomNumberGenerator.GetBytes(64);
-
-        string token = Convert.ToBase64String(bytes);
-
-        var session = new Session
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(RefreshTokenExpirationTimeMinutes),
-            RefreshTokenHash = HashRefreshToken(token)
-        };
-
-        _db.Sessions.Add(session);
-
-        await _db.SaveChangesAsync();
-
-        Response.Cookies.Append(
-            "refresh_token",
-            token,
-            new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTimeOffset.UtcNow.AddMinutes(RefreshTokenExpirationTimeMinutes)
-            });
-    }
-
-    private string HashRefreshToken(string token)
-    {
-        byte[] tokenHash = SHA256.HashData(
-           Encoding.UTF8.GetBytes(token)
-       );
-        string hashedToken = Convert.ToHexString(tokenHash);
-        return hashedToken;
     }
 }

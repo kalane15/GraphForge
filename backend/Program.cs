@@ -1,6 +1,7 @@
 using GraphForge.Api.Auth;
 using GraphForge.Api.Database;
 using GraphForge.Api.Models;
+using GraphForge.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
+AddAuth(builder);
 
 
 string frontendUrl = builder.Configuration["FRONTEND_URL"]
@@ -18,29 +20,6 @@ string frontendUrl = builder.Configuration["FRONTEND_URL"]
         "FRONTEND_URL is not configured"
     );
 
-
-var authOptions = new AuthOptions
-{
-    Issuer = builder.Configuration["AUTH_ISSUER"]
-        ?? throw new InvalidOperationException("AUTH_ISSUER is not configured"),
-
-    Audience = builder.Configuration["AUTH_AUDIENCE"]
-        ?? throw new InvalidOperationException("AUTH_AUDIENCE is not configured"),
-
-    Key = builder.Configuration["JWT_KEY"]
-        ?? throw new InvalidOperationException("JWT_KEY is not configured"),
-};
-
-builder.Services.AddSingleton(authOptions);
-
-var keyBytes = Encoding.UTF8.GetBytes(authOptions.Key);
-
-if (keyBytes.Length < 32)
-{
-    throw new InvalidOperationException(
-        "JWT_KEY must be at least 32 bytes long."
-    );
-}
 
 builder.Services.AddCors(options =>
 {
@@ -54,59 +33,97 @@ builder.Services.AddCors(options =>
     });
 });
 
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options
         .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
         .UseSnakeCaseNamingConvention()
 );
 
-builder.Services
-    .AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme =
-            JwtBearerDefaults.AuthenticationScheme;
 
-        options.DefaultChallengeScheme =
-            JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = authOptions.Issuer,
-
-            ValidateAudience = true,
-            ValidAudience = authOptions.Audience,
-
-            ValidateLifetime = true,
-
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(authOptions.Key)
-                )
-        };
-
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                context.Token =
-                    context.Request.Cookies["access_token"];
-
-                return Task.CompletedTask;
-            }
-        };
-    });
-
-builder.Services.AddAuthorization();
-
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProjectsService, ProjectsService>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler();
+}
+
+
 app.UseRouting();
 app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+static void AddAuth(WebApplicationBuilder builder)
+{
+    var authOptions = new AuthOptions
+    {
+        Issuer = builder.Configuration["AUTH_ISSUER"]
+            ?? throw new InvalidOperationException("AUTH_ISSUER is not configured"),
+
+        Audience = builder.Configuration["AUTH_AUDIENCE"]
+            ?? throw new InvalidOperationException("AUTH_AUDIENCE is not configured"),
+
+        Key = builder.Configuration["JWT_KEY"]
+            ?? throw new InvalidOperationException("JWT_KEY is not configured"),
+    };
+
+    builder.Services.AddSingleton(authOptions);
+
+    var keyBytes = Encoding.UTF8.GetBytes(authOptions.Key);
+
+    if (keyBytes.Length < 32)
+    {
+        throw new InvalidOperationException(
+            "JWT_KEY must be at least 32 bytes long."
+        );
+    }
+
+    builder.Services
+        .AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = authOptions.Issuer,
+
+                ValidateAudience = true,
+                ValidAudience = authOptions.Audience,
+
+                ValidateLifetime = true,
+
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(authOptions.Key)
+                )
+            };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    context.Token = context.Request.Cookies["access_token"];
+                    return Task.CompletedTask;
+                }
+            };
+        });
+
+    builder.Services.AddAuthorization();
+}
