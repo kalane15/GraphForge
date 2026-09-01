@@ -64,8 +64,7 @@ public class AuthController : ControllerBase
         }
 
         ProvideAccessToken(request.Login);
-        DeleteSession(user);
-        user.SessionId = await CreateSession();
+        await CreateSession(user.Id);
 
         await _db.SaveChangesAsync();
 
@@ -103,7 +102,7 @@ public class AuthController : ControllerBase
         _db.Users.Add(user);
 
         ProvideAccessToken(request.Login);
-        user.SessionId = await CreateSession();
+        await CreateSession(user.Id);
 
         await _db.SaveChangesAsync();
 
@@ -143,7 +142,9 @@ public class AuthController : ControllerBase
             return Unauthorized();
         }
 
+        User user = await _db.Users.SingleAsync((u) => u.Id == session.UserId);
 
+        ProvideAccessToken(user.Login);
 
         return Ok();
     }
@@ -195,34 +196,22 @@ public class AuthController : ControllerBase
         });
     }
 
-    private void DeleteSession(User user)
-    {
-        var session = _db.Sessions.FirstOrDefault(s => s.Id == user.SessionId);
-        if (session != null)
-        {
-            _db.Sessions.Remove(session);
-            _db.SaveChanges();
-        }
-    }
-
-    private async Task<Guid> CreateSession()
+    private async Task CreateSession(Guid userId)
     {
         byte[] bytes = RandomNumberGenerator.GetBytes(64);
 
         string token = Convert.ToBase64String(bytes);
-       
-
-        Guid id = Guid.NewGuid();
 
         var session = new Session
         {
-            Id = id,
+            Id = Guid.NewGuid(),
+            UserId = userId,
             ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(RefreshTokenExpirationTimeMinutes),
-            RevokedAt = DateTimeOffset.MinValue,
             RefreshTokenHash = HashRefreshToken(token)
         };
 
         _db.Sessions.Add(session);
+
         await _db.SaveChangesAsync();
 
         Response.Cookies.Append(
@@ -235,8 +224,6 @@ public class AuthController : ControllerBase
                 SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddDays(30)
             });
-
-        return id;
     }
 
     private string HashRefreshToken(string token)

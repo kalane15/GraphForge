@@ -7,17 +7,39 @@ function ProtectedRoute({ children }) {
 
     useEffect(() => {
         async function checkAuth() {
-            const response = await fetch(
+            let response = await fetch(
                 `${import.meta.env.VITE_BACKEND_URL}/auth/me`,
                 {
                     credentials: "include"
                 }
             );
 
-            setIsAuthenticated(response.ok);
+            return response.ok;
         }
 
-        checkAuth();
+        async function tryAuth() {
+            if (await checkAuth()) {
+                setIsAuthenticated(true);
+                return;
+            }
+
+            const response = await fetch(
+                `${import.meta.env.VITE_BACKEND_URL}/auth/refresh`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                }
+            );        
+
+            if (await checkAuth()) {
+                setIsAuthenticated(true);
+                return;
+            }
+
+            setIsAuthenticated(false);                    
+        }
+
+        tryAuth();
     }, []);
 
     if (isAuthenticated === null) {
