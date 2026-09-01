@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36511.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphForge.Api", "backend\GraphForge.Api.csproj", "{57886383-CB46-A4F4-00EC-0D76CE3CC167}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{57886383-CB46-A4F4-00EC-0D76CE3CC167}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57886383-CB46-A4F4-00EC-0D76CE3CC167}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57886383-CB46-A4F4-00EC-0D76CE3CC167}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57886383-CB46-A4F4-00EC-0D76CE3CC167}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {064223EA-03A9-4180-A1B9-C67E316F1883}
+	EndGlobalSection
+EndGlobal

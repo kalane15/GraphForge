@@ -9,7 +9,10 @@ body,
 body {
     background-image: url("./src/assets/background.png");
     background-size: cover;
+    font-family: system-ui, sans-serif;
 }
+
+
 
 #root {
     display: grid;

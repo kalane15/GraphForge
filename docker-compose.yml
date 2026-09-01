@@ -12,3 +12,35 @@ services:
 
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+
+
+  backend:
+    build:
+      context: ./backend
+
+    ports:
+      - "8080:8080"
+
+    env_file:
+      - .env
+    
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+
+  postgres:
+    image: postgres:18
+    container_name: graphforge-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+      - ./database/init:/docker-entrypoint-initdb.d
+
+
+volumes:
+  postgres_data:

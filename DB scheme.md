@@ -7,7 +7,8 @@ hide stereotypes
 entity "users" as users {
     * id : uuid <<PK>>
     --
-    email : varchar
+    login : varchar
+	password_hash: varchar
     created_at : timestamp
 }
 
