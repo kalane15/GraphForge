@@ -11,18 +11,4 @@ public class AppDbContext : DbContext
     {
         Database.EnsureCreated();
     }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.ToTable("users");
-            entity.HasKey(user => user.Id);
-
-            entity.Property(user => user.Id).HasColumnName("id");
-            entity.Property(user => user.Login).HasColumnName("login");
-            entity.Property(user => user.PasswordHash).HasColumnName("password_hash");
-            entity.Property(user => user.CreatedAt).HasColumnName("created_at");
-        });
-    }
 }

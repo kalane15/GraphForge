@@ -1,19 +1,22 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
 
-function SignInForm() {
+function SignInForm({ from = "/" }) {
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
-    const [resultInfo, setResultInfo] = useState("");
+    const [message, setMessage] = useState("");
+    const navigate = useNavigate();
 
     async function handleSubmit(event) {
         event.preventDefault();
 
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/signin`, {
             method: "POST",
+            credentials: "include",
 
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json"               
             },
 
             body: JSON.stringify({
@@ -23,10 +26,10 @@ function SignInForm() {
         });
         const data = await response.json();
 
+        setMessage(data.message);  
+        
         if (response.ok) {
-            setResultInfo("Wellcome");
-        } else {
-            setResultInfo(data.message);
+            navigate(from, { replace: true });
         }
     }
 
@@ -56,7 +59,7 @@ function SignInForm() {
 
                 <input id="submit-btn" type="submit" value="Submit" />
             </form>
-            <label>{ resultInfo }</label><br />
+            <label>{ message }</label><br />
         </div>
     );
 }

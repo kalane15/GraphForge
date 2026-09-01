@@ -16,3 +16,7 @@
     height: 100%;
     object-fit: contain;
 }
+
+label, h1, h2, h3 {
+    color: white;
+}

@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
 
-function RegisterForm() {
+function RegisterForm({ from = "/" }) {
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
+    const [message, setMessage] = useState("");
+    const navigate = useNavigate();
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -21,10 +24,12 @@ function RegisterForm() {
             })
         });
 
+        
+
+        setMessage(await response.json().then(data => data.message));
+
         if (response.ok) {
-            console.log("Успешный вход");
-        } else {
-            console.log("Ошибка входа");
+            navigate(from, { replace: true });
         }
     }
 
@@ -54,6 +59,7 @@ function RegisterForm() {
 
                 <input id="submit-btn" type="submit" value="Submit" />
             </form>
+            <label>{ message }</label><br />
         </div>
     );
 }

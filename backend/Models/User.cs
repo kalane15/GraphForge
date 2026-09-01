@@ -1,5 +1,8 @@
-﻿namespace GraphForge.Api.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
+namespace GraphForge.Api.Models;
+
+[Table("users")]
 public class User
 {
     public Guid Id { get; set; }

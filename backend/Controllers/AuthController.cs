@@ -2,6 +2,7 @@
 using GraphForge.Api.Database;
 using GraphForge.Api.DTOs;
 using GraphForge.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,11 +26,11 @@ public class AuthController : ControllerBase
     public AuthController(
        AppDbContext db,
        IPasswordHasher<User> passwordHasher,
-       IOptions<AuthOptions> authOptions)
+       AuthOptions authOptions)
     {
         _db = db;
         _passwordHasher = passwordHasher;
-        _authOptions = authOptions.Value;
+        _authOptions = authOptions;
     }
 
 
@@ -59,8 +60,8 @@ public class AuthController : ControllerBase
         }
 
         var claims = new List<Claim> { 
-            new Claim("login", request.Login),
-            new Claim("role", "user"),
+            new Claim(ClaimTypes.Name, request.Login),
+            new Claim(ClaimTypes.Role, "user"), 
         };
 
         var key = new SymmetricSecurityKey(
@@ -74,9 +75,18 @@ public class AuthController : ControllerBase
                 expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(2)),
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
 
+        string token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+        Response.Cookies.Append("access_token", token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddMinutes(30)
+        });
+
         return Ok(new
         {
-            token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
+            message = "Signed in successfully"
         });
     }
 
@@ -88,7 +98,12 @@ public class AuthController : ControllerBase
             .AnyAsync(user => user.Login == request.Login);
 
         if (userExists)
-            return Conflict("User with this login already exists.");
+        {
+            return Conflict(new
+            {
+                message = "User with this login already exists"
+            });
+        }
 
         var user = new User
         {
@@ -104,6 +119,35 @@ public class AuthController : ControllerBase
 
         await _db.SaveChangesAsync();
 
+        return Ok(new
+        {
+            message = "Signed up successfully"
+        });
+    }
+
+    [HttpPost("signout")]
+    public IActionResult LogOut()
+    {
+        Response.Cookies.Delete("access_token");
+
         return Ok();
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult Me()
+    {
+        if (User.Identity?.Name == null)
+        {
+            return Unauthorized(new
+            {
+                message = "Unauthorized"
+            });
+        }
+
+        return Ok(new
+        {
+            login = User.Identity?.Name
+        });
     }
 }
