@@ -63,7 +63,7 @@ public class AuthController : ControllerBase
             });
         }
 
-        ProvideAccessToken(request.Login);
+        ProvideAccessToken(user);
         await CreateSession(user.Id);
 
         await _db.SaveChangesAsync();
@@ -101,7 +101,7 @@ public class AuthController : ControllerBase
 
         _db.Users.Add(user);
 
-        ProvideAccessToken(request.Login);
+        ProvideAccessToken(user);
         await CreateSession(user.Id);
 
         await _db.SaveChangesAsync();
@@ -113,9 +113,26 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("signout")]
-    public IActionResult LogOut()
+    public async Task<IActionResult> LogOut()
     {
+        string? refreshToken = Request.Cookies["refresh_token"];
+
+        if (refreshToken is not null)
+        {
+            string hash = HashRefreshToken(refreshToken);
+
+            Session? session = await _db.Sessions
+                .FirstOrDefaultAsync(s => s.RefreshTokenHash == hash);
+
+            if (session is not null)
+            {
+                _db.Sessions.Remove(session);
+                await _db.SaveChangesAsync();
+            }
+        }
+
         Response.Cookies.Delete("access_token");
+        Response.Cookies.Delete("refresh_token");
 
         return Ok();
     }
@@ -144,7 +161,7 @@ public class AuthController : ControllerBase
 
         User user = await _db.Users.SingleAsync((u) => u.Id == session.UserId);
 
-        ProvideAccessToken(user.Login);
+        ProvideAccessToken(user);
 
         return Ok();
     }
@@ -167,11 +184,12 @@ public class AuthController : ControllerBase
         });
     }
 
-    private void ProvideAccessToken(string login)
+    private void ProvideAccessToken(User user)
     {
 
         var claims = new List<Claim> {
-            new Claim(ClaimTypes.Name, login),
+            new Claim(ClaimTypes.Name, user.Login),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Role, "user"),
         };
 
