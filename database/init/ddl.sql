@@ -6,6 +6,20 @@ CREATE TABLE IF NOT EXISTS users
     created_at    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS sessions
+(
+    id                 UUID PRIMARY KEY,
+    user_id            UUID NOT NULL,
+    refresh_token_hash VARCHAR(255) NOT NULL,
+    expires_at         TIMESTAMPTZ NOT NULL,
+    revoked_at         TIMESTAMPTZ DEFAULT NULL,
+
+    CONSTRAINT fk_sessions_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS projects
 (
     id          UUID PRIMARY KEY,

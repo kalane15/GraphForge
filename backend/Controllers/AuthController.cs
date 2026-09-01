@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace GraphForge.Api.Controllers;
@@ -18,6 +19,9 @@ namespace GraphForge.Api.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
+    private const int AccessTokenExpirationTimeMinutes = 15;
+    private const int RefreshTokenExpirationTimeMinutes = 30 * 24 * 60;
+
     private readonly AppDbContext _db;
     private readonly IPasswordHasher<User> _passwordHasher;
 
@@ -59,30 +63,10 @@ public class AuthController : ControllerBase
             });
         }
 
-        var claims = new List<Claim> { 
-            new Claim(ClaimTypes.Name, request.Login),
-            new Claim(ClaimTypes.Role, "user"), 
-        };
+        ProvideAccessToken(user);
+        await CreateSession(user.Id);
 
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_authOptions.Key)
-        );
-
-        JwtSecurityToken jwtToken = new JwtSecurityToken(
-                issuer: _authOptions.Issuer,
-                audience: _authOptions.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(2)),
-                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
-
-        string token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
-        Response.Cookies.Append("access_token", token, new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false,
-            SameSite = SameSiteMode.Lax,
-            Expires = DateTimeOffset.UtcNow.AddMinutes(30)
-        });
+        await _db.SaveChangesAsync();
 
         return Ok(new
         {
@@ -117,6 +101,9 @@ public class AuthController : ControllerBase
 
         _db.Users.Add(user);
 
+        ProvideAccessToken(user);
+        await CreateSession(user.Id);
+
         await _db.SaveChangesAsync();
 
         return Ok(new
@@ -126,9 +113,61 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("signout")]
-    public IActionResult LogOut()
+    public async Task<IActionResult> LogOut()
     {
+        string? refreshToken = Request.Cookies["refresh_token"];
+
+        if (refreshToken is not null)
+        {
+            string hash = HashRefreshToken(refreshToken);
+
+            Session? session = await _db.Sessions
+                .FirstOrDefaultAsync(s => s.RefreshTokenHash == hash);
+
+            if (session is not null)
+            {
+                _db.Sessions.Remove(session);
+                await _db.SaveChangesAsync();
+            }
+        }
+
         Response.Cookies.Delete("access_token");
+        Response.Cookies.Delete("refresh_token");
+
+        return Ok();
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh()
+    {
+        string? refreshToken = Request.Cookies["refresh_token"];
+
+        if (refreshToken is null)
+        {
+            return Unauthorized();
+        }
+
+        string hash = HashRefreshToken(refreshToken);
+
+        Session? session = await _db.Sessions
+            .FirstOrDefaultAsync(s =>
+                s.RefreshTokenHash == hash);
+
+        if (session is null)
+        {
+            return Unauthorized();
+        }
+
+        if (session.ExpiresAt >= DateTimeOffset.UtcNow)
+        {
+            _db.Sessions.Remove(session);
+            await _db.SaveChangesAsync();
+            return Unauthorized();
+        }
+
+        User user = await _db.Users.SingleAsync((u) => u.Id == session.UserId);
+
+        ProvideAccessToken(user);
 
         return Ok();
     }
@@ -149,5 +188,74 @@ public class AuthController : ControllerBase
         {
             login = User.Identity?.Name
         });
+    }
+
+    private void ProvideAccessToken(User user)
+    {
+
+        var claims = new List<Claim> {
+            new Claim(ClaimTypes.Name, user.Login),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Role, "user"),
+        };
+
+        var key = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(_authOptions.Key)
+        );
+
+        JwtSecurityToken jwtToken = new JwtSecurityToken(
+                issuer: _authOptions.Issuer,
+                audience: _authOptions.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(AccessTokenExpirationTimeMinutes)),
+                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+
+        string token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+        Response.Cookies.Append("access_token", token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddMinutes(AccessTokenExpirationTimeMinutes)
+        });
+    }
+
+    private async Task CreateSession(Guid userId)
+    {
+        byte[] bytes = RandomNumberGenerator.GetBytes(64);
+
+        string token = Convert.ToBase64String(bytes);
+
+        var session = new Session
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(RefreshTokenExpirationTimeMinutes),
+            RefreshTokenHash = HashRefreshToken(token)
+        };
+
+        _db.Sessions.Add(session);
+
+        await _db.SaveChangesAsync();
+
+        Response.Cookies.Append(
+            "refresh_token",
+            token,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(RefreshTokenExpirationTimeMinutes)
+            });
+    }
+
+    private string HashRefreshToken(string token)
+    {
+        byte[] tokenHash = SHA256.HashData(
+           Encoding.UTF8.GetBytes(token)
+       );
+        string hashedToken = Convert.ToHexString(tokenHash);
+        return hashedToken;
     }
 }

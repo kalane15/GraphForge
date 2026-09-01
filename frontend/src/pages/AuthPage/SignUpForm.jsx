@@ -13,6 +13,7 @@ function RegisterForm({ from = "/" }) {
 
         const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/signup`, {
             method: "POST",
+            credentials: "include",
 
             headers: {
                 "Content-Type": "application/json"
@@ -23,8 +24,6 @@ function RegisterForm({ from = "/" }) {
                 password: password
             })
         });
-
-        
 
         setMessage(await response.json().then(data => data.message));
 
