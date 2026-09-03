@@ -1,16 +1,16 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
 
 namespace GraphForge.Api.Models;
 
-[Table("projects")]
-public class Project
+[Table("graphs")]
+public class Graph
 {
     public Guid Id { get; set; }
-    public Guid OwnerId { get; set; }
+    public Guid ProjectId { get; set; }
     public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
+    public JsonDocument Content { get; set; } = JsonDocument.Parse("{}");
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
-    public User Owner { get; set; } = null!;
-    public List<Graph> Graphs { get; set; } = new List<Graph>();
+    public Project Project { get; set; } = null!;
 }

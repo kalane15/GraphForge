@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS projects
         ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS graph_documents
+CREATE TABLE IF NOT EXISTS graphs
 (
     id         UUID PRIMARY KEY,
     project_id UUID NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS graph_documents
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_graph_documents_project
+    CONSTRAINT fk_graphs_project
         FOREIGN KEY (project_id)
         REFERENCES projects(id)
         ON DELETE CASCADE

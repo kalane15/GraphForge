@@ -17,6 +17,95 @@
     object-fit: contain;
 }
 
-label, h1, h2, h3 {
+label, h1 {
     color: white;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal {
+    background: white;
+    padding: 24px;
+    border-radius: 10px;
+    min-width: 300px;
+}
+
+.list-entry {
+    display: grid;
+    gap: 12px;
+    align-items: center;
+    border: 5px solid white;
+    padding: 12px;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.list-entry--graph {
+    grid-template-columns: minmax(140px, 1.2fr) minmax(180px, 1.5fr) minmax(90px, 0.7fr) minmax(150px, 1fr) minmax(150px, 1fr) auto;
+}
+
+.list-entry--project {
+    grid-template-columns: minmax(140px, 1.2fr) minmax(220px, 1.5fr) minmax(90px, 0.7fr) minmax(90px, 2fr) auto;
+}
+
+.list-entry__field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.list-entry__label {
+    color: white;
+    font-size: 12px;
+    line-height: 1.2;
+    opacity: 0.75;
+}
+
+.list-entry__value {
+    color: white;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.list-entry__value--mono {
+    font-family: monospace;
+    font-size: 13px;
+}
+
+.list-entry__button {
+    min-width: 72px;
+    justify-self: end;
+}
+
+.list-entry__actions {
+    display: flex;
+    gap: 8px;
+    justify-self: end;
+}
+
+@media (max-width: 900px) {
+    .list-entry,
+    .list-entry--graph,
+    .list-entry--project {
+        grid-template-columns: 1fr;
+    }
+
+    .list-entry__button {
+        justify-self: stretch;
+    }
+
+    .list-entry__actions {
+        justify-self: stretch;
+    }
+
+    .list-entry__actions .list-entry__button {
+        flex: 1;
+    }
 }
