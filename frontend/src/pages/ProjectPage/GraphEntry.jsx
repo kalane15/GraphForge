@@ -17,11 +17,11 @@ function GraphEntry(props) {
     }
 
     async function loadGraph() {
-        navigate(`/graphs/${props.id}`);
+        navigate(`/projects/${props.projectId}/graphs/${props.id}`);
     }
 
     async function updateGraph() {
-        navigate(`/graphs/${props.id}/edit`);
+        navigate(`/projects/${props.projectId}/graphs/${props.id}/edit`);
     }
 
     async function deleteGraph() {

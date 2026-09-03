@@ -5,6 +5,7 @@ import AuthPage from "@/pages/AuthPage/AuthPage";
 import ProjectsListPage from "@/pages/ProjectsListPage/ProjectsListPage";
 import ProjectPage from "@/pages/ProjectPage/ProjectPage";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
+import GraphEditorPage from "@/pages/GraphEditorPage/GraphEditorPage"
 
 
 function App() {
@@ -24,6 +25,12 @@ function App() {
                 <Route path="/projects/:projectId" element={
                     <ProtectedRoute>
                         <ProjectPage />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/projects/:projectId/graphs/:graphId/edit" element={
+                    <ProtectedRoute>
+                        <GraphEditorPage />
                     </ProtectedRoute>
                 } />
 

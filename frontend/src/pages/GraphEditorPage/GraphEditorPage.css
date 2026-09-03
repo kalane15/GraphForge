@@ -1,0 +1,75 @@
+.graph-editor {
+    width: 100%;
+    height: calc(100vh - 88px);
+    min-height: 520px;
+}
+
+.graph-editor .react-flow__pane {
+    cursor: default;
+}
+
+.graph-editor .react-flow__controls {
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
+}
+
+.graph-editor .react-flow__controls-button {
+    color: #1f2937;
+}
+
+.graph-editor__add-node-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.editable-node {
+    min-width: 128px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 18px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #172033;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.10);
+    transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+/* {
+    border-color: #64748b;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.14);
+}*/
+
+.editable-node:hover,
+.editable-node--selected {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.20), 0 10px 26px rgba(37, 99, 235, 0.18);
+}
+
+.editable-node__title {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.editable-node__handle.react-flow__handle {
+    width: 10px;
+    height: 10px;
+    border: 2px solid #ffffff;
+    background: #2563eb;
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
+}
+
+.editable-node__handle.react-flow__handle:hover {
+    background: #1d4ed8;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.16);
+}
