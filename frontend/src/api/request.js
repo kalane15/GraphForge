@@ -21,5 +21,11 @@ export async function request(path, options = {}) {
         return null;
     }
 
-    return await response.json();
+    const text = await response.text();
+
+    if (!text) {
+        return null;
+    }
+
+    return JSON.parse(text);
 }

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router";
 import "@/styles/common.css";
 import ProjectForm from "./ProjectForm";
 import ProjectEntry from "./ProjectEntry";
+import { getProjectsListRequest, deleteProjectRequest, createProjectRequest } from "@/api/projectsApi";
 
 
 function ProjectsListPage() {
@@ -51,81 +52,36 @@ function ProjectsListPage() {
 
 
     async function createProject(name, description) {
-        const response = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/projects`,
-            {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ name, description })
-            }
-        );
-
-        if (!response.ok) {
-            const text = await response.text();
-            const message = text ? JSON.parse(text).message : response.statusText;
-            throw new Error(message);
-        }
-
-        const data = await response.json();
-        setProjects((prevProjects) => [...prevProjects, data]);
+        try {
+            const data = await createProjectRequest(name, description);
+            setProjects((prevProjects) => [...prevProjects, data]);
+        } catch (error) {
+            setMessage(error.message);
+        }        
     }
 
 
     async function deleteProject(id) {
-        const response = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/projects/${id}`,
-            {
-                method: "DELETE",
-                credentials: "include"
-            }
-        );
-
-        if (response.status !== 204) {
-            const text = await response.text();
-            const message = text ? JSON.parse(text).message : response.statusText;
-            throw new Error(message);
+        try {
+            await deleteProjectRequest(id);
         }
-
-        setProjects((prevProjects) => prevProjects.filter(project => project.id !== id));
-    }
-
-    async function loadProjects() {
-        const response = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/projects`,
-            {
-                credentials: "include"
-            }
-        );
-
-        if (response.status === 401) {
-            navigate("/auth", { state: { from: location }, replace: true });
-            return [];
+        catch (error) {
+            setMessage(error.message);
         }
-
-        if (!response.ok) {
-            throw new Error("Failed to load projects");
-        }
-
-        const data = await response.json();
-        return data;
     }
 
     useEffect(() => {
         async function fetchProjects() {
             try {
-                const data = await loadProjects();
-                setProjects(data.projects);
-            }
-            catch (error) {
+                const data = await getProjectsListRequest();
+            } catch (error) {
                 setMessage(error.message);
             }
         }
 
-        fetchProjects();
+        setProjects((prevProjects) => prevProjects.filter(project => project.id !== id));
     }, []);
+
 
     return (
         <div>
