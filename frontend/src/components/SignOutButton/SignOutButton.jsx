@@ -1,14 +1,16 @@
 ﻿import { useNavigate } from "react-router";
-
+import { sigOutRequest } from "@/api/authApi";
 
 function SignOutButton() {
     const navigate = useNavigate();
     async function signOut() {
-        await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/signout`, {
-            method: "POST",
-            credentials: "include"
-        });
-        navigate(`/`);
+        try {
+            await signOutRequest();            
+        } catch (error) {
+            console.error("Error signing out:", error.message);
+        } finally {
+            navigate(`/`);
+        } 
     }
 
     return (

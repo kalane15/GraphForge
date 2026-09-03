@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
+import { getProjectsListRequest } from "@/api/projectsApi";
 import "@/styles/common.css";
 
 
@@ -9,31 +10,10 @@ function ProjectsPage() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    async function loadProjects() {
-        const response = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/projects`,
-            {
-                credentials: "include"
-            }
-        );
-
-        if (response.status === 401) {
-            navigate("/auth", { state: { from: location }, replace: true });
-            return [];
-        }
-
-        if (!response.ok) {
-            throw new Error("Failed to load projects");
-        }
-
-        const data = await response.json();
-        return data;
-    }
-
     useEffect(() => {
         async function fetchProjects() {
             try {
-                const data = await loadProjects();
+                const data = await getProjectsListRequest();
                 setProjects(data.projects);
             }
             catch (error) {
