@@ -1,7 +1,10 @@
 using GraphForge.Api.Auth;
 using GraphForge.Api.Database;
 using GraphForge.Api.Models;
-using GraphForge.Api.Services;
+using GraphForge.Api.Services.AuthService;
+using GraphForge.Api.Services.GraphService;
+using GraphForge.Api.Services.ProjectService;
+using GraphForge.Api.Services.UserIdentityProviderService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -42,9 +45,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 
 builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectsService, ProjectsService>();
+builder.Services.AddScoped<IGraphsService, GraphsService>();
+builder.Services.AddScoped<IUserIdentityProvider, UserIdentityProvider>();
+
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();

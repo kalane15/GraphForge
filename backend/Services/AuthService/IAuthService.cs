@@ -1,6 +1,6 @@
 ﻿using GraphForge.Api.Models;
 
-namespace GraphForge.Api.Services
+namespace GraphForge.Api.Services.AuthService
 {
     public interface IAuthService
     {
@@ -8,6 +8,5 @@ namespace GraphForge.Api.Services
         Task ProvideSessionAsync(User user);
         Task EndCurrentSessionAsync();
         Task<bool> RefreshAccessTokenAsync();
-        Guid? GetCurrentUserId();
     }
 }

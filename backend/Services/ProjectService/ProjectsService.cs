@@ -1,18 +1,23 @@
 ﻿using GraphForge.Api.Database;
 using GraphForge.Api.DTOs;
 using GraphForge.Api.Models;
+using GraphForge.Api.Services.GraphService;
 using Microsoft.EntityFrameworkCore;
 
-namespace GraphForge.Api.Services;
+namespace GraphForge.Api.Services.ProjectService;
 
 public class ProjectsService : IProjectsService
 {
     private readonly AppDbContext _db;
+    private readonly IGraphsService _graphsService;
 
-    public ProjectsService(AppDbContext db)
+    public ProjectsService(AppDbContext db, IGraphsService graphsService)
     {
         _db = db;
+        _graphsService = graphsService;
     }
+
+
     public async Task<ProjectInfoResponse> CreateUserProjectAsync(Guid userId, ProjectInfoEditRequest request)
     {
         string projectName = ValidateProjectName(request);
@@ -38,9 +43,9 @@ public class ProjectsService : IProjectsService
             );
     }
 
-    public async Task<ProjectInfoResponse[]> GetUserProjectsAsync(Guid userId)
+    public async Task<List<ProjectInfoResponse>> GetUserProjectsListAsync(Guid userId)
     {
-        ProjectInfoResponse[] projects = await _db.Projects
+        List<ProjectInfoResponse> projects = await _db.Projects
             .Where(project => project.OwnerId == userId)
             .Select(project => new ProjectInfoResponse(
                 project.Id,
@@ -48,16 +53,15 @@ public class ProjectsService : IProjectsService
                 project.Description,
                 _db.Graphs.Count(graph => graph.ProjectId == project.Id)
                 )
-            ).ToArrayAsync();
+            ).ToListAsync();
 
         return projects;
     }
 
 
-    public async Task<ProjectDataResponse?> GetUserProjectAsync(Guid projectId, Guid userId)
+    public async Task<ProjectDataResponse?> GetUserProjectAsync(Guid userId, Guid projectId)
     {
         var project = await _db.Projects
-            .Include(p => p.Graphs)
             .FirstOrDefaultAsync(p => p.Id == projectId && p.OwnerId == userId);
 
         if (project == null)
@@ -72,13 +76,13 @@ public class ProjectsService : IProjectsService
             project.Description,
             project.CreatedAt,
             project.UpdatedAt,
-            project.Graphs.Select(g => new GraphInfoResponse(g.Id, g.ProjectId, g.Name, g.CreatedAt, g.UpdatedAt)).ToList()
+            await _graphsService.GetUserProjectsGraphsAsync(userId, projectId)
         );
 
         return result;
     }
 
-    public async Task<ProjectInfoResponse?> UpdateUserProjectAsync(Guid projectId, Guid userId, ProjectInfoEditRequest request)
+    public async Task<ProjectInfoResponse?> UpdateUserProjectAsync(Guid userId, Guid projectId, ProjectInfoEditRequest request)
     {
         string projectName = ValidateProjectName(request);
 
@@ -108,7 +112,7 @@ public class ProjectsService : IProjectsService
         return result;
     }
 
-    public async Task<bool> DeleteUserProjectAsync(Guid projectId, Guid userId)
+    public async Task<bool> DeleteUserProjectAsync(Guid userId, Guid projectId)
     {
         var project = await _db.Projects
            .FirstOrDefaultAsync(p => p.Id == projectId && p.OwnerId == userId);

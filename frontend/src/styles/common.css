@@ -17,7 +17,7 @@
     object-fit: contain;
 }
 
-label, h1 {
+label, h1, h2 {
     color: white;
 }
 
@@ -35,6 +35,9 @@ label, h1 {
     padding: 24px;
     border-radius: 10px;
     min-width: 300px;
+}
+.modal h2 {
+    color: black;
 }
 
 .list-entry {
@@ -105,7 +108,7 @@ label, h1 {
         justify-self: stretch;
     }
 
-    .list-entry__actions .list-entry__button {
-        flex: 1;
-    }
+        .list-entry__actions .list-entry__button {
+            flex: 1;
+        }
 }

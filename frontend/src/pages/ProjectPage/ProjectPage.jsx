@@ -4,6 +4,7 @@ import GraphCreationForm from "./GraphCreationForm";
 import GraphEntry from "./GraphEntry";
 import { getProjectRequest } from "@/api/projectsApi";
 import { createGraphRequest } from "@/api/graphsApi";
+import { deleteGraphRequest } from "@/api/graphsApi";
 
 
 function ProjectPage() {
@@ -41,6 +42,15 @@ function ProjectPage() {
         } catch (error) {
             setError(error.message);
         }        
+    }
+
+    async function deleteGraph(graphId) {
+        try {
+            await deleteGraphRequest(graphId, projectId);
+            setProject({ ...project, graphs: project.graphs.filter(g => g.id !== graphId) });
+        } catch (error) {
+            setError(error.message);
+        }
     }
 
     if (isLoading) {
@@ -83,6 +93,7 @@ function ProjectPage() {
                             createdAt={graph.createdAt}
                             updatedAt={graph.updatedAt}
                             projectName={project.name}
+                            onDelete={deleteGraph}
                         />
                     )
                 )

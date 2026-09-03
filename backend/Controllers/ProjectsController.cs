@@ -1,5 +1,7 @@
 using GraphForge.Api.DTOs;
-using GraphForge.Api.Services;
+using GraphForge.Api.Services.AuthService;
+using GraphForge.Api.Services.ProjectService;
+using GraphForge.Api.Services.UserIdentityProviderService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.NetworkInformation;
@@ -11,8 +13,8 @@ namespace GraphForge.Api.Controllers;
 [Authorize]
 public class ProjectsController : ControllerBase
 {
-    private readonly IAuthService _authService;
     private readonly IProjectsService _projectsService;
+    private readonly IUserIdentityProvider _userIdentityProvider;
     private static ProblemDetails ProjectDoesNotExistsDetails() => new ()
     {
         Status = StatusCodes.Status404NotFound,
@@ -22,20 +24,17 @@ public class ProjectsController : ControllerBase
 
     public ProjectsController(
         IAuthService authService,
-        IProjectsService projectsService)
+        IProjectsService projectsService,
+        IUserIdentityProvider userIdentityProvider)
     {
-        _authService = authService;
         _projectsService = projectsService;
+        _userIdentityProvider = userIdentityProvider;
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateProject(ProjectInfoEditRequest request)
     {
-        IActionResult? error = TryGetUserId(out Guid userId);
-        if (error is not null)
-        {
-            return error;
-        }
+        Guid userId = _userIdentityProvider.GetCurrentUserId();
 
         try
         {
@@ -57,13 +56,9 @@ public class ProjectsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetProjects()
     {
-        IActionResult? error = TryGetUserId(out Guid userId);
-        if (error is not null)
-        {
-            return error;
-        }
+        Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        ProjectInfoResponse[] projects = await _projectsService.GetUserProjectsAsync(userId);
+        List<ProjectInfoResponse> projects = await _projectsService.GetUserProjectsListAsync(userId);
 
         return Ok(new ProjectsListResponse(projects));
     }
@@ -71,13 +66,9 @@ public class ProjectsController : ControllerBase
     [HttpGet("{projectId}")]
     public async Task<IActionResult> GetProject(Guid projectId)
     {
-        IActionResult? error = TryGetUserId(out Guid userId);
-        if (error is not null)
-        {
-            return error;
-        }
+        Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        ProjectDataResponse? result = await _projectsService.GetUserProjectAsync(projectId, userId);
+        ProjectDataResponse? result = await _projectsService.GetUserProjectAsync(userId, projectId);
 
         if (result == null)
         {
@@ -92,15 +83,11 @@ public class ProjectsController : ControllerBase
         [FromRoute] Guid projectId,
         [FromBody] ProjectInfoEditRequest request)
     {
-        IActionResult? error = TryGetUserId(out Guid userId);
-        if (error is not null)
-        {
-            return error;
-        }
+        Guid userId = _userIdentityProvider.GetCurrentUserId();
 
         try
         {
-            ProjectInfoResponse? result = await _projectsService.UpdateUserProjectAsync(projectId, userId, request);
+            ProjectInfoResponse? result = await _projectsService.UpdateUserProjectAsync(userId, projectId, request);
 
             if (result == null)
             {
@@ -124,34 +111,10 @@ public class ProjectsController : ControllerBase
     [HttpDelete("{projectId}")]
     public async Task<IActionResult> DeleteProject(Guid projectId)
     {
-        IActionResult? error = TryGetUserId(out Guid userId);
-        if (error is not null)
-        {
-            return error;
-        }
+        Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        bool status = await _projectsService.DeleteUserProjectAsync(projectId, userId);
+        bool status = await _projectsService.DeleteUserProjectAsync(userId, projectId);
 
         return status ? NoContent() : NotFound(ProjectDoesNotExistsDetails());
-    }
-    
-    private IActionResult? TryGetUserId(out Guid userId)
-    {
-        Guid? currentUserId = _authService.GetCurrentUserId();
-
-        if (currentUserId is null)
-        {
-            userId = Guid.Empty;
-            return StatusCode(500, new ProblemDetails()
-                {
-                    Status = StatusCodes.Status500InternalServerError,
-                    Title = "Identity error",
-                    Detail = "Unable to get current user id"
-                }
-            );
-        }
-
-        userId = currentUserId.Value;
-        return null;
     }
 }

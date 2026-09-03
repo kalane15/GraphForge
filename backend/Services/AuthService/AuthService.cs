@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 
-namespace GraphForge.Api.Services
+namespace GraphForge.Api.Services.AuthService
 {
     public class AuthService : IAuthService
     {
@@ -184,20 +184,6 @@ namespace GraphForge.Api.Services
             await ProvideAccessTokenAsync(user);
 
             return true;
-        }
-
-        public Guid? GetCurrentUserId()
-        {
-            var user = _httpContextAccessor.HttpContext?.User;
-
-            var claim = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (!Guid.TryParse(claim, out var userId))
-            {
-                return null;
-            }
-
-            return userId;
         }
     }
 }

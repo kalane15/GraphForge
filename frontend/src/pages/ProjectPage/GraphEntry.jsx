@@ -1,8 +1,12 @@
 import "@/styles/common.css";
 import { useNavigate } from "react-router";
+import { useState } from "react";
+import ConfirmForm from "@/components/ConfirmForm/ConfirmForm"
+
 
 function GraphEntry(props) {
     const navigate = useNavigate();
+    const [ isConfirmOpen, setIsConfirmOpen ] = useState(false);
 
     function formatDate(value) {
         if (!value) {
@@ -14,6 +18,14 @@ function GraphEntry(props) {
 
     async function loadGraph() {
         navigate(`/graphs/${props.id}`);
+    }
+
+    async function updateGraph() {
+        navigate(`/graphs/${props.id}/edit`);
+    }
+
+    async function deleteGraph() {
+        props.onDelete(props.id);
     }
 
     return (
@@ -45,9 +57,26 @@ function GraphEntry(props) {
                 <span className="list-entry__value">{formatDate(props.updatedAt)}</span>
             </div>
 
-            <button className="list-entry__button" onClick={loadGraph}>
-                Load
-            </button>
+            <div className="list-entry__actions">
+                <button className="list-entry__button" onClick={loadGraph}>
+                    Load
+                </button>
+
+                <button className="list-entry__button" onClick={updateGraph}>
+                    Edit
+                </button>
+
+                <button className="list-entry__button" onClick={() => setIsConfirmOpen(true)}>
+                    Delete
+                </button>
+            </div>
+
+            {isConfirmOpen && (
+                <ConfirmForm
+                    onConfirm={deleteGraph}
+                    onClose={() => setIsConfirmOpen(false)}
+                />
+            )}
         </div>
     );
 }
