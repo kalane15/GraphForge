@@ -1,5 +1,5 @@
 ﻿import { useNavigate } from "react-router";
-import { sigOutRequest } from "@/api/authApi";
+import { signOutRequest } from "@/api/authApi";
 
 function SignOutButton() {
     const navigate = useNavigate();

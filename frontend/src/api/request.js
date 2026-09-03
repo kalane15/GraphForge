@@ -9,9 +9,9 @@ export async function request(path, options = {}) {
             ...options.headers
         }
     });
+        
 
     if (!response.ok) {
-        const data = await response.json();
         const message = data.detail;
 
         throw new Error(message);
@@ -21,11 +21,6 @@ export async function request(path, options = {}) {
         return null;
     }
 
-    const text = await response.text();
-
-    if (!text) {
-        return null;
-    }
-
-    return JSON.parse(text);
+    const data = await response.json();
+    return data;
 }

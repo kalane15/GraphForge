@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
 import "@/styles/common.css";
 import ProjectForm from "./ProjectForm";
 import ProjectEntry from "./ProjectEntry";
-import { getProjectsListRequest, deleteProjectRequest, createProjectRequest } from "@/api/projectsApi";
+
+import {
+    getProjectsListRequest,
+    deleteProjectRequest,
+    createProjectRequest,
+    updateProjectMetadataRequest
+} from "@/api/projectsApi";
 
 
 function ProjectsListPage() {
@@ -12,42 +17,24 @@ function ProjectsListPage() {
 
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-    const navigate = useNavigate();
-
-    const location = useLocation();
-
     async function updateProject(id, name, description) {
-        const response = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/projects/${id}`,
-            {
-                method: "PUT",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ name, description })
-            }
-        );
+        try {
+            const updatedProject = await updateProjectMetadataRequest(id, name, description);
 
-        if (!response.ok) {
-            const text = await response.text();
-            const message = text ? JSON.parse(text).message : response.statusText;
-            throw new Error(message);
+            setProjects(prevProjects =>
+                prevProjects.map(project =>
+                    project.id === id
+                        ? {
+                            ...project,
+                            name: updatedProject.name,
+                            description: updatedProject.description
+                        }
+                        : project
+                )
+            );
+        } catch (error) {
+            setMessage(error.message);
         }
-
-        const updatedProject = await response.json();
-
-        setProjects(prevProjects =>
-            prevProjects.map(project =>
-                project.id === id
-                    ? {
-                        ...project,
-                        name: updatedProject.name,
-                        description: updatedProject.description
-                    }
-                    : project
-            )
-        );
     }
 
 
@@ -64,6 +51,7 @@ function ProjectsListPage() {
     async function deleteProject(id) {
         try {
             await deleteProjectRequest(id);
+            setProjects((prevProjects) => prevProjects.filter(project => project.id !== id));
         }
         catch (error) {
             setMessage(error.message);
@@ -74,12 +62,13 @@ function ProjectsListPage() {
         async function fetchProjects() {
             try {
                 const data = await getProjectsListRequest();
+                setProjects(data?.projects ?? []);
             } catch (error) {
                 setMessage(error.message);
             }
         }
 
-        setProjects((prevProjects) => prevProjects.filter(project => project.id !== id));
+        fetchProjects();
     }, []);
 
 

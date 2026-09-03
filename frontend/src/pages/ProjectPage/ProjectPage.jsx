@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import GraphCreationForm from "./GraphCreationForm";
 import GraphEntry from "./GraphEntry";
-import { getProject } from "@/api/projectsApi";
+import { getProjectRequest } from "@/api/projectsApi";
+import { createGraphRequest } from "@/api/graphsApi";
 
 
 function ProjectPage() {
@@ -19,7 +20,7 @@ function ProjectPage() {
                 setIsLoading(true);
                 setError(null);
 
-                data = await getProjectRequest(projectId);
+                const data = await getProjectRequest(projectId);
                 setProject(data);
             }
             catch (error) {

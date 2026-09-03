@@ -1,8 +1,8 @@
-import { request, API_URL } from "./request"
+import { request } from "./request"
 
 
 export async function signOutRequest() {
-    const path = `${API_URL}/auth/signout`;
+    const path = `/auth/signout`;
     const details =  {
         method: "POST",
     };
@@ -11,7 +11,7 @@ export async function signOutRequest() {
 }
 
 export async function signInRequest(login, password) {
-    const path = `${API_URL}/auth/signin`;
+    const path = `/auth/signin`;
     const details = {
         method: "POST",
 
@@ -29,7 +29,7 @@ export async function signInRequest(login, password) {
 }
 
 export async function signUpRequest(login, password) {
-    const path = `${API_URL}/auth/signup`
+    const path = `/auth/signup`
     const details = {
         method: "POST",
 
@@ -44,4 +44,15 @@ export async function signUpRequest(login, password) {
     }
 
     await request(path, details);
+}
+
+export async function meRequest() {
+    const path = "/auth/me";
+    return await request(path, { });
+}
+
+export async function refreshRequest() {
+    return await request("/auth/refresh", {
+        method: "POST"
+    });
 }

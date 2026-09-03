@@ -1,11 +1,11 @@
-import { request, API_URL } from "./request"
+import { request } from "./request"
 
 export async function getGraphRequest(graphId) {
     
 }
 
-export async function createGraphRequest(name) {
-    const path = `${API_URL}/graphs`;
+export async function createGraphRequest(name, projectId) {
+    const path = `/graphs`;
     const details = {
         method: "POST",
 
