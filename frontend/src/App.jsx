@@ -2,7 +2,8 @@ import { Routes, Route } from "react-router";
 import Header from "@/components/Header/Header";
 import HomePage from "@/pages/HomePage/HomePage";
 import AuthPage from "@/pages/AuthPage/AuthPage";
-import ProjectsPage from "@/pages/ProjectsPage/ProjectsPage";
+import ProjectsListPage from "@/pages/ProjectsListPage/ProjectsListPage";
+import ProjectPage from "@/pages/ProjectPage/ProjectPage";
 import ProtectedRoute from "@/components/ProtectedRoute/ProtectedRoute";
 
 
@@ -16,7 +17,13 @@ function App() {
 
                 <Route path="/projects" element={
                     <ProtectedRoute>
-                        <ProjectsPage />
+                        <ProjectsListPage />
+                    </ProtectedRoute>
+                } />
+
+                <Route path="/projects/:projectId" element={
+                    <ProtectedRoute>
+                        <ProjectPage />
                     </ProtectedRoute>
                 } />
 

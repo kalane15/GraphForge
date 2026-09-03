@@ -7,6 +7,7 @@ hide stereotypes
 entity "sessions" as sessions{
     * id : uuid <<PK>>
     --
+    user_id : uuid <<FK>>
     expires_at : timestamptz
 	revoked_at : timestamptz
 	refresh_token_hash : varchar
@@ -16,7 +17,6 @@ entity "users" as users {
     * id : uuid <<PK>>
     --
     login : varchar
-	session_id : uuid <<FK>>
 	password_hash: varchar
     created_at : timestamptz
 }
@@ -31,7 +31,7 @@ entity "projects" as projects {
     updated_at : timestamptz
 }
 
-entity "graph_documents" as graphs {
+entity "graphs" as graphs {
     * id : uuid <<PK>>
     --
     project_id : uuid <<FK>>
@@ -51,6 +51,8 @@ entity "node_schemas" as schemas {
 }
 
 users ||--o{ projects : owns
+
+users ||--o{ sessions : has
 
 projects ||--o{ graphs : contains
 
