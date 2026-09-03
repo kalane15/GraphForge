@@ -3,9 +3,9 @@ import { useNavigate } from "react-router";
 
 function SignInButton() {
     const navigate = useNavigate();
-    const authPath = "/auth";
+
     function handleClick() {
-        navigate(authPath);
+        navigate("/auth");
     }
 
     return (

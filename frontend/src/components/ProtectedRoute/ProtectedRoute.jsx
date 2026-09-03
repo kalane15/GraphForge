@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router";
+import { meRequest, refreshRequest } from "@/api/authApi";
 
 function ProtectedRoute({ children }) {
     const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -7,14 +8,12 @@ function ProtectedRoute({ children }) {
 
     useEffect(() => {
         async function checkAuth() {
-            let response = await fetch(
-                `${import.meta.env.VITE_BACKEND_URL}/auth/me`,
-                {
-                    credentials: "include"
-                }
-            );
-
-            return response.ok;
+            try {
+                await meRequest();
+                return true;
+            } catch (error) {
+                return false;
+            }
         }
 
         async function tryAuth() {
@@ -23,13 +22,12 @@ function ProtectedRoute({ children }) {
                 return;
             }
 
-            const response = await fetch(
-                `${import.meta.env.VITE_BACKEND_URL}/auth/refresh`,
-                {
-                    method: "POST",
-                    credentials: "include",
-                }
-            );        
+            try {
+                await refreshRequest();
+            } catch (error) {
+                setIsAuthenticated(false);
+                return;
+            }
 
             if (await checkAuth()) {
                 setIsAuthenticated(true);

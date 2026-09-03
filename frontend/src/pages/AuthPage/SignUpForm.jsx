@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { signUpRequest } from "@/api/authApi";
 
 
 function RegisterForm({ from = "/" }) {
@@ -11,24 +12,11 @@ function RegisterForm({ from = "/" }) {
     async function handleSubmit(event) {
         event.preventDefault();
 
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/signup`, {
-            method: "POST",
-            credentials: "include",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify({
-                login: login,
-                password: password
-            })
-        });
-
-        setMessage(await response.json().then(data => data.message));
-
-        if (response.ok) {
+        try {
+            await signUpRequest(login, password);
             navigate(from, { replace: true });
+        } catch (error) {
+            setMessage(error.message);
         }
     }
 

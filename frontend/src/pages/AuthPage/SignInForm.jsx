@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-
+import { signInRequest } from "@/api/authApi";
 
 function SignInForm({ from = "/" }) {
     const [login, setLogin] = useState("");
@@ -11,25 +11,11 @@ function SignInForm({ from = "/" }) {
     async function handleSubmit(event) {
         event.preventDefault();
 
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/auth/signin`, {
-            method: "POST",
-            credentials: "include",
-
-            headers: {
-                "Content-Type": "application/json"               
-            },
-
-            body: JSON.stringify({
-                login: login,
-                password: password
-            })
-        });
-        const data = await response.json();
-
-        setMessage(data.message);  
-        
-        if (response.ok) {
+        try {
+            await signInRequest(login, password);
             navigate(from, { replace: true });
+        } catch (error) {
+            setMessage(error.message);
         }
     }
 

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import GraphCreationForm from "./GraphCreationForm";
 import GraphEntry from "./GraphEntry";
+import { getProjectRequest } from "@/api/projectsApi";
+import { createGraphRequest } from "@/api/graphsApi";
 
 
 function ProjectPage() {
@@ -18,19 +20,7 @@ function ProjectPage() {
                 setIsLoading(true);
                 setError(null);
 
-                const response = await fetch(
-                    `${import.meta.env.VITE_BACKEND_URL}/projects/${projectId}`,
-                    {
-                        method: "GET",
-                        credentials: "include"
-                    }
-                );
-
-                if (!response.ok) {
-                    throw new Error("Failed to load project");
-                }
-
-                const data = await response.json();
+                const data = await getProjectRequest(projectId);
                 setProject(data);
             }
             catch (error) {
@@ -42,28 +32,15 @@ function ProjectPage() {
         }
 
         loadProject();
-    }, []);
+    }, [projectId]);
 
     async function createGraph(name) {
-        const response = await fetch(
-            `${import.meta.env.VITE_BACKEND_URL}/graphs`,
-            {
-                method: "POST",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ name, projectId })
-            }
-        );
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message);
-        }
-
-        const graph = await response.json();
-        setProject({ ...project, graphs: [...project.graphs, graph] });
+        try {
+            const graph = await createGraphRequest(name, projectId);
+            setProject({ ...project, graphs: [...project.graphs, graph] });
+        } catch (error) {
+            setError(error.message);
+        }        
     }
 
     if (isLoading) {

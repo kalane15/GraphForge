@@ -14,12 +14,10 @@ namespace GraphForge.Api.Controllers;
 [Authorize]
 public class GraphsController : ControllerBase
 {
-    private readonly IAuthService _authService;
     private readonly AppDbContext _db;
 
-    public GraphsController(IAuthService authService, AppDbContext db)
+    public GraphsController(AppDbContext db)
     {
-        _authService = authService;
         _db = db;
     }
 
@@ -31,10 +29,13 @@ public class GraphsController : ControllerBase
 
         if (exist)
         {
-            return BadRequest(new
-            {
-                message = "Graph with the same name already exists in this project"
-            });
+            return BadRequest(new ProblemDetails()
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Entity exists",
+                    Detail = "Graph already exists"
+                }
+            );
         }
 
         var result = new Graph

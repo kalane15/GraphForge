@@ -18,6 +18,13 @@ public class AuthController : ControllerBase
     private readonly IPasswordHasher<User> _passwordHasher;
     private readonly IAuthService _authService;
 
+    private static ProblemDetails UnauthorizedDetails(string detail) => new()
+    {
+        Status = StatusCodes.Status401Unauthorized,
+        Title = "Unauthorized",
+        Detail = detail
+    };
+
     public AuthController(
        AppDbContext db,
        IPasswordHasher<User> passwordHasher,
@@ -37,10 +44,7 @@ public class AuthController : ControllerBase
 
         if (user is null)
         {
-            return Unauthorized(new
-            {
-                message = "User not found"
-            });
+            return Unauthorized(UnauthorizedDetails("User does not exist"));
         }
 
         PasswordVerificationResult verifyPasswordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
@@ -48,19 +52,13 @@ public class AuthController : ControllerBase
 
         if (!isCorrectPassword)
         {
-            return Unauthorized(new
-            {
-                message = "Incorrect password"
-            });
+            return Unauthorized(UnauthorizedDetails("Incorrect password"));
         }
 
         await _authService.ProvideAccessTokenAsync(user);
         await _authService.ProvideSessionAsync(user);
 
-        return Ok(new
-        {
-            message = "Signed in successfully"
-        });
+        return NoContent();
     }
 
 
@@ -72,10 +70,13 @@ public class AuthController : ControllerBase
 
         if (userExists)
         {
-            return Conflict(new
-            {
-                message = "User with this login already exists"
-            });
+            return Conflict(new ProblemDetails()
+                {
+                    Status = StatusCodes.Status409Conflict,
+                    Title = "Conflict",
+                    Detail = "User already exists"
+                }
+            );
         }
 
         var user = new User
@@ -94,10 +95,7 @@ public class AuthController : ControllerBase
         await _authService.ProvideAccessTokenAsync(user);
         await _authService.ProvideSessionAsync(user);
 
-        return Ok(new
-        {
-            message = "Signed up successfully"
-        });
+        return NoContent();
     }
 
     [HttpPost("signout")]
@@ -105,7 +103,7 @@ public class AuthController : ControllerBase
     {
         await _authService.EndCurrentSessionAsync();
 
-        return Ok();
+        return NoContent();
     }
 
     [HttpPost("refresh")]
@@ -113,7 +111,7 @@ public class AuthController : ControllerBase
     {
         bool refreshed = await _authService.RefreshAccessTokenAsync();
 
-        return refreshed ? Ok() : Unauthorized();
+        return refreshed ? NoContent() : Unauthorized(UnauthorizedDetails("User refresh failed"));
     }
 
     [Authorize]
@@ -122,35 +120,28 @@ public class AuthController : ControllerBase
     {
         if (User.Identity?.Name == null)
         {
-            return Unauthorized(new
-            {
-                message = "Unauthorized"
-            });
+            return Unauthorized(UnauthorizedDetails("Authorization is required"));
         }
 
         string? userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (!Guid.TryParse(userIdClaim, out Guid userId))
         {
-            return StatusCode(500, new
+            return StatusCode(500, new ProblemDetails()
             {
-                message = "User claim does not exist"
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Internal server error",
+                Detail = "Unable to get user claim"
             });
         }
 
-        bool userExists = await _db.Users.AnyAsync(u => u.Id == userId);
+        User? user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
-        if (!userExists) { 
-            return Unauthorized(new
-            {
-                message = "User not found"
-            });
+        if (user == null) { 
+            return Unauthorized(UnauthorizedDetails("User not found"));
         }
         
 
-        return Ok(new
-        {
-            login = User.Identity?.Name
-        });
+        return Ok(new CurrentUserInfoResponse(user.Login, user.CreatedAt));
     }
 }

@@ -2,6 +2,7 @@ using GraphForge.Api.DTOs;
 using GraphForge.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.NetworkInformation;
 
 namespace GraphForge.Api.Controllers;
 
@@ -12,6 +13,12 @@ public class ProjectsController : ControllerBase
 {
     private readonly IAuthService _authService;
     private readonly IProjectsService _projectsService;
+    private static ProblemDetails ProjectDoesNotExistsDetails() => new ()
+    {
+        Status = StatusCodes.Status404NotFound,
+        Title = "Not found",
+        Detail = "Project does not exist"
+    };
 
     public ProjectsController(
         IAuthService authService,
@@ -37,7 +44,13 @@ public class ProjectsController : ControllerBase
         }
         catch (ProjectValidationException exception)
         {
-            return BadRequest(new { message = exception.Message });
+            return BadRequest(new ProblemDetails()
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Bad request",
+                    Detail = exception.Message
+                }
+            );
         }
     }
 
@@ -68,7 +81,7 @@ public class ProjectsController : ControllerBase
 
         if (result == null)
         {
-            return NotFound();
+            return NotFound(ProjectDoesNotExistsDetails());
         }
 
         return Ok(result);
@@ -91,14 +104,20 @@ public class ProjectsController : ControllerBase
 
             if (result == null)
             {
-                return NotFound();
+                return NotFound(ProjectDoesNotExistsDetails());
             }
 
             return Ok(result);
         }
         catch (ProjectValidationException exception)
         {
-            return BadRequest(new { message = exception.Message });
+            return BadRequest(new ProblemDetails()
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Bad request",
+                    Detail = exception.Message
+                }
+            );
         }
     }
 
@@ -113,9 +132,9 @@ public class ProjectsController : ControllerBase
 
         bool status = await _projectsService.DeleteUserProjectAsync(projectId, userId);
 
-        return status ? NoContent() : NotFound();
+        return status ? NoContent() : NotFound(ProjectDoesNotExistsDetails());
     }
-
+    
     private IActionResult? TryGetUserId(out Guid userId)
     {
         Guid? currentUserId = _authService.GetCurrentUserId();
@@ -123,7 +142,13 @@ public class ProjectsController : ControllerBase
         if (currentUserId is null)
         {
             userId = Guid.Empty;
-            return StatusCode(500, new { message = "Unable to get user id" });
+            return StatusCode(500, new ProblemDetails()
+                {
+                    Status = StatusCodes.Status500InternalServerError,
+                    Title = "Identity error",
+                    Detail = "Unable to get current user id"
+                }
+            );
         }
 
         userId = currentUserId.Value;
