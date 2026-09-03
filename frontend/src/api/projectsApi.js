@@ -31,10 +31,11 @@ export async function createProjectRequest(name, description) {
     const path = `/projects`;
     const details = {
         method: "POST",
-        credentials: "include",
+
         headers: {
             "Content-Type": "application/json"
         },
+
         body: JSON.stringify({ name, description })
     };
 

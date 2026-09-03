@@ -32,7 +32,7 @@ function ProjectPage() {
         }
 
         loadProject();
-    }, []);
+    }, [projectId]);
 
     async function createGraph(name) {
         try {

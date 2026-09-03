@@ -12,7 +12,8 @@ export async function request(path, options = {}) {
         
 
     if (!response.ok) {
-        const message = data.detail;
+        const errorData = await response.json();
+        const message = errorData.detail;
 
         throw new Error(message);
     }

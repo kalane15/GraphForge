@@ -90,16 +90,6 @@ public class ProjectsService : IProjectsService
             return null;
         }
 
-        var updatedProject = new Project
-        {
-            Id = project.Id,
-            OwnerId = project.OwnerId,
-            Name = projectName,
-            Description = request.Description,
-            CreatedAt = project.CreatedAt,
-            UpdatedAt = DateTimeOffset.UtcNow
-        };
-
         project.Name = projectName;
         project.Description = request.Description;
         project.UpdatedAt = DateTimeOffset.UtcNow;
