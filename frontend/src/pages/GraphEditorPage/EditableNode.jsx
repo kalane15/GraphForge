@@ -1,12 +1,12 @@
 import { Handle, Position } from '@xyflow/react';
 
-export function buildEditableNode({ label = "New node", position = { x: 0, y: 0 } } = {}) {
+export function buildEditableNode({ title = "New node", position = { x: 0, y: 0 } } = {}) {
     return {
         id: crypto.randomUUID(),
         type: "editableNode",
         position,
         data: {
-            label,
+            title,
             "type": "dialogue",
             "properties": {
                 "string": "asd"
@@ -132,6 +132,12 @@ export function EditableNode({ id, data, selected }) {
         onChange(name, value);
     }
 
+    function handleTitleChange(event) {
+        const value = event.target.value;
+
+        data.onTitleChange(id, event.target.value)
+    }
+
     return (
         <div className={`react-flow__node-default editable-node ${selected ? "editable-node--selected" : ""}`}>
             <Handle className="editable-node__handle" id="top" type="source" position={Position.Top} isConnectableStart isConnectableEnd />
@@ -139,7 +145,7 @@ export function EditableNode({ id, data, selected }) {
             <Handle className="editable-node__handle" id="bottom" type="source" position={Position.Bottom} isConnectableStart isConnectableEnd />
             <Handle className="editable-node__handle" id="left" type="source" position={Position.Left} isConnectableStart isConnectableEnd />
 
-            <div className="editable-node__title">{data.label}</div>
+            <input className="editable-node__title" type="text" value={data.title} onChange={(event) => handleTitleChange(event)}></input>
             <div className="editable-node__type">type: {data.type}</div>
             <div className="editable-node__fields">
                 {

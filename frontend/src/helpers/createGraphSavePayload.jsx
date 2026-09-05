@@ -5,7 +5,7 @@ export function createGraphSavePayload(nodes, edges) {
             type: node.type,
             position: node.position,
             data: {
-                label: node.data.label,
+                title: node.data.title,
                 type: node.data.type,
                 properties: node.data.properties,
             },

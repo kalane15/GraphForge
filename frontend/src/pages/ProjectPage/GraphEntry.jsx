@@ -16,10 +16,6 @@ function GraphEntry(props) {
         return new Date(value).toLocaleString();
     }
 
-    async function loadGraph() {
-        navigate(`/projects/${props.projectId}/graphs/${props.id}`);
-    }
-
     async function updateGraph() {
         navigate(`/projects/${props.projectId}/graphs/${props.id}/edit`);
     }
@@ -58,10 +54,6 @@ function GraphEntry(props) {
             </div>
 
             <div className="list-entry__actions">
-                <button className="list-entry__button" onClick={loadGraph}>
-                    Load
-                </button>
-
                 <button className="list-entry__button" onClick={updateGraph}>
                     Edit
                 </button>

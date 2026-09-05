@@ -47,12 +47,31 @@ function Flow({ nodes, edges, setNodes, setEdges, onSave, onReturn }) {
         );
     }, [setNodes]);
 
+    const handleNodeTitleChange = useCallback((nodeId, title) => {
+        setNodes((nodes) =>
+            nodes.map((node) => {
+                if (node.id !== nodeId) {
+                    return node;
+                }
+
+                return {
+                    ...node,
+                    data: {
+                        ...node.data,
+                        title,
+                    },
+                };
+            })
+        );
+    }, [setNodes]);
+
 
     const nodesWithCallbacks = useMemo(() => nodes.map((node) => ({
         ...node,
         data: {
             ...node.data,
             onFieldChange: handleNodeFieldChange,
+            onTitleChange: handleNodeTitleChange
         },
     })), [nodes, handleNodeFieldChange]);
 
