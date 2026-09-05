@@ -34,6 +34,14 @@ function GraphEditorPage() {
         loadGraph();
     }, [projectId, graphId]);
 
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            saveGraph();
+        }, 1000);
+
+        return () => clearTimeout(timeoutId);
+    }, [nodes, edges]);
+
     async function returnToProjectPage() {
         await saveGraph();
         navigate(`/projects/${projectId}`);
