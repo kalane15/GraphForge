@@ -9,6 +9,7 @@ public class AppDbContext : DbContext
     public DbSet<Session> Sessions => Set<Session>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<Graph> Graphs => Set<Graph>();
+    public DbSet<Schema> Schemas => Set<Schema>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -32,5 +33,18 @@ public class AppDbContext : DbContext
             .Property(graph => graph.Content)
             .HasColumnType("jsonb")
             .HasDefaultValueSql("""'{"nodes":[],"edges":[]}'::jsonb""");
+
+        modelBuilder.Entity<Schema>()
+            .HasOne(schema => schema.Project)
+            .WithMany(project => project.Schemas)
+            .HasForeignKey(schema => schema.ProjectId);
+
+        modelBuilder.Entity<Schema>()
+            .Property(schema => schema.SchemaTypeName)
+            .HasColumnName("schema_type_name");
+
+        modelBuilder.Entity<Schema>()
+            .Property(schema => schema.Content)
+            .HasColumnType("jsonb");
     }
 }

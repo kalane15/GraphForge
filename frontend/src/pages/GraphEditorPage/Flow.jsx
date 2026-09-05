@@ -73,7 +73,7 @@ function Flow({ nodes, edges, setNodes, setEdges, onSave, onReturn }) {
             onFieldChange: handleNodeFieldChange,
             onTitleChange: handleNodeTitleChange
         },
-    })), [nodes, handleNodeFieldChange]);
+    })), [nodes, handleNodeFieldChange, handleNodeTitleChange]);
 
     useCopyPaste({ nodes, edges, setNodes, setEdges, cursorPositionRef });
 

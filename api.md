@@ -5,7 +5,7 @@
 - User
 - Project
 - Graph
-- NodeSchema
+- Schema
 - GraphVersion
 - Export
 
@@ -31,7 +31,7 @@ Authenticate user via GitHub OAuth.
 
 # Project
 
-Project is a container for graphs and node schemas.
+Project is a container for graphs and schemas.
 
 ---
 
@@ -97,36 +97,38 @@ Delete graph.
 
 ---
 
-# NodeSchema
+# Schema
 
-NodeSchema describes available node types.
+Schema describes available node types.
 
 Example:
 
-    DialogueNode
-
-    Fields:
-    - text: string
-    - speaker: string
+    schemaTypeName: DialogueNode
+    content:
+      fields:
+      - name: text
+        type: string
+      - name: speaker
+        type: string
 
 ---
 
     POST /projects/{projectId}/schemas
 
-Create a new node schema.
+Create a new schema.
 
     GET /projects/{projectId}/schemas
 
-Get all node schemas in a project.
+Get all schemas in a project.
 
     GET /schemas/{schemaId}
 
-Get node schema.
+Get schema.
 
     PUT /schemas/{schemaId}
 
-Update node schema.
+Update schema.
 
     DELETE /schemas/{schemaId}
 
-Delete node schema.
+Delete schema.

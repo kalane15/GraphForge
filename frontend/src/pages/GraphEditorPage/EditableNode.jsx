@@ -1,4 +1,6 @@
 import { Handle, Position } from '@xyflow/react';
+import EditableField from "@/components/EditableField/EditableField"
+
 
 export function buildEditableNode({ title = "New node", position = { x: 0, y: 0 } } = {}) {
     return {
@@ -7,7 +9,7 @@ export function buildEditableNode({ title = "New node", position = { x: 0, y: 0 
         position,
         data: {
             title,
-            "type": "dialogue",
+            schemaTypeName: "dialogue",
             "properties": {
                 "string": "asd"
             },
@@ -17,9 +19,9 @@ export function buildEditableNode({ title = "New node", position = { x: 0, y: 0 
 
 
 
-function getSchema(schemaName) {
+function getSchema(schemaTypeName) {
     const schema = {
-        "type": "dialogue",
+        schemaTypeName: "dialogue",
         "fields": [
             {
                 "name": "string",
@@ -48,89 +50,10 @@ function getSchema(schemaName) {
 }
 
 
-
 export function EditableNode({ id, data, selected }) {
     const properties = data.properties ?? {};
     const onChange = (name, value) => data.onFieldChange(id, name, value);
 
-    function renderFieldInput(field, value) {
-        if (field.type === "int") {
-            return (
-                <input
-                    className="editable-node__input"
-                    type="text"
-                    value={value}
-                    step="1"
-                    onChange={(event) => handleIntChange(field.name, event)}
-                />
-            );
-        }
-
-        if (field.type === "float") {
-            return (
-                <input
-                    className="editable-node__input"
-                    type="text"
-                    value={value}
-                    step="any"
-                    onChange={(event) => handleFloatChange(field.name, event)}
-                />
-            );
-        }
-
-        if (field.type === "bool") {
-            return (
-                <input
-                    className="editable-node__checkbox"
-                    type="checkbox"
-                    checked={value}
-                    onChange={(event) => onChange(field.name, event.target.checked)}
-                />
-            );
-        }
-
-        return (
-            <input
-                className="editable-node__input"
-                type="text"
-                value={value}
-                onChange={(event) => onChange(field.name, event.target.value)}
-            />
-        );
-    }
-
-    function renderField(fieldSchema, data) {
-        const value = data?.[fieldSchema.name] ?? "";
-
-        return (
-            <label className="editable-node__field">
-                <span className="editable-node__field-name">{fieldSchema.name}</span>
-                {renderFieldInput(fieldSchema, value, (newValue) => {
-                    onChange(fieldSchema.name, newValue);
-                })}
-            </label>
-        );
-    }
-
-    function handleFloatChange(name, event) {
-        const value = event.target.value;
-
-        if (!/^-?\d*\.?\d*$/.test(value)) {
-            return;
-        }
-
-        onChange(name, value);
-    }
-
-    function handleIntChange(name, event) {
-        const value = event.target.value;
-
-        if (!/^-?\d*$/.test(value)) {
-            return;
-        }
-
-        onChange(name, value);
-    }
 
     function handleTitleChange(event) {
         const value = event.target.value;
@@ -146,13 +69,18 @@ export function EditableNode({ id, data, selected }) {
             <Handle className="editable-node__handle" id="left" type="source" position={Position.Left} isConnectableStart isConnectableEnd />
 
             <input className="editable-node__title" type="text" value={data.title} onChange={(event) => handleTitleChange(event)}></input>
-            <div className="editable-node__type">type: {data.type}</div>
+            <div className="editable-node__type">schemaTypeName: {data.schemaTypeName}</div>
             <div className="editable-node__fields">
                 {
-                    getSchema(data.type).fields.map((field) => {
+                    getSchema(data.schemaTypeName).fields.map((field) => {
                         return (
                             <div className="editable-node__field-row" key={field.name}>
-                                {renderField(field, properties)}
+                                <EditableField
+                                    name={field.name}
+                                    value={properties[field.name] ?? ""}
+                                    type={field.type}
+                                    onChange={onChange}
+                                    />
                             </div>
                         );
                     })

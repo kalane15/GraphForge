@@ -41,13 +41,12 @@ entity "graphs" as graphs {
     updated_at : timestamptz
 }
 
-entity "node_schemas" as schemas {
+entity "schemas" as schemas {
     * id : uuid <<PK>>
     --
     project_id : uuid <<FK>>
-    name : varchar
-    schema : jsonb
-    created_at : timestamptz
+    schema_type_name : varchar
+    content : jsonb
 }
 
 users ||--o{ projects : owns
