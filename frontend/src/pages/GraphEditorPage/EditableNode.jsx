@@ -36,6 +36,10 @@ function getSchema(schemaName) {
             {
                 "name": "bool",
                 "type": "bool"
+            },
+            {
+                "name": "isAboba",
+                "type": "bool"
             }
         ]
     }
@@ -53,6 +57,7 @@ export function EditableNode({ id, data, selected }) {
         if (field.type === "int") {
             return (
                 <input
+                    className="editable-node__input"
                     type="text"
                     value={value}
                     step="1"
@@ -64,6 +69,7 @@ export function EditableNode({ id, data, selected }) {
         if (field.type === "float") {
             return (
                 <input
+                    className="editable-node__input"
                     type="text"
                     value={value}
                     step="any"
@@ -75,6 +81,7 @@ export function EditableNode({ id, data, selected }) {
         if (field.type === "bool") {
             return (
                 <input
+                    className="editable-node__checkbox"
                     type="checkbox"
                     checked={value}
                     onChange={(event) => onChange(field.name, event.target.checked)}
@@ -84,6 +91,7 @@ export function EditableNode({ id, data, selected }) {
 
         return (
             <input
+                className="editable-node__input"
                 type="text"
                 value={value}
                 onChange={(event) => onChange(field.name, event.target.value)}
@@ -95,8 +103,8 @@ export function EditableNode({ id, data, selected }) {
         const value = data?.[fieldSchema.name] ?? "";
 
         return (
-            <label>
-                <span>{fieldSchema.name}</span>
+            <label className="editable-node__field">
+                <span className="editable-node__field-name">{fieldSchema.name}</span>
                 {renderFieldInput(fieldSchema, value, (newValue) => {
                     onChange(fieldSchema.name, newValue);
                 })}
@@ -132,15 +140,18 @@ export function EditableNode({ id, data, selected }) {
             <Handle className="editable-node__handle" id="left" type="source" position={Position.Left} isConnectableStart isConnectableEnd />
 
             <div className="editable-node__title">{data.label}</div>
-            {
-                getSchema(data.type).fields.map((field) => {
-                    return (
-                        <div key={field.name}>
-                            {renderField(field, properties)}
-                        </div>
-                    );
-                })
-            }
+            <div className="editable-node__type">type: {data.type}</div>
+            <div className="editable-node__fields">
+                {
+                    getSchema(data.type).fields.map((field) => {
+                        return (
+                            <div className="editable-node__field-row" key={field.name}>
+                                {renderField(field, properties)}
+                            </div>
+                        );
+                    })
+                }
+            </div>
         </div>
     );
 }

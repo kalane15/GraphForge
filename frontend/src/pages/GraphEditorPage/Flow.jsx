@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import {
     ReactFlow,
     Controls,
@@ -9,7 +9,8 @@ import {
     addEdge,
     SelectionMode,
     ConnectionMode,
-    useReactFlow
+    useReactFlow,
+    Panel
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
@@ -17,27 +18,12 @@ import './GraphEditorPage.css';
 import { EditableNode, buildEditableNode } from "./EditableNode";
 import { useCopyPaste } from "./useCopyPaste";
 
-
-
-const initialEdges = [];
-
 const nodeTypes = {
     editableNode: EditableNode,
 };
 
-function Flow() {
+function Flow({ nodes, edges, setNodes, setEdges, onSave, onReturn }) {
     const { screenToFlowPosition } = useReactFlow();
-    const [nodes, setNodes] = useState(() => [
-        buildEditableNode({
-            label: "New Node",
-            position: { x: 100, y: 100 },
-        }),
-        buildEditableNode({
-            label: "New Node",
-            position: { x: 150, y: 150 },
-        }),
-    ]);
-    const [edges, setEdges] = useState(initialEdges);
     const cursorPositionRef = useRef({ x: 0, y: 0 });
 
     const handleNodeFieldChange = useCallback((nodeId, fieldName, value) => {
@@ -59,7 +45,8 @@ function Flow() {
                 };
             })
         );
-    }, []);
+    }, [setNodes]);
+
 
     const nodesWithCallbacks = useMemo(() => nodes.map((node) => ({
         ...node,
@@ -80,8 +67,7 @@ function Flow() {
         const newNode = buildEditableNode({ position });
 
         setNodes((nodes) => [...nodes, newNode]);
-    }, [screenToFlowPosition]);
-
+    }, [screenToFlowPosition, setNodes]);
 
 
     const handleMouseMove = useCallback((event) => {
@@ -93,16 +79,22 @@ function Flow() {
 
     const onConnect = useCallback((connection) => {
         setEdges((edges) => addEdge(connection, edges));
-    }, []);
+    }, [setEdges]);
 
     const onNodesChange = useCallback(
         (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-        [],
+        [setNodes],
     );
     const onEdgesChange = useCallback(
         (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-        [],
+        [setEdges],
     );
+
+
+
+
+
+
 
     return (
         <div className="graph-editor">
@@ -128,6 +120,11 @@ function Flow() {
                         add
                     </ControlButton>
                 </Controls>
+
+                <Panel position="top-left">
+                    <button onClick={onSave}> Save </button>
+                    <button onClick={onReturn}> Return to project page </button>
+                </Panel>
             </ReactFlow>
         </div>
     );

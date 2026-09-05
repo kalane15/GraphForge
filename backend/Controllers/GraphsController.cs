@@ -20,13 +20,6 @@ public class GraphsController : ControllerBase
 {
     private readonly IUserIdentityProvider _userIdentityProvider;
     private readonly IGraphsService _graphsService;
-    private static ProblemDetails GraphDoesNotExistsDetails() => new()
-    {
-        Status = StatusCodes.Status404NotFound,
-        Title = "Not found",
-        Detail = "Graph does not exist"
-    };
-
 
     public GraphsController(IUserIdentityProvider userIdentityProvider, IGraphsService graphsService)
     {
@@ -84,11 +77,6 @@ public class GraphsController : ControllerBase
 
         GraphDataResponse? result = await _graphsService.GetUserGraphAsync(userId, projectId, graphId);
 
-        if (result == null)
-        {
-            return NotFound(GraphDoesNotExistsDetails());
-        }
-
         return Ok(result);
     }
 
@@ -103,11 +91,6 @@ public class GraphsController : ControllerBase
         try
         {
             GraphDataResponse? result = await _graphsService.UpdateUserGraphAsync(userId, projectId, graphId, request);
-
-            if (result == null)
-            {
-                return NotFound(GraphDoesNotExistsDetails());
-            }
 
             return Ok(result);
         }
@@ -138,8 +121,25 @@ public class GraphsController : ControllerBase
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        bool status = await _graphsService.DeleteUserGraphAsync(userId, projectId, graphId);
+        await _graphsService.DeleteUserGraphAsync(userId, projectId, graphId);
 
-        return status ? NoContent() : NotFound(GraphDoesNotExistsDetails());
+        return NoContent();
+    }
+
+    [HttpPut("{graphId}/content")]
+    public async Task<IActionResult> UpdateUserGraphContent(
+        Guid projectId,
+        Guid graphId,
+        UpdateGraphContentRequest request)
+    {
+        Guid userId = _userIdentityProvider.GetCurrentUserId();
+
+        await _graphsService.UpdateUserGraphContentAsync(
+            userId,
+            projectId,
+            graphId,
+            request.Content);
+
+        return NoContent();
     }
 }

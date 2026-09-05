@@ -5,6 +5,7 @@ using GraphForge.Api.Services.ProjectService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Text.Json;
 
 
 namespace GraphForge.Api.Services.GraphService
@@ -53,7 +54,7 @@ namespace GraphForge.Api.Services.GraphService
             return result;
         }
 
-        public async Task<bool> DeleteUserGraphAsync(Guid userId, Guid projectId, Guid graphId)
+        public async Task DeleteUserGraphAsync(Guid userId, Guid projectId, Guid graphId)
         {
             Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
                 (g) => 
@@ -64,17 +65,14 @@ namespace GraphForge.Api.Services.GraphService
 
             if (graph == null)
             {
-                return false;
+                throw new NotFoundException("Graph not found");
             }
 
             _db.Graphs.Remove(graph);
             await _db.SaveChangesAsync();
-
-            return true;
-
         }
 
-        public async Task<GraphDataResponse?> GetUserGraphAsync(Guid userId, Guid projectId, Guid graphId)
+        public async Task<GraphDataResponse> GetUserGraphAsync(Guid userId, Guid projectId, Guid graphId)
         {
             Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
                 (g) =>
@@ -85,16 +83,14 @@ namespace GraphForge.Api.Services.GraphService
 
             if (graph == null)
             {
-                return null;
+                throw new NotFoundException("Graph not found");
             }
 
             var result = new GraphDataResponse(
                 graph.Id,
                 graph.ProjectId,
                 graph.Name,
-                graph.Content,
-                graph.CreatedAt,
-                graph.UpdatedAt
+                graph.Content
             );
 
             return result;
@@ -114,7 +110,7 @@ namespace GraphForge.Api.Services.GraphService
             return graphs;
         }
 
-        public async Task<GraphDataResponse?> UpdateUserGraphAsync(Guid userId, Guid projectId, Guid graphId, GraphDataEditRequest request)
+        public async Task<GraphDataResponse> UpdateUserGraphAsync(Guid userId, Guid projectId, Guid graphId, GraphDataEditRequest request)
         {
             string graphName = ValidateGraphName(request.Name);
             Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
@@ -126,7 +122,7 @@ namespace GraphForge.Api.Services.GraphService
 
             if (graph == null)
             {
-                return null;
+                throw new NotFoundException("Graph not found");
             }
 
             graph.Name = graphName;
@@ -138,12 +134,29 @@ namespace GraphForge.Api.Services.GraphService
                 graph.Id,
                 graph.ProjectId,
                 graph.Name,
-                graph.Content,
-                graph.CreatedAt,
-                graph.UpdatedAt
+                graph.Content
             );
 
             return result;
+        }
+
+        public async Task UpdateUserGraphContentAsync(Guid userId, Guid projectId, Guid graphId, JsonDocument content)
+        {
+            Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
+                (g) =>
+                    g.Id == graphId &&
+                    g.ProjectId == projectId &&
+                    g.Project.OwnerId == userId
+            );
+
+            if (graph == null)
+            {
+                throw new NotFoundException("Graph not found");
+            }
+
+            graph.Content = content;
+            graph.UpdatedAt = DateTimeOffset.UtcNow;
+            await _db.SaveChangesAsync();
         }
 
         private static string ValidateGraphName(string name)
