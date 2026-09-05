@@ -27,5 +27,10 @@ public class AppDbContext : DbContext
             .HasOne(graph => graph.Project)
             .WithMany(project => project.Graphs)
             .HasForeignKey(graph => graph.ProjectId);
+
+        modelBuilder.Entity<Graph>()
+            .Property(graph => graph.Content)
+            .HasColumnType("jsonb")
+            .HasDefaultValueSql("""'{"nodes":[],"edges":[]}'::jsonb""");
     }
 }

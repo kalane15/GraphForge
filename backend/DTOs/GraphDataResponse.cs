@@ -6,7 +6,5 @@ public record GraphDataResponse(
     Guid Id,
     Guid ProjectId,
     string Name,
-    JsonDocument Content,
-    DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt
+    JsonDocument Content
 );

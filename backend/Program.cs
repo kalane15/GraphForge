@@ -1,12 +1,15 @@
 using GraphForge.Api.Auth;
 using GraphForge.Api.Database;
 using GraphForge.Api.Models;
+using GraphForge.Api.Services;
 using GraphForge.Api.Services.AuthService;
 using GraphForge.Api.Services.GraphService;
 using GraphForge.Api.Services.ProjectService;
 using GraphForge.Api.Services.UserIdentityProviderService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -60,10 +63,41 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
-else
+
+app.UseExceptionHandler(errorApp =>
 {
-    app.UseExceptionHandler();
-}
+    errorApp.Run(async context =>
+    {
+        var exception = context.Features
+            .Get<IExceptionHandlerFeature>()?
+            .Error;
+
+        context.Response.ContentType = "application/problem+json";
+
+        if (exception is NotFoundException)
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+
+            await context.Response.WriteAsJsonAsync(new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Not found",
+                Detail = exception.Message
+            });
+
+            return;
+        }
+
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+        await context.Response.WriteAsJsonAsync(new ProblemDetails
+        {
+            Status = StatusCodes.Status500InternalServerError,
+            Title = "Internal server error",
+            Detail = "Unexpected server error"
+        });
+    });
+});
 
 
 app.UseRouting();
