@@ -75,7 +75,7 @@ public class GraphsController : ControllerBase
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        GraphDataResponse? result = await _graphsService.GetUserGraphAsync(userId, projectId, graphId);
+        GraphDataResponse result = await _graphsService.GetUserGraphAsync(userId, projectId, graphId);
 
         return Ok(result);
     }

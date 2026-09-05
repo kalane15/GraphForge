@@ -2,10 +2,13 @@ export function createGraphSavePayload(nodes, edges) {
     return {
         nodes: nodes.map((node) => ({
             id: node.id,
-            type: node.data.type,
-            label: node.data.label,
+            type: node.type,
             position: node.position,
-            properties: node.data.properties,
+            data: {
+                label: node.data.label,
+                type: node.data.type,
+                properties: node.data.properties,
+            },
         })),
         edges: edges.map((edge) => ({
             id: edge.id,

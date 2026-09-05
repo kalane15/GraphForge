@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS graphs
     id         UUID PRIMARY KEY,
     project_id UUID NOT NULL,
     name       VARCHAR(255) NOT NULL,
-    content    JSONB NOT NULL,
+    content    JSONB NOT NULL DEFAULT '{"nodes":[],"edges":[]}'::jsonb,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

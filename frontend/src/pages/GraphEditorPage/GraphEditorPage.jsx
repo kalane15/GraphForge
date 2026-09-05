@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Flow from "./Flow"
 import { useNavigate, useParams } from "react-router"
 import { ReactFlowProvider } from "@xyflow/react";
 import { buildEditableNode } from "./EditableNode";
 import { createGraphSavePayload } from "@/helpers/createGraphSavePayload";
-import { updateGraphContentRequest } from "@/api/graphsApi";
+import { updateGraphContentRequest, getGraphRequest } from "@/api/graphsApi";
 
 
 function GraphEditorPage() {
@@ -23,6 +23,16 @@ function GraphEditorPage() {
     ]);
     const [edges, setEdges] = useState([]);
 
+    useEffect(() => {
+        async function loadGraph() {
+            const graph = await getGraphRequest(graphId, projectId);
+
+            setNodes(graph.content.nodes);
+            setEdges(graph.content.edges);
+        }
+
+        loadGraph();
+    }, [projectId, graphId]);
 
     async function returnToProjectPage() {
         await saveGraph();

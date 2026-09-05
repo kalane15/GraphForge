@@ -1,7 +1,7 @@
 import { request } from "./request"
 
 export async function getGraphRequest(graphId, projectId) {
-    const path = `/projects/${projectId}/graphs`;
+    const path = `/projects/${projectId}/graphs/${graphId}`;
     return await request(path, {});
 }
 
