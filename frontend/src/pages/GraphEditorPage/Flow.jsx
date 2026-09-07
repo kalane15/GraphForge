@@ -18,13 +18,12 @@ import './GraphEditorPage.css';
 import { EditableNode, buildEditableNode } from "./EditableNode";
 import { useCopyPaste } from "./useCopyPaste";
 
-const nodeTypes = {
-    editableNode: EditableNode,
-};
 
-function Flow({ nodes, edges, setNodes, setEdges, onSave, onReturn }) {
+function Flow({ nodes, edges, setNodes, setEdges, onSave, onReturn, projectId, schemas }) {
     const { screenToFlowPosition } = useReactFlow();
-    const cursorPositionRef = useRef({ x: 0, y: 0 });
+    const cursorPositionRef = useRef({ x: 0, y: 0 });   
+
+
 
     const handleNodeFieldChange = useCallback((nodeId, fieldName, value) => {
         setNodes((nodes) =>
@@ -65,15 +64,38 @@ function Flow({ nodes, edges, setNodes, setEdges, onSave, onReturn }) {
         );
     }, [setNodes]);
 
+    const handleNodeSchemaTypeChange = useCallback((nodeId, schemaTypeName) => {
+        setNodes((nodes) =>
+            nodes.map((node) => {
+                if (node.id !== nodeId) {
+                    return node;
+                }
+
+                return {
+                    ...node,
+                    data: {
+                        ...node.data,
+                        schemaTypeName,
+                    },
+                };
+            })
+        );
+    }, [setNodes]);
+
+    const nodeTypes = useMemo(() => ({
+        editableNode: (props) => <EditableNode {...props} schemas={schemas} />
+    }), [schemas]);
+
 
     const nodesWithCallbacks = useMemo(() => nodes.map((node) => ({
         ...node,
         data: {
             ...node.data,
             onFieldChange: handleNodeFieldChange,
-            onTitleChange: handleNodeTitleChange
+            onTitleChange: handleNodeTitleChange,
+            onSchemaTypeChange: handleNodeSchemaTypeChange
         },
-    })), [nodes, handleNodeFieldChange, handleNodeTitleChange]);
+    })), [nodes, handleNodeFieldChange, handleNodeTitleChange, handleNodeSchemaTypeChange]);
 
     useCopyPaste({ nodes, edges, setNodes, setEdges, cursorPositionRef });
 

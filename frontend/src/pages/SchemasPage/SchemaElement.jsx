@@ -1,7 +1,7 @@
 import schemaFieldTypesAvailable from "@/schemaFieldTypesAvailable";
 
 
-function SchemaElement({ fieldId, fieldName, fieldType, onFieldNameChange, onFieldTypeChange }) {
+function SchemaElement({ fieldId, fieldName, fieldType, onFieldNameChange, onFieldTypeChange, onFieldDeleted }) {
 
     return (
         <div className="editable-node__field-row">
@@ -16,6 +16,7 @@ function SchemaElement({ fieldId, fieldName, fieldType, onFieldNameChange, onFie
                     </option>
                 ))}
             </select>
+            <button onClick={ () => onFieldDeleted(fieldId) } >Delete field</button>
         </div>
     )
 }

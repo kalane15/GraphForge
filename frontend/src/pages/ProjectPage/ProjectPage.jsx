@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import GraphCreationForm from "./GraphCreationForm";
 import GraphEntry from "./GraphEntry";
 import { getProjectRequest } from "@/api/projectsApi";
@@ -8,6 +8,8 @@ import { deleteGraphRequest } from "@/api/graphsApi";
 
 
 function ProjectPage() {
+    const navigate = useNavigate();
+
     const { projectId } = useParams();
 
     const [project, setProject] = useState(null);
@@ -53,6 +55,10 @@ function ProjectPage() {
         }
     }
 
+    function goToSchemas() {
+        navigate(`/projects/${projectId }/schemas`);
+    }
+
     if (isLoading) {
         return <div>Loading...</div>;
     }
@@ -69,6 +75,10 @@ function ProjectPage() {
         <div>
             <h1>{project.name}</h1>
             <p>{project.description}</p>
+
+            <button onClick={() => goToSchemas()}>
+                Go to schemas
+            </button>
 
             <h2>Graphs</h2>
 

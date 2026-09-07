@@ -1,50 +1,21 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import { getSchemasRequest } from "@/api/schemasApi";
+import {
+    createSchemaRequest,
+    deleteSchemaRequest,
+    getSchemasRequest,
+    updateSchemaRequest
+} from "@/api/schemasApi";
 import Schema from "./Schema";
 
 function SchemasPage() {
     const { projectId } = useParams();
     const [schemas, setSchemas] = useState([]);
+    const schemaDefaultName = "New schema";
 
-    function addSchemaField(schemaId, newFieldName, newFieldType) {
-        setSchemas((schemas) =>
-            schemas.map((schema) => {
-                if (schema.id !== schemaId) {
-                    return schema;
-                }
-
-                return {
-                    ...schema,
-                    fields: [
-                        ...schema.fields,
-                        {
-                            id: crypto.randomUUID(),
-                            name: newFieldName,
-                            type: newFieldType,
-                        },
-                    ],
-                };
-            })
-        );
-    }
-
-    function deleteSchemaField(schemaId, fieldId) {
-        setSchemas((schemas) =>
-            schemas.map((schema) => {
-                if (schema.id !== schemaId) {
-                    return schema;
-                }
-
-                return {
-                    ...schema,
-                    fields: schema.fields.filter((field) => field.id !== fieldId),
-                };
-            })
-        );
-    }
 
     function onSchemaChanged(schemaId, newSchema) {
+        updateSchemaRequest(projectId, newSchema.id, newSchema)
         setSchemas((schemas) =>
             schemas.map((schema) => {
                 if (schema.id !== schemaId) {
@@ -56,6 +27,44 @@ function SchemasPage() {
                 };
             })
         );
+    }
+
+    function getSchemaDefaultName() {
+        let possibleName = schemaDefaultName;
+        let exists = schemas.some(schema => schema.schemaTypeName === possibleName);
+        let number = 0;
+
+        while (exists) {
+            possibleName = schemaDefaultName + " " + String(++number);
+            exists = schemas.some(schema => schema.schemaTypeName === possibleName);
+        }
+
+        return possibleName;
+    }
+
+    async function addNewSchema() {
+        const response = await createSchemaRequest(projectId, getSchemaDefaultName());
+        setSchemas
+            (
+                (schemas) => ([
+                    ...schemas,
+                    {
+                        id: response.id,
+                        schemaTypeName: response.schemaTypeName,
+                        fields: (response.content?.fields ?? []).map((field) => ({
+                            id: field.id ?? crypto.randomUUID(),
+                            name: field.name,
+                            type: field.type,
+                        })),
+                    }
+                    
+                ])
+            );
+    }
+
+    async function onSchemaDeleted(schemaId) {
+        await deleteSchemaRequest(projectId, schemaId);
+        setSchemas(schemas.filter((schema) => schema.id != schemaId));
     }
 
     useEffect(() => {
@@ -78,14 +87,17 @@ function SchemasPage() {
     }, [projectId]);
 
 
+
     return (
         <div>
+            <button onClick={ addNewSchema } >Add new schema</button>
             {schemas.map((schema) => (
                 <div key={schema.id}>
                     <Schema
                         schemaId={schema.id}
                         schema={schema}
-                        onChange={onSchemaChanged}
+                        onSchemaUpdated={onSchemaChanged}
+                        onSchemaDeleted={onSchemaDeleted}
                     />
                 </div>
             ))}
