@@ -81,6 +81,24 @@
     white-space: nowrap;
 }
 
+.editable-node__schema-select {
+    max-width: 128px;
+    min-width: 0;
+    margin-left: 3px;
+    padding: 1px 14px 1px 5px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    background: rgba(248, 250, 252, 0.75);
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+    text-align: inherit;
+}
+
+.editable-node__schema-select:focus {
+    outline: none;
+}
+
 .editable-node__fields {
     width: 100%;
     box-sizing: border-box;
@@ -156,4 +174,26 @@
 .editable-node__handle.react-flow__handle:hover {
     background: #1d4ed8;
     box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.16);
+}
+
+.graph-editor-page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 38px); /* высота header */
+    min-height: 0;
+}
+
+.graph-editor-toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 5    px solid #d1d5db;
+    background: transparent;
+}
+
+.graph-editor {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
 }

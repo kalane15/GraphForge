@@ -41,19 +41,23 @@ export function EditableNode({ id, data, selected, schemas }) {
             <Handle className="editable-node__handle" id="bottom" type="source" position={Position.Bottom} isConnectableStart isConnectableEnd />
             <Handle className="editable-node__handle" id="left" type="source" position={Position.Left} isConnectableStart isConnectableEnd />
 
-            <select
-                value={data.schemaTypeName}
-                onChange={(event) => data.onSchemaTypeChange(id, event.target.value)}>
-
-                {schemas.map((schema) => (
-                    <option key={schema.id} value={schema.schemaTypeName}>
-                        {schema.schemaTypeName}
-                    </option>
-                ))}
-            </select>
+           
 
             <input className="editable-node__title" type="text" value={data.title} onChange={(event) => handleTitleChange(event)}></input>
-            <div className="editable-node__type">schemaTypeName: {data.schemaTypeName}</div>
+            <div className="editable-node__type">
+                schemaTypeName:
+                <select
+                    className="editable-node__schema-select"
+                    value={data.schemaTypeName}
+                        onChange={(event) => data.onSchemaTypeChange(id, event.target.value)}>
+
+                    {schemas.map((schema) => (
+                        <option key={schema.id} value={schema.schemaTypeName}>
+                            {schema.schemaTypeName}
+                        </option>       
+                    ))}
+                </select>
+            </div>
             <div className="editable-node__fields">
                 {
                     (schema?.fields ?? []).map((field) => {

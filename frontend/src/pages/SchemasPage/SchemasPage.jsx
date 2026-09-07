@@ -6,6 +6,7 @@ import {
     getSchemasRequest,
     updateSchemaRequest
 } from "@/api/schemasApi";
+import { downloadJsonFile } from "@/helpers/downloadJsonFile";
 import Schema from "./Schema";
 
 function SchemasPage() {
@@ -67,6 +68,20 @@ function SchemasPage() {
         setSchemas(schemas.filter((schema) => schema.id != schemaId));
     }
 
+    function exportSchemas() {
+        const exportData = {
+            schemas: schemas.map((schema) => ({
+                schemaTypeName: schema.schemaTypeName,
+                fields: schema.fields.map((field) => ({
+                    name: field.name,
+                    type: field.type,
+                })),
+            })),
+        };
+
+        downloadJsonFile("schemas.json", exportData);
+    }
+
     useEffect(() => {
         async function loadSchemas() {
             const data = await getSchemasRequest(projectId);
@@ -91,6 +106,7 @@ function SchemasPage() {
     return (
         <div>
             <button onClick={ addNewSchema } >Add new schema</button>
+            <button onClick={ exportSchemas } >Export</button>
             {schemas.map((schema) => (
                 <div key={schema.id}>
                     <Schema

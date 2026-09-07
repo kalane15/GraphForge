@@ -19,7 +19,7 @@ import { EditableNode, buildEditableNode } from "./EditableNode";
 import { useCopyPaste } from "./useCopyPaste";
 
 
-function Flow({ nodes, edges, setNodes, setEdges, onSave, onReturn, projectId, schemas }) {
+function Flow({ nodes, edges, setNodes, setEdges, projectId, schemas }) {
     const { screenToFlowPosition } = useReactFlow();
     const cursorPositionRef = useRef({ x: 0, y: 0 });   
 
@@ -156,11 +156,6 @@ function Flow({ nodes, edges, setNodes, setEdges, onSave, onReturn, projectId, s
                         add
                     </ControlButton>
                 </Controls>
-
-                <Panel position="top-left">
-                    <button onClick={onSave}> Save </button>
-                    <button onClick={onReturn}> Return to project page </button>
-                </Panel>
             </ReactFlow>
         </div>
     );

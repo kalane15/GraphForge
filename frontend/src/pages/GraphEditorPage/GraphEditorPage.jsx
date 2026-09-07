@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import Flow from "./Flow"
 import { useNavigate, useParams } from "react-router"
-import { ReactFlowProvider } from "@xyflow/react";
+import { ReactFlowProvider, Panel } from "@xyflow/react";
 import { buildEditableNode } from "./EditableNode";
 import { createGraphSavePayload } from "@/helpers/createGraphSavePayload";
 import { updateGraphContentRequest, getGraphRequest } from "@/api/graphsApi";
 import { getSchemasRequest } from "@/api/schemasApi";
+import { downloadJsonFile } from "@/helpers/downloadJsonFile";
 
 
 function GraphEditorPage() {
@@ -71,16 +72,41 @@ function GraphEditorPage() {
         await updateGraphContentRequest(graphId, projectId, content);
     }
 
+    function goToSchemas() {
+        navigate(`/projects/${projectId}/schemas`);
+    }
+
+    async function exportGraph() {
+        const graph = await getGraphRequest(graphId, projectId);
+        downloadJsonFile("graph.json", graph.content);
+    }
+
     return (
         <div>
-            <ReactFlowProvider>
+            <div className="graph-editor-toolbar">
+                <button onClick={returnToProjectPage}>
+                    Return
+                </button>
+
+                <button onClick={goToSchemas}>
+                    Schemas
+                </button>
+
+                <button onClick={saveGraph}>
+                    Save
+                </button>
+
+                <button onClick={exportGraph}>
+                    Export
+                </button>
+            </div>
+
+            <ReactFlowProvider>  
                 <Flow
                     nodes={nodes}
                     edges={edges}
                     setNodes={setNodes}
                     setEdges={setEdges}
-                    onReturn={returnToProjectPage}
-                    onSave={saveGraph}
                     projectId={projectId}
                     schemas={schemas}
                 />
