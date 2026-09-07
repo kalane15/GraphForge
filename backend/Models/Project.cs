@@ -13,4 +13,5 @@ public class Project
     public DateTimeOffset UpdatedAt { get; set; }
     public User Owner { get; set; } = null!;
     public List<Graph> Graphs { get; set; } = new List<Graph>();
+    public List<Schema> Schemas { get; set; } = new List<Schema>();
 }

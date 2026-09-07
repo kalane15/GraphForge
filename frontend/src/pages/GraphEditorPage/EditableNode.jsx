@@ -1,4 +1,6 @@
 import { Handle, Position } from '@xyflow/react';
+import EditableField from "@/components/EditableField/EditableField"
+
 
 export function buildEditableNode({ title = "New node", position = { x: 0, y: 0 } } = {}) {
     return {
@@ -7,7 +9,7 @@ export function buildEditableNode({ title = "New node", position = { x: 0, y: 0 
         position,
         data: {
             title,
-            "type": "dialogue",
+            schemaTypeName: "dialogue",
             "properties": {
                 "string": "asd"
             },
@@ -16,127 +18,21 @@ export function buildEditableNode({ title = "New node", position = { x: 0, y: 0 
 }
 
 
-
-function getSchema(schemaName) {
-    const schema = {
-        "type": "dialogue",
-        "fields": [
-            {
-                "name": "string",
-                "type": "string"
-            },
-            {
-                "name": "float",
-                "type": "float"
-            },
-            {
-                "name": "int",
-                "type": "int"
-            },
-            {
-                "name": "bool",
-                "type": "bool"
-            },
-            {
-                "name": "isAboba",
-                "type": "bool"
-            }
-        ]
-    }
-
-    return schema
-}
-
-
-
-export function EditableNode({ id, data, selected }) {
+export function EditableNode({ id, data, selected, schemas }) {
     const properties = data.properties ?? {};
+    const schema = schemas.find(
+        (schema) => schema.schemaTypeName === data.schemaTypeName
+    );
+
     const onChange = (name, value) => data.onFieldChange(id, name, value);
 
-    function renderFieldInput(field, value) {
-        if (field.type === "int") {
-            return (
-                <input
-                    className="editable-node__input"
-                    type="text"
-                    value={value}
-                    step="1"
-                    onChange={(event) => handleIntChange(field.name, event)}
-                />
-            );
-        }
-
-        if (field.type === "float") {
-            return (
-                <input
-                    className="editable-node__input"
-                    type="text"
-                    value={value}
-                    step="any"
-                    onChange={(event) => handleFloatChange(field.name, event)}
-                />
-            );
-        }
-
-        if (field.type === "bool") {
-            return (
-                <input
-                    className="editable-node__checkbox"
-                    type="checkbox"
-                    checked={value}
-                    onChange={(event) => onChange(field.name, event.target.checked)}
-                />
-            );
-        }
-
-        return (
-            <input
-                className="editable-node__input"
-                type="text"
-                value={value}
-                onChange={(event) => onChange(field.name, event.target.value)}
-            />
-        );
-    }
-
-    function renderField(fieldSchema, data) {
-        const value = data?.[fieldSchema.name] ?? "";
-
-        return (
-            <label className="editable-node__field">
-                <span className="editable-node__field-name">{fieldSchema.name}</span>
-                {renderFieldInput(fieldSchema, value, (newValue) => {
-                    onChange(fieldSchema.name, newValue);
-                })}
-            </label>
-        );
-    }
-
-    function handleFloatChange(name, event) {
-        const value = event.target.value;
-
-        if (!/^-?\d*\.?\d*$/.test(value)) {
-            return;
-        }
-
-        onChange(name, value);
-    }
-
-    function handleIntChange(name, event) {
-        const value = event.target.value;
-
-        if (!/^-?\d*$/.test(value)) {
-            return;
-        }
-
-        onChange(name, value);
-    }
 
     function handleTitleChange(event) {
         const value = event.target.value;
 
         data.onTitleChange(id, event.target.value)
     }
+
 
     return (
         <div className={`react-flow__node-default editable-node ${selected ? "editable-node--selected" : ""}`}>
@@ -145,14 +41,34 @@ export function EditableNode({ id, data, selected }) {
             <Handle className="editable-node__handle" id="bottom" type="source" position={Position.Bottom} isConnectableStart isConnectableEnd />
             <Handle className="editable-node__handle" id="left" type="source" position={Position.Left} isConnectableStart isConnectableEnd />
 
+           
+
             <input className="editable-node__title" type="text" value={data.title} onChange={(event) => handleTitleChange(event)}></input>
-            <div className="editable-node__type">type: {data.type}</div>
+            <div className="editable-node__type">
+                schemaTypeName:
+                <select
+                    className="editable-node__schema-select"
+                    value={data.schemaTypeName}
+                        onChange={(event) => data.onSchemaTypeChange(id, event.target.value)}>
+
+                    {schemas.map((schema) => (
+                        <option key={schema.id} value={schema.schemaTypeName}>
+                            {schema.schemaTypeName}
+                        </option>       
+                    ))}
+                </select>
+            </div>
             <div className="editable-node__fields">
                 {
-                    getSchema(data.type).fields.map((field) => {
+                    (schema?.fields ?? []).map((field) => {
                         return (
                             <div className="editable-node__field-row" key={field.name}>
-                                {renderField(field, properties)}
+                                <EditableField
+                                    name={field.name}
+                                    value={properties[field.name] ?? ""}
+                                    type={field.type}
+                                    onChange={onChange}
+                                    />
                             </div>
                         );
                     })

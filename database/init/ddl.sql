@@ -50,15 +50,14 @@ CREATE TABLE IF NOT EXISTS graphs
         ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS node_schemas
+CREATE TABLE IF NOT EXISTS schemas
 (
     id         UUID PRIMARY KEY,
     project_id UUID NOT NULL,
-    name       VARCHAR(255) NOT NULL,
-    schema     JSONB NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    schema_type_name VARCHAR(255) NOT NULL,
+    content    JSONB NOT NULL,
 
-    CONSTRAINT fk_node_schemas_project
+    CONSTRAINT fk_schemas_project
         FOREIGN KEY (project_id)
         REFERENCES projects(id)
         ON DELETE CASCADE
