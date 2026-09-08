@@ -79,7 +79,7 @@ function SchemasPage() {
             })),
         };
 
-        downloadJsonFile("schemas.json", exportData);
+        downloadJsonFile("schemas.schema.json", exportData);
     }
 
     useEffect(() => {

@@ -1,0 +1,13 @@
+{
+  "schemas": [
+    {
+      "schemaTypeName": "DialogueNode",
+      "fields": [
+        {
+          "name": "speaker",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}

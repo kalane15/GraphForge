@@ -5,3 +5,11 @@
 .env
 /frontend/.vs
 todo.txt
+/GraphForge.Generator/obj
+/GraphForge.Runtime/bin
+/GraphForge.Runtime/obj
+/GraphForge.Generator/bin
+/GraphForge.Contracts/obj
+/GraphForge.Contracts/bin
+/GraphForge.Runtime.Tests/bin
+/GraphForge.Runtime.Tests/obj
