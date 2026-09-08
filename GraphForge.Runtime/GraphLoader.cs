@@ -23,4 +23,22 @@ public static class GraphLoader
 
         return GraphMapper.FromDto(graphDto);
     }
+
+    public static void SaveGraphToFile(string path, Graph graph)
+    {
+        GraphDto? graphDto = GraphMapper.ToDto(graph);
+
+        if (graphDto == null)
+        {
+            throw new InvalidDataException();
+        }
+
+        string json = JsonSerializer.Serialize(graphDto, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+        File.WriteAllText(path, json);       
+
+        return ;
+    }
 }

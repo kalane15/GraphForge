@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Flow from "./Flow"
 import { useNavigate, useParams } from "react-router"
 import { ReactFlowProvider, Panel } from "@xyflow/react";
@@ -81,6 +81,22 @@ function GraphEditorPage() {
         downloadJsonFile("graph.json", graph.content);
     }
 
+    async function handleFileChange(event) {
+        const file = event.target.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        const text = await file.text();
+        const graph = JSON.parse(text);
+
+        setNodes(graph.nodes);
+        setEdges(graph.edges);
+    };
+
+    const inputRef = useRef(null);
+
     return (
         <div>
             <div className="graph-editor-toolbar">
@@ -99,6 +115,19 @@ function GraphEditorPage() {
                 <button onClick={exportGraph}>
                     Export
                 </button>
+
+                <button onClick={() => inputRef.current?.click()}>
+                    Import
+                </button>
+
+                <input
+                    ref={inputRef}
+                    type="file"
+                    accept=".json"
+                    hidden
+                    onChange={handleFileChange}
+                />
+
             </div>
 
             <ReactFlowProvider>  

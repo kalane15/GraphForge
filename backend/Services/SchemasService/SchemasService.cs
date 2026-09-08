@@ -3,11 +3,13 @@ using GraphForge.Api.DTOs;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.GraphService;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace GraphForge.Api.Services.SchemasService;
 
 public class SchemasService : ISchemasService
 {
+    private const string DefaultSchemaContentJson = """{"fields":[]}""";
     private readonly AppDbContext _db;
 
     public SchemasService(AppDbContext db)
@@ -41,7 +43,8 @@ public class SchemasService : ISchemasService
         var schema = new Schema
         {
             ProjectId = projectId,
-            SchemaTypeName = request.SchemaTypeName
+            SchemaTypeName = request.SchemaTypeName,
+            Content = request.Content ?? JsonDocument.Parse(DefaultSchemaContentJson)
         };
 
         _db.Schemas.Add(schema);
@@ -50,7 +53,7 @@ public class SchemasService : ISchemasService
         return new SchemaResponse(schema.Id, schema.SchemaTypeName, schema.Content);
     }
 
-    public async Task UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaUpdateRequest request)
+    public async Task UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaDataRequest request)
     {
         Schema? schema = await _db.Schemas.FirstOrDefaultAsync(
             (schema) =>
