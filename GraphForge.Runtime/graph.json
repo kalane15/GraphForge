@@ -1,0 +1,46 @@
+{
+  "edges": [
+    {
+      "id": "xy-edge__78127be7-7b96-472c-8ad7-c75510d260a8right-1810498e-46f3-4db4-b1ff-8c3e39282eecleft",
+      "source": "78127be7-7b96-472c-8ad7-c75510d260a8",
+      "target": "1810498e-46f3-4db4-b1ff-8c3e39282eec",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "78127be7-7b96-472c-8ad7-c75510d260a8",
+      "data": {
+        "title": "New nodeыф",
+        "properties": {
+          "string": "asd",
+          "new field": "4755",
+          "new field 1": true,
+          "new field 2": true
+        },
+        "schemaTypeName": "New schema 3"
+      },
+      "type": "editableNode",
+      "position": {
+        "x": 77.05870986025954,
+        "y": 91.46021134591876
+      }
+    },
+    {
+      "id": "1810498e-46f3-4db4-b1ff-8c3e39282eec",
+      "data": {
+        "title": "New node2",
+        "properties": {
+          "string": "asd"
+        },
+        "schemaTypeName": "dialogue"
+      },
+      "type": "editableNode",
+      "position": {
+        "x": 391.01837831093064,
+        "y": 193.5095975874104
+      }
+    }
+  ]
+}

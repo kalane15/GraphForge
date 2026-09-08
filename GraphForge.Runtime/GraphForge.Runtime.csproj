@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GraphForge.Contracts\GraphForge.Contracts.csproj" />
+    <ProjectReference Include="..\GraphForge.Generator\GraphForge.Generator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="**\*.schema.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Generated\**\*.cs" />
+    <None Include="Generated\**\*.cs" />
+  </ItemGroup>
+
+</Project>

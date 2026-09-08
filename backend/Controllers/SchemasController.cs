@@ -38,8 +38,9 @@ public class SchemasController : ControllerBase
         return Ok(result);
     }
 
+
     [HttpPut("{schemaId}")]
-    public async Task<IActionResult> UpdateSchema(Guid projectId, Guid schemaId, SchemaUpdateRequest request)
+    public async Task<IActionResult> UpdateSchema(Guid projectId, Guid schemaId, SchemaDataRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
         await _schemasService.UpdateSchema(userId, projectId, schemaId, request);

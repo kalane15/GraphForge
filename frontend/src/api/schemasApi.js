@@ -8,7 +8,7 @@ export async function getSchemasRequest(projectId) {
     return await request(path, {});
 }
 
-export async function createSchemaRequest(projectId, schemaTypeName) {
+export async function createNoDataSchemaRequest(projectId, schemaTypeName) {
     const path = `/projects/${projectId}/schemas`;
     const detail = {
         method: "POST",
@@ -31,6 +31,24 @@ function createSchemaUpdatePayload(schema) {
             })),
         },
     };
+}
+
+export async function createSchemaWithContentRequest(projectId, schemaTypeName, fields) {
+    const path = `/projects/${projectId}/schemas`;
+    const detail = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            schemaTypeName: schemaTypeName,
+            content: {
+                fields
+            }
+        })
+    }
+
+    return await request(path, detail);
 }
 
 export async function updateSchemaRequest(projectId, schemaId, schema) {

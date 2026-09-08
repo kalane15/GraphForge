@@ -1,0 +1,43 @@
+{
+  "nodes": [
+    {
+      "id": "node-1",
+      "type": "editableNode",
+      "position": {
+        "x": 100,
+        "y": 200
+      },
+      "data": {
+        "title": "Start",
+        "schemaTypeName": "DialogueNode",
+        "properties": {
+          "speaker": "Alice"
+        }
+      }
+    },
+    {
+      "id": "node-2",
+      "type": "editableNode",
+      "position": {
+        "x": 400,
+        "y": 200
+      },
+      "data": {
+        "title": "Reply",
+        "schemaTypeName": "DialogueNode",
+        "properties": {
+          "speaker": "Bob"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "node-1",
+      "target": "node-2",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    }
+  ]
+}
