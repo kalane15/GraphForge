@@ -1,5 +1,5 @@
 import { useEffect, useState , useRef } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import {
     createNoDataSchemaRequest,
     deleteSchemaRequest,
@@ -14,6 +14,7 @@ function SchemasPage() {
     const { projectId } = useParams();
     const [schemas, setSchemas] = useState([]);
     const schemaDefaultName = "New schema";
+    const navigate = useNavigate();
 
     function mapSchemaToViewModel(schema) {
         const fields = schema.fields ?? schema.content?.fields ?? schema.content?.Fields ?? [];
@@ -155,6 +156,11 @@ function SchemasPage() {
                 hidden
                 onChange={importSchemas}
             />
+
+
+            <button onClick={() => navigate(`/projects/${projectId}`)}>
+                Graphs
+            </button>
 
             {schemas.map((schema) => (
                 <div key={schema.id}>

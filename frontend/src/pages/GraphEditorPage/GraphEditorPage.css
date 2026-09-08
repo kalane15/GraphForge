@@ -1,7 +1,6 @@
 .graph-editor {
     width: 100%;
-    height: calc(100vh - 88px);
-    min-height: 520px;
+    height: 100%;
 }
 
 .graph-editor .react-flow__pane {
@@ -9,6 +8,7 @@
 }
 
 .graph-editor .react-flow__controls {
+    margin: 12px;
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
 }
 
@@ -179,7 +179,13 @@
 .graph-editor-page {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 38px); /* высота header */
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.graph-editor-shell {
+    flex: 1;
     min-height: 0;
 }
 
@@ -188,12 +194,6 @@
     gap: 8px;
     align-items: center;
     padding: 8px 12px;
-    border-bottom: 5    px solid #d1d5db;
+    border-bottom: 1px solid #d1d5db;
     background: transparent;
-}
-
-.graph-editor {
-    flex: 1;
-    min-height: 0;
-    width: 100%;
 }

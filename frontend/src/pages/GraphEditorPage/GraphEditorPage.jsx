@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Flow from "./Flow"
 import { useNavigate, useParams } from "react-router"
-import { ReactFlowProvider, Panel } from "@xyflow/react";
+import { ReactFlowProvider } from "@xyflow/react";
 import { buildEditableNode } from "./EditableNode";
 import { createGraphSavePayload } from "@/helpers/createGraphSavePayload";
 import { updateGraphContentRequest, getGraphRequest } from "@/api/graphsApi";
@@ -98,7 +98,7 @@ function GraphEditorPage() {
     const inputRef = useRef(null);
 
     return (
-        <div>
+        <div className="graph-editor-page">
             <div className="graph-editor-toolbar">
                 <button onClick={returnToProjectPage}>
                     Return
@@ -130,16 +130,18 @@ function GraphEditorPage() {
 
             </div>
 
-            <ReactFlowProvider>  
-                <Flow
-                    nodes={nodes}
-                    edges={edges}
-                    setNodes={setNodes}
-                    setEdges={setEdges}
-                    projectId={projectId}
-                    schemas={schemas}
-                />
-            </ReactFlowProvider>
+            <div className="graph-editor-shell">
+                <ReactFlowProvider>
+                    <Flow
+                        nodes={nodes}
+                        edges={edges}
+                        setNodes={setNodes}
+                        setEdges={setEdges}
+                        projectId={projectId}
+                        schemas={schemas}
+                    />
+                </ReactFlowProvider>
+            </div>
         </div>
     )
 }
