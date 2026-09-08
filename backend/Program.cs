@@ -4,6 +4,7 @@ using GraphForge.Api.Models;
 using GraphForge.Api.Services;
 using GraphForge.Api.Services.AuthService;
 using GraphForge.Api.Services.GraphService;
+using GraphForge.Api.Services.GraphService.GraphJsonValidatorService;
 using GraphForge.Api.Services.ProjectService;
 using GraphForge.Api.Services.SchemasService;
 using GraphForge.Api.Services.UserIdentityProviderService;
@@ -54,6 +55,7 @@ builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectsService, ProjectsService>();
 builder.Services.AddScoped<IGraphsService, GraphsService>();
+builder.Services.AddScoped<IGraphJsonValidatorService, GraphJsonValidatorService>();
 builder.Services.AddScoped<ISchemasService, SchemasService>();
 builder.Services.AddScoped<IUserIdentityProvider, UserIdentityProvider>();
 

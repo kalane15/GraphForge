@@ -134,11 +134,24 @@ public class GraphsController : ControllerBase
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        await _graphsService.UpdateUserGraphContentAsync(
-            userId,
-            projectId,
-            graphId,
-            request.Content);
+        try
+        {
+            await _graphsService.UpdateUserGraphContentAsync(
+                userId,
+                projectId,
+                graphId,
+                request.Content);
+        }
+        catch (GraphValidationException exception)
+        {
+            return BadRequest(new ProblemDetails()
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Bad request",
+                    Detail = exception.Message
+                }
+            );
+        }
 
         return NoContent();
     }

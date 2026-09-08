@@ -25,14 +25,11 @@ function GraphEditorPage() {
             const loadedSchemas = data?.schemas ?? [];
 
             setSchemas(loadedSchemas.map(mapSchemaToViewModel));
-        }
+        }        
 
-        loadSchemas();
-    }, [projectId]);
- 
-
-    useEffect(() => {
         async function loadGraph() {
+            await loadSchemas();
+
             const graph = await getGraphRequest(graphId, projectId);
 
             setNodes(graph.content.nodes);

@@ -1,6 +1,7 @@
 ﻿using GraphForge.Api.Database;
 using GraphForge.Api.DTOs;
 using GraphForge.Api.Models;
+using GraphForge.Api.Services.GraphService.GraphJsonValidatorService;
 using GraphForge.Api.Services.ProjectService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +14,13 @@ namespace GraphForge.Api.Services.GraphService
     public class GraphsService : IGraphsService
     {
         private readonly AppDbContext _db;
+        private readonly IGraphJsonValidatorService _graphJsonValidatorService;
 
 
-        public GraphsService(AppDbContext db)
+        public GraphsService(AppDbContext db, IGraphJsonValidatorService graphJsonValidatorService)
         {
             _db = db;
+            _graphJsonValidatorService = graphJsonValidatorService;
         }
 
         async public Task<GraphInfoResponse> CreateUserGraphAsync(Guid userId, Guid projectId, GraphCreationRequest request)
@@ -125,6 +128,8 @@ namespace GraphForge.Api.Services.GraphService
                 throw new NotFoundException("Graph not found");
             }
 
+            _graphJsonValidatorService.Validate(request.Content);
+
             graph.Name = graphName;
             graph.Content = request.Content;
             graph.UpdatedAt = DateTimeOffset.UtcNow;
@@ -153,6 +158,8 @@ namespace GraphForge.Api.Services.GraphService
             {
                 throw new NotFoundException("Graph not found");
             }
+
+            _graphJsonValidatorService.Validate(content);
 
             graph.Content = content;
             graph.UpdatedAt = DateTimeOffset.UtcNow;

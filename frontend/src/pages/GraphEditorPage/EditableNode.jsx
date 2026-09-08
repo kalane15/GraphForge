@@ -45,6 +45,7 @@ export function EditableNode({ id, data, selected }) {
            
 
             <input className="editable-node__title" type="text" value={data.title} onChange={(event) => handleTitleChange(event)}></input>
+
             <div className="editable-node__type">
                 schemaTypeName:
                 <select
@@ -59,6 +60,7 @@ export function EditableNode({ id, data, selected }) {
                     ))}
                 </select>
             </div>
+
             <div className="editable-node__fields">
                 {
                     (schema?.fields ?? []).map((field) => {
