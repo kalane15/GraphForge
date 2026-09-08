@@ -1,37 +1,36 @@
-import { useEffect, useState , useRef } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router";
 import {
     createNoDataSchemaRequest,
     deleteSchemaRequest,
     getSchemasRequest,
     updateSchemaRequest,
-    createSchemaWithContentRequest
+    createSchemaWithFieldsRequest
 } from "@/api/schemasApi";
 import { downloadJsonFile } from "@/helpers/downloadJsonFile";
 import Schema from "./Schema";
+import { mapSchemaToViewModel } from "@/helpers/schemaMappers";
+import SchemasToolbar from "./SchemasToolbar";
+import { getSchemaDefaultName } from "@/helpers/schemaNames";
+
 
 function SchemasPage() {
     const { projectId } = useParams();
     const [schemas, setSchemas] = useState([]);
-    const schemaDefaultName = "New schema";
-    const navigate = useNavigate();
 
-    function mapSchemaToViewModel(schema) {
-        const fields = schema.fields ?? schema.content?.fields ?? schema.content?.Fields ?? [];
+    useEffect(() => {
+        async function loadSchemas() {
+            const data = await getSchemasRequest(projectId);
+            const loadedSchemas = data?.schemas ?? [];
 
-        return {
-            id: schema.id ?? crypto.randomUUID(),
-            schemaTypeName: schema.schemaTypeName,
-            fields: fields.map((field) => ({
-                id: field.id ?? crypto.randomUUID(),
-                name: field.name,
-                type: field.type,
-            })),
-        };
-    }
+            setSchemas(loadedSchemas.map(mapSchemaToViewModel));
+        }
 
-    function onSchemaChanged(schemaId, newSchema) {
-        updateSchemaRequest(projectId, newSchema.id, newSchema)
+        loadSchemas();
+    }, [projectId]);
+
+    async function onSchemaChanged(schemaId, newSchema) {
+        await updateSchemaRequest(projectId, newSchema.id, newSchema);
         setSchemas((schemas) =>
             schemas.map((schema) => {
                 if (schema.id !== schemaId) {
@@ -45,21 +44,8 @@ function SchemasPage() {
         );
     }
 
-    function getSchemaDefaultName() {
-        let possibleName = schemaDefaultName;
-        let exists = schemas.some(schema => schema.schemaTypeName === possibleName);
-        let number = 0;
-
-        while (exists) {
-            possibleName = schemaDefaultName + " " + String(++number);
-            exists = schemas.some(schema => schema.schemaTypeName === possibleName);
-        }
-
-        return possibleName;
-    }
-
     async function addNewSchema() {
-        const response = await createNoDataSchemaRequest(projectId, getSchemaDefaultName());
+        const response = await createNoDataSchemaRequest(projectId, getSchemaDefaultName(schemas));
         setSchemas
             (
                 (schemas) => ([
@@ -89,17 +75,6 @@ function SchemasPage() {
         downloadJsonFile("schemas.schema.json", exportData);
     }
 
-    useEffect(() => {
-        async function loadSchemas() {
-            const data = await getSchemasRequest(projectId);
-            const loadedSchemas = data?.schemas ?? [];
-
-            setSchemas(loadedSchemas.map(mapSchemaToViewModel));
-        }
-
-        loadSchemas();
-    }, [projectId]);
-
     async function importSchemas(event) {
         const file = event.target.files[0];
 
@@ -113,17 +88,9 @@ function SchemasPage() {
             ? parsedFile
             : parsedFile?.schemas ?? [];
 
-        importedSchemas = importedSchemas.map((schema) => ({
-            schemaTypeName: schema.schemaTypeName,
-            fields: (schema.fields ?? schema.content?.fields ?? []).map((field) => ({
-                name: field.name,
-                type: field.type,
-            }))
-        }));
-
         importedSchemas = await Promise.all(
             importedSchemas.map((schema) =>
-                createSchemaWithContentRequest(
+                createSchemaWithFieldsRequest(
                     projectId,
                     schema.schemaTypeName,
                     schema.fields
@@ -138,30 +105,16 @@ function SchemasPage() {
         event.target.value = "";
     };
 
-    const inputRef = useRef(null);
-
+    
     return (
         <div>
-            <button onClick={ addNewSchema } >Add new schema</button>
-            <button onClick={exportSchemas} >Export</button>
-
-            <button onClick={() => inputRef.current?.click()}>
-                Import
-            </button>
-
-            <input
-                ref={inputRef}
-                type="file"
-                accept=".json"
-                hidden
-                onChange={importSchemas}
+            <SchemasToolbar
+                addNewSchema={addNewSchema}
+                exportSchemas={exportSchemas}
+                importSchemas={importSchemas}
+                projectId={projectId}
             />
-
-
-            <button onClick={() => navigate(`/projects/${projectId}`)}>
-                Graphs
-            </button>
-
+                        
             {schemas.map((schema) => (
                 <div key={schema.id}>
                     <Schema

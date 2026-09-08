@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import {
     ReactFlow,
     Controls,
@@ -9,95 +9,26 @@ import {
     addEdge,
     SelectionMode,
     ConnectionMode,
-    useReactFlow,
-    Panel
+    useReactFlow
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
 import './GraphEditorPage.css';
 import { EditableNode, buildEditableNode } from "./EditableNode";
 import { useCopyPaste } from "./useCopyPaste";
+import { useEditableNodesWithChangesCallbacks } from "./useEditableNodesWithChangesCallbacks"
 
+const nodeTypes = {
+    editableNode: EditableNode
+};
 
 function Flow({ nodes, edges, setNodes, setEdges, projectId, schemas }) {
     const { screenToFlowPosition } = useReactFlow();
-    const cursorPositionRef = useRef({ x: 0, y: 0 });   
-
-
-
-    const handleNodeFieldChange = useCallback((nodeId, fieldName, value) => {
-        setNodes((nodes) =>
-            nodes.map((node) => {
-                if (node.id !== nodeId) {
-                    return node;
-                }
-
-                return {
-                    ...node,
-                    data: {
-                        ...node.data,
-                        properties: {
-                            ...node.data.properties,
-                            [fieldName]: value,
-                        },
-                    },
-                };
-            })
-        );
-    }, [setNodes]);
-
-    const handleNodeTitleChange = useCallback((nodeId, title) => {
-        setNodes((nodes) =>
-            nodes.map((node) => {
-                if (node.id !== nodeId) {
-                    return node;
-                }
-
-                return {
-                    ...node,
-                    data: {
-                        ...node.data,
-                        title,
-                    },
-                };
-            })
-        );
-    }, [setNodes]);
-
-    const handleNodeSchemaTypeChange = useCallback((nodeId, schemaTypeName) => {
-        setNodes((nodes) =>
-            nodes.map((node) => {
-                if (node.id !== nodeId) {
-                    return node;
-                }
-
-                return {
-                    ...node,
-                    data: {
-                        ...node.data,
-                        schemaTypeName,
-                    },
-                };
-            })
-        );
-    }, [setNodes]);
-
-    const nodeTypes = useMemo(() => ({
-        editableNode: (props) => <EditableNode {...props} schemas={schemas} />
-    }), [schemas]);
-
-
-    const nodesWithCallbacks = useMemo(() => nodes.map((node) => ({
-        ...node,
-        data: {
-            ...node.data,
-            onFieldChange: handleNodeFieldChange,
-            onTitleChange: handleNodeTitleChange,
-            onSchemaTypeChange: handleNodeSchemaTypeChange
-        },
-    })), [nodes, handleNodeFieldChange, handleNodeTitleChange, handleNodeSchemaTypeChange]);
+    const cursorPositionRef = useRef({ x: 0, y: 0 });
 
     useCopyPaste({ nodes, edges, setNodes, setEdges, cursorPositionRef });
+
+    const nodesWithCallbacks = useEditableNodesWithChangesCallbacks({ nodes, setNodes, schemas });
 
     const addNode = useCallback(() => {
         const position = screenToFlowPosition({

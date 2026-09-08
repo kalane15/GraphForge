@@ -1,7 +1,7 @@
 import schemaFieldTypesAvailable from "@/schemaFieldTypesAvailable";
 
 
-function SchemaElement({ fieldId, fieldName, fieldType, onFieldNameChange, onFieldTypeChange, onFieldDeleted }) {
+function SchemaFieldRow({ fieldId, fieldName, fieldType, onFieldNameChange, onFieldTypeChange, onFieldDeleted }) {
 
     return (
         <div className="editable-node__field-row">
@@ -21,4 +21,4 @@ function SchemaElement({ fieldId, fieldName, fieldType, onFieldNameChange, onFie
     )
 }
 
-export default SchemaElement;
+export default SchemaFieldRow;

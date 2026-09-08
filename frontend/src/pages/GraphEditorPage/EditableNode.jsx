@@ -18,7 +18,8 @@ export function buildEditableNode({ title = "New node", position = { x: 0, y: 0 
 }
 
 
-export function EditableNode({ id, data, selected, schemas }) {
+export function EditableNode({ id, data, selected }) {
+    const schemas = data.schemas ?? [];
     const properties = data.properties ?? {};
     const schema = schemas.find(
         (schema) => schema.schemaTypeName === data.schemaTypeName

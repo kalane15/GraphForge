@@ -2,28 +2,20 @@ import { useState, useEffect, useRef } from "react";
 import Flow from "./Flow"
 import { useNavigate, useParams } from "react-router"
 import { ReactFlowProvider } from "@xyflow/react";
-import { buildEditableNode } from "./EditableNode";
 import { createGraphSavePayload } from "@/helpers/createGraphSavePayload";
 import { updateGraphContentRequest, getGraphRequest } from "@/api/graphsApi";
 import { getSchemasRequest } from "@/api/schemasApi";
 import { downloadJsonFile } from "@/helpers/downloadJsonFile";
+import { mapSchemaToViewModel } from "@/helpers/schemaMappers";
+import GraphEditorToolbar from "./GraphEditorToolbar";
 
 
 function GraphEditorPage() {
     const { projectId, graphId } = useParams();
     const navigate = useNavigate();
-    const [schemas, setSchemas] = useState([]);
 
-    const [nodes, setNodes] = useState(() => [
-        buildEditableNode({
-            label: "New Node",
-            position: { x: 100, y: 100 },
-        }),
-        buildEditableNode({
-            label: "New Node",
-            position: { x: 150, y: 150 },
-        }),
-    ]);
+    const [schemas, setSchemas] = useState([]);
+    const [nodes, setNodes] = useState(() => []);
     const [edges, setEdges] = useState([]);
 
 
@@ -32,11 +24,7 @@ function GraphEditorPage() {
             const data = await getSchemasRequest(projectId);
             const loadedSchemas = data?.schemas ?? [];
 
-            setSchemas(loadedSchemas.map((schema) => ({
-                id: schema.id,
-                schemaTypeName: schema.schemaTypeName,
-                fields: schema.content?.fields ?? [],
-            })));
+            setSchemas(loadedSchemas.map(mapSchemaToViewModel));
         }
 
         loadSchemas();
@@ -72,7 +60,8 @@ function GraphEditorPage() {
         await updateGraphContentRequest(graphId, projectId, content);
     }
 
-    function goToSchemas() {
+    async function goToSchemas() {
+        await saveGraph();
         navigate(`/projects/${projectId}/schemas`);
     }
 
@@ -81,7 +70,7 @@ function GraphEditorPage() {
         downloadJsonFile("graph.json", graph.content);
     }
 
-    async function handleFileChange(event) {
+    async function importGraph(event) {
         const file = event.target.files[0];
 
         if (!file) {
@@ -94,41 +83,17 @@ function GraphEditorPage() {
         setNodes(graph.nodes);
         setEdges(graph.edges);
     };
-
-    const inputRef = useRef(null);
+    
 
     return (
         <div className="graph-editor-page">
-            <div className="graph-editor-toolbar">
-                <button onClick={returnToProjectPage}>
-                    Return
-                </button>
-
-                <button onClick={goToSchemas}>
-                    Schemas
-                </button>
-
-                <button onClick={saveGraph}>
-                    Save
-                </button>
-
-                <button onClick={exportGraph}>
-                    Export
-                </button>
-
-                <button onClick={() => inputRef.current?.click()}>
-                    Import
-                </button>
-
-                <input
-                    ref={inputRef}
-                    type="file"
-                    accept=".json"
-                    hidden
-                    onChange={handleFileChange}
-                />
-
-            </div>
+            <GraphEditorToolbar
+                returnToProjectPage={returnToProjectPage}
+                goToSchemas={goToSchemas}
+                saveGraph={saveGraph}
+                exportGraph={exportGraph}
+                importGraph={importGraph}
+            />
 
             <div className="graph-editor-shell">
                 <ReactFlowProvider>

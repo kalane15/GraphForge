@@ -33,7 +33,7 @@ function createSchemaUpdatePayload(schema) {
     };
 }
 
-export async function createSchemaWithContentRequest(projectId, schemaTypeName, fields) {
+export async function createSchemaWithFieldsRequest(projectId, schemaTypeName, fields) {
     const path = `/projects/${projectId}/schemas`;
     const detail = {
         method: "POST",

@@ -1,45 +1,19 @@
-import SchemaElement from "./SchemaElement";
+import {
+    addSchemaField,
+    changeSchemaFieldType,
+    deleteSchemaField,
+    renameSchemaField
+} from "@/helpers/schemaFields";
+import SchemaFieldRow from "./SchemaFieldRow";
 
 
 function Schema({ schemaId, schema, onSchemaUpdated, onSchemaDeleted }) {
-    const schemaFieldDefaultType = "string";
-    const schemaFieldDefaultName = "new field";
-
-
     function updateSchemaFieldName(fieldId, newFieldName) {
-        const newSchema = {
-            ...schema,
-            fields: schema.fields.map((field) => {
-                if (field.id !== fieldId) {
-                    return field;
-                }
-
-                return {
-                    ...field,
-                    name: newFieldName
-                };
-            }),
-        };
-
-        onSchemaUpdated(schemaId, newSchema);
+        onSchemaUpdated(schemaId, renameSchemaField(schema, fieldId, newFieldName));
     }
 
     function updateSchemaFieldType(fieldId, newFieldType) {
-        const newSchema = {
-            ...schema,
-            fields: schema.fields.map((field) => {
-                if (field.id !== fieldId) {
-                    return field;
-                }
-
-                return {
-                    ...field,
-                    type: newFieldType
-                };
-            }),
-        };
-
-        onSchemaUpdated(schemaId, newSchema);
+        onSchemaUpdated(schemaId, changeSchemaFieldType(schema, fieldId, newFieldType));
     }
 
     function changeSchemaTypeName(newSchemaTypeName) {
@@ -51,44 +25,12 @@ function Schema({ schemaId, schema, onSchemaUpdated, onSchemaDeleted }) {
         onSchemaUpdated(schemaId, newSchema);
     }
 
-
-    function getFieldDefaultName() {
-        const fields = schema.fields;
-        let possibleName = schemaFieldDefaultName;
-        let exists = fields.some(field => field.name === possibleName);
-        let number = 0;
-
-        while (exists) {
-            possibleName = schemaFieldDefaultName + " " + String(++number);
-            exists = fields.some(field => field.name === possibleName);
-        }
-
-        return possibleName;
-    }
-
     function addField() {
-        const newSchema = {
-            ...schema,
-            fields: [
-                ...schema.fields,
-                {
-                    id: crypto.randomUUID(),
-                    name: getFieldDefaultName(),
-                    type: schemaFieldDefaultType,
-                },
-            ],
-        };
-
-        onSchemaUpdated(schemaId, newSchema);
+        onSchemaUpdated(schemaId, addSchemaField(schema));
     }
 
     function deleteField(fieldId) {
-        const newSchema = {
-            ...schema,
-            fields: schema.fields.filter((field) => field.id !== fieldId),
-        };
-
-        onSchemaUpdated(schemaId, newSchema);
+        onSchemaUpdated(schemaId, deleteSchemaField(schema, fieldId));
     }
 
     function deleteSchema() {
@@ -110,7 +52,7 @@ function Schema({ schemaId, schema, onSchemaUpdated, onSchemaDeleted }) {
                     (field) => {
                         return (
                             <div className="editable-node__field-row" key={field.id}>
-                                <SchemaElement
+                                <SchemaFieldRow
                                     fieldId={field.id}
                                     fieldName={field.name}
                                     fieldType={field.type}

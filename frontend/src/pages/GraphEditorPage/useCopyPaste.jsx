@@ -37,9 +37,12 @@ export function useCopyPaste({
     }, []);
 
     function pasteNodes(copiedNodes, idMap) {
+        const currentPosition = cursorPositionRef.current;
+        const positionWhenCopy = clipboardRef.current.cursorPosition;
+
         const moveVector = {
-            x: cursorPositionRef.current.x - clipboardRef.current.cursorPosition.x,
-            y: cursorPositionRef.current.y - clipboardRef.current.cursorPosition.y
+            x: currentPosition.x - positionWhenCopy.x,
+            y: currentPosition.y - positionWhenCopy.y
         };
 
         const pastedNodes = copiedNodes.map((node) => {
