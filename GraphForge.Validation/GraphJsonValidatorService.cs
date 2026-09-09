@@ -31,16 +31,26 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
             throw new GraphValidationException("Graph edges are required.");
         }
 
+        if (graph.Nodes.Any(node => string.IsNullOrWhiteSpace(node.Id)))
+        {
+            throw new GraphValidationException("Node ids are required.");
+        }
+
         var nodeIds = new HashSet<string>(
-            graph.Nodes.Where(node => node.Id != null).Select(node => node.Id));
+            graph.Nodes.Select(node => node.Id));
 
         if (nodeIds.Count != graph.Nodes.Count)
         {
             throw new GraphValidationException("Nodes ids must be unique");
         }
 
+        if (graph.Edges.Any(edge => string.IsNullOrWhiteSpace(edge.Id)))
+        {
+            throw new GraphValidationException("Edge ids are required.");
+        }
+
         var edgeIds = new HashSet<string>(
-            graph.Edges.Where(edge => edge.Id != null).Select(edge => edge.Id));
+            graph.Edges.Select(edge => edge.Id));
 
         if (edgeIds.Count != graph.Edges.Count)
         {
