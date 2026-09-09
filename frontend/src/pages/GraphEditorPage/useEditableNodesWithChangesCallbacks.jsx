@@ -41,7 +41,7 @@ export function useEditableNodesWithChangesCallbacks({ nodes, setNodes, schemas 
 		);
 	}, [setNodes]);
 
-	const handleNodeSchemaTypeChange = useCallback((nodeId, schemaTypeName) => {
+	const handleNodeSchemaTypeChange = useCallback((nodeId, schemaId) => {
 		setNodes((nodes) =>
 			nodes.map((node) => {
 				if (node.id !== nodeId) {
@@ -52,7 +52,7 @@ export function useEditableNodesWithChangesCallbacks({ nodes, setNodes, schemas 
 					...node,
 					data: {
 						...node.data,
-                        schemaTypeName,
+                        schemaId,
                         properties: {}
 					},
 				};

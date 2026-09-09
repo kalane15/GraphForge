@@ -2,7 +2,7 @@ import { parseFieldValue } from "./parseFieldValue";
 
 function createNodeProperties(node, schemas) {
     const schema = schemas.find(
-        (schema) => schema.schemaTypeName === node.data.schemaTypeName
+        (schema) => schema.id === node.data.schemaId
     );
 
     if (!schema) {
@@ -27,6 +27,7 @@ export function createGraphSavePayload(nodes, edges, schemas) {
             position: node.position,
             data: {
                 title: node.data.title,
+                schemaId: node.data.schemaId,
                 schemaTypeName: node.data.schemaTypeName,
                 properties: createNodeProperties(node, schemas),
             },

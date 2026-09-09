@@ -50,6 +50,8 @@ public sealed class NodeDataDto
 {
     [JsonPropertyName("title")]
     public string Title { get; set; } = string.Empty;
+    [JsonPropertyName("schemaId")]
+    public Guid SchemaId { get; set; }
 
     [JsonPropertyName("schemaTypeName")]
     public string SchemaTypeName { get; set; } = string.Empty;

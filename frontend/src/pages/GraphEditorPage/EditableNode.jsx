@@ -20,7 +20,7 @@ export function EditableNode({ id, data, selected }) {
     const schemas = data.schemas ?? [];
     const properties = data.properties ?? {};
     const schema = schemas.find(
-        (schema) => schema.schemaTypeName === data.schemaTypeName
+        (schema) => schema.id === data.schemaId
     );
 
     const isSchemaMissing = schemas.length > 0 && !schema;
@@ -51,11 +51,12 @@ export function EditableNode({ id, data, selected }) {
             )}
             <div className="editable-node__type">
                 <span className="editable-node__type-label">schemaTypeName:</span>
-                <select
-                    className="editable-node__schema-select"
-                    value={data.schemaTypeName}
-                        onChange={(event) => data.onSchemaTypeChange(id, event.target.value)}>
 
+
+                <select
+                    value={data.schemaId}
+                    onChange={(event) => data.onSchemaTypeChange(id, event.target.value)}
+                >
                     {isSchemaMissing && (
                         <option key={"missing"} value={data.schemaTypeName}>
                             {data.schemaTypeName}
@@ -63,14 +64,12 @@ export function EditableNode({ id, data, selected }) {
                     )}
 
                     {schemas.map((schema) => (
-                        <option key={schema.id} value={schema.schemaTypeName}>
+                        <option key={schema.id} value={schema.id}>
                             {schema.schemaTypeName}
-                        </option>       
+                        </option>
                     ))}
-
-
-
                 </select>
+
             </div>
 
             <div className="editable-node__fields">
