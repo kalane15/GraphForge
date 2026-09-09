@@ -33,7 +33,11 @@ function GraphEditorToolbar({ returnToProjectPage, goToSchemas, saveGraph, expor
                 hidden
                 onChange={importGraph}
             />
-            <label>{ message }</label>
+            {message && (
+                <span className={`graph-editor-toolbar__message graph-editor-toolbar__message--${message.type}`}>
+                    {message.text}
+                </span>
+            )}
         </div>
     )
 }

@@ -17,7 +17,8 @@ function GraphEditorPage() {
     const [schemas, setSchemas] = useState([]);
     const [nodes, setNodes] = useState(() => []);
     const [edges, setEdges] = useState([]);
-    const [message, setMessage] = useState("");
+    const [message, setMessage] = useState(null);
+    const messageTimeoutRef = useRef(null);
 
 
     useEffect(() => {
@@ -56,16 +57,15 @@ function GraphEditorPage() {
         };
     }, []);
 
-    const messageTimeoutRef = useRef(null);
-    function showMessage(text) {
-        setMessage(text);
+    function showMessage(text, type = "success") {
+        setMessage({ text, type });
 
         if (messageTimeoutRef.current) {
             clearTimeout(messageTimeoutRef.current);
         }
 
         messageTimeoutRef.current = setTimeout(() => {
-            setMessage("");
+            setMessage(null);
             messageTimeoutRef.current = null;
         }, 3000);
     }
@@ -79,9 +79,9 @@ function GraphEditorPage() {
         try {
             const content = createGraphSavePayload(nodes, edges, schemas);
             await updateGraphContentRequest(graphId, projectId, content);
-            showMessage("Successfully saved")
+            showMessage("Successfully saved", "success");
         } catch (ex) {
-            showMessage(`Error during saving: ${ex.message}`);
+            showMessage(`Error during saving: ${ex.message}`, "error");
         }
     }
 
