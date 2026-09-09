@@ -1,4 +1,5 @@
 using GraphForge.Contracts;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Text.Json;
 
@@ -6,8 +7,20 @@ namespace GraphForge.Validation;
 
 public class GraphJsonValidatorService : IGraphJsonValidatorService
 {
+    private static readonly IReadOnlyList<JsonValueKind> ForbiddenJsonTypes = new List<JsonValueKind>() {
+        JsonValueKind.Null,
+        JsonValueKind.Object,
+        JsonValueKind.Undefined,
+        JsonValueKind.Array
+    };
+
+
     public void Validate(GraphDto graph, List<SchemaDto> schemas)
     {
+        if (graph == null)
+        {
+            throw new GraphValidationException("Graph is null");
+        }
         if(graph.Nodes is null)
         {
             throw new GraphValidationException("Graph nodes are required.");
@@ -19,7 +32,20 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
         }
 
         var nodeIds = new HashSet<string>(
-            graph.Nodes.Select(node => node.Id));
+            graph.Nodes.Where(node => node.Id != null).Select(node => node.Id));
+
+        if (nodeIds.Count != graph.Nodes.Count)
+        {
+            throw new GraphValidationException("Nodes ids must be unique");
+        }
+
+        var edgeIds = new HashSet<string>(
+            graph.Edges.Where(edge => edge.Id != null).Select(edge => edge.Id));
+
+        if (edgeIds.Count != graph.Edges.Count)
+        {
+            throw new GraphValidationException("Edges ids must be unique");
+        }
 
         foreach (EdgeDto edge in graph.Edges)
         {
@@ -38,7 +64,7 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
 
         foreach (NodeDto node in graph.Nodes)
         {
-            SchemaDto schema = schemas.FirstOrDefault((schema) => schema.SchemaTypeName == node.Data.SchemaTypeName);
+            SchemaDto schema = schemas.FirstOrDefault((schema) => schema.Id == node.Data.SchemaId);
             if (schema == null)
             {
                 throw new GraphValidationException(
@@ -72,13 +98,18 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
 
             JsonElement value = property.Value;
 
+            if (ForbiddenJsonTypes.Contains(value.ValueKind))
+            {
+                throw new GraphValidationException($"Property {property.Key} has forbidden json value kind: {value.ValueKind}");
+            }
+
             if (value.ValueKind == JsonValueKind.Number)
             {
                 if (value.TryGetInt32(out int intValue))
                 {
                     if (relatedSchemaField.Type == "int")
                     {
-                        return;
+                        continue;
                     }
                 }
 
@@ -87,7 +118,7 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
                 {
                     if (relatedSchemaField.Type == "float")
                     {
-                        return;
+                        continue;
                     }
                 }
 
@@ -103,7 +134,7 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
             {
                 if (relatedSchemaField.Type == "bool")
                 {
-                    return;
+                    continue;
                 }
                 throw new GraphValidationException(
                     $"Property {property.Key} value type doesnt match type of corresponding schema field\n" +
