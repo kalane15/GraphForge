@@ -1,5 +1,5 @@
 ﻿using GraphForge.Api.Database;
-using GraphForge.Api.DTOs;
+using GraphForge.Api.DTOs.Auth;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.AuthService;
 using Microsoft.AspNetCore.Authorization;

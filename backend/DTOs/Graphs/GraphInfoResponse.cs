@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace GraphForge.Api.DTOs;
+namespace GraphForge.Api.DTOs.Graphs;
 
 public record GraphInfoResponse(
     Guid Id,

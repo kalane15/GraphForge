@@ -63,6 +63,8 @@ function GraphEditorPage() {
     }
 
     async function exportGraph() {
+        await saveGraph();
+
         const graph = await getGraphRequest(graphId, projectId);
         downloadJsonFile("graph.json", graph.content);
     }

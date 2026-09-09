@@ -1,5 +1,5 @@
 ﻿using GraphForge.Api.Database;
-using GraphForge.Api.DTOs;
+using GraphForge.Api.DTOs.Graphs;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.GraphJsonValidatorService;
 using GraphForge.Api.Services.ProjectService;

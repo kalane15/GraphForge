@@ -9,6 +9,6 @@ public class Schema
     public Guid Id { get; set; }
     public Guid ProjectId { get; set; }
     public string SchemaTypeName { get; set; } = string.Empty;
-    public JsonDocument Content { get; set; } = JsonDocument.Parse("""{"fields":[]}""");
+    public List<SchemaField> Fields { get; set; } = new List<SchemaField>();
     public Project Project { get; set; } = null!;
 }

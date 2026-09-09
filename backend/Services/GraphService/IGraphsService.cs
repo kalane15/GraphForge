@@ -1,4 +1,4 @@
-﻿using GraphForge.Api.DTOs;
+﻿using GraphForge.Api.DTOs.Graphs;
 using System.Text.Json;
 
 namespace GraphForge.Api.Services.GraphService

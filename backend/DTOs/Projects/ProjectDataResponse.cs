@@ -1,4 +1,6 @@
-﻿namespace GraphForge.Api.DTOs;
+﻿using GraphForge.Api.DTOs.Graphs;
+
+namespace GraphForge.Api.DTOs.Projects;
 
 public sealed record ProjectDataResponse(
     Guid Id,

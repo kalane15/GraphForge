@@ -1,4 +1,4 @@
-using GraphForge.Api.DTOs;
+﻿using GraphForge.Api.DTOs.Projects;
 using GraphForge.Api.Services.AuthService;
 using GraphForge.Api.Services.ProjectService;
 using GraphForge.Api.Services.UserIdentityProviderService;

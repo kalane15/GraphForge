@@ -1,5 +1,5 @@
-using GraphForge.Api.Database;
-using GraphForge.Api.DTOs;
+﻿using GraphForge.Api.Database;
+using GraphForge.Api.DTOs.Schemas;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.GraphService;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +28,9 @@ public class SchemasService : ISchemasService
                 (
                 s.Id,
                 s.SchemaTypeName,
-                s.Content
+                s.Fields
+                .Select(f => new SchemaFieldDefinitionResponse(f.Id, f.Name, f.Type))
+                .ToList()
                 )
             )
             .ToListAsync();
@@ -40,27 +42,40 @@ public class SchemasService : ISchemasService
     {
         await EnsureProjectBelongsToUser(userId, projectId);
 
+        var schemaId = Guid.NewGuid();
+
         var schema = new Schema
         {
             ProjectId = projectId,
             SchemaTypeName = request.SchemaTypeName,
-            Content = request.Content ?? JsonDocument.Parse(DefaultSchemaContentJson)
+            Fields = request.Fields.Select(f => new SchemaField
+            {
+                Name = f.Name,
+                Type = f.Type
+            }).ToList()
         };
 
         _db.Schemas.Add(schema);
         await _db.SaveChangesAsync();
 
-        return new SchemaResponse(schema.Id, schema.SchemaTypeName, schema.Content);
+        List <SchemaFieldDefinitionResponse> fieldsDefinions = schema.Fields
+            .Select(f => new SchemaFieldDefinitionResponse(f.Id, f.Name, f.Type)).ToList();
+
+        return new SchemaResponse(schema.Id, schema.SchemaTypeName, fieldsDefinions);
     }
 
     public async Task UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaDataRequest request)
     {
-        Schema? schema = await _db.Schemas.FirstOrDefaultAsync(
+        await EnsureProjectBelongsToUser(userId, projectId);
+
+        Schema? schema = await _db.Schemas
+            .Include(schema => schema.Fields)
+            .FirstOrDefaultAsync(
             (schema) =>
                 schema.Id == schemaId &&
                 schema.ProjectId == projectId &&
                 schema.Project.OwnerId == userId
-        );
+            );
 
         if (schema is null)
         {
@@ -68,7 +83,13 @@ public class SchemasService : ISchemasService
         }
 
         schema.SchemaTypeName = request.SchemaTypeName;
-        schema.Content = request.Content;
+        schema.Fields = request.Fields
+            .Select(field => new SchemaField
+            {
+                Name = field.Name,
+                Type = field.Type,
+            })
+            .ToList();
 
         await _db.SaveChangesAsync();
     }

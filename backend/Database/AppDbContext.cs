@@ -39,12 +39,13 @@ public class AppDbContext : DbContext
             .WithMany(project => project.Schemas)
             .HasForeignKey(schema => schema.ProjectId);
 
+        modelBuilder.Entity<SchemaField>()
+            .HasOne(schemaField => schemaField.Schema)
+            .WithMany(schema => schema.Fields)
+            .HasForeignKey(schemaField => schemaField.SchemaId);
+
         modelBuilder.Entity<Schema>()
             .Property(schema => schema.SchemaTypeName)
             .HasColumnName("schema_type_name");
-
-        modelBuilder.Entity<Schema>()
-            .Property(schema => schema.Content)
-            .HasColumnType("jsonb");
     }
 }

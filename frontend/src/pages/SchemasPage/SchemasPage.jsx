@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import {
-    createNoDataSchemaRequest,
     deleteSchemaRequest,
     getSchemasRequest,
     updateSchemaRequest,
-    createSchemaWithFieldsRequest
+    createSchemaRequest
 } from "@/api/schemasApi";
 import { downloadJsonFile } from "@/helpers/downloadJsonFile";
 import Schema from "./Schema";
@@ -45,13 +44,12 @@ function SchemasPage() {
     }
 
     async function addNewSchema() {
-        const response = await createNoDataSchemaRequest(projectId, getSchemaDefaultName(schemas));
+        const response = await createSchemaRequest(projectId, getSchemaDefaultName(schemas), []);
         setSchemas
             (
                 (schemas) => ([
                     ...schemas,
-                    mapSchemaToViewModel(response)
-                    
+                    mapSchemaToViewModel(response)                    
                 ])
             );
     }
@@ -90,7 +88,7 @@ function SchemasPage() {
 
         importedSchemas = await Promise.all(
             importedSchemas.map((schema) =>
-                createSchemaWithFieldsRequest(
+                createSchemaRequest(
                     projectId,
                     schema.schemaTypeName,
                     schema.fields
