@@ -2,4 +2,4 @@
 
 namespace GraphForge.Api.DTOs;
 
-public sealed record UpdateGraphContentRequest(JsonDocument Content);
+public sealed record UpdateGraphContentRequest(GraphForge.Contracts.GraphDto Content);

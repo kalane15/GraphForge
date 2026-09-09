@@ -1,7 +1,7 @@
 ﻿using GraphForge.Api.Database;
 using GraphForge.Api.DTOs;
 using GraphForge.Api.Models;
-using GraphForge.Api.Services.GraphService.GraphJsonValidatorService;
+using GraphForge.Api.Services.GraphJsonValidatorService;
 using GraphForge.Api.Services.ProjectService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -131,7 +131,7 @@ namespace GraphForge.Api.Services.GraphService
             _graphJsonValidatorService.Validate(request.Content);
 
             graph.Name = graphName;
-            graph.Content = request.Content;
+            graph.Content = JsonSerializer.SerializeToDocument(request.Content);
             graph.UpdatedAt = DateTimeOffset.UtcNow;
             await _db.SaveChangesAsync();
 
@@ -145,7 +145,7 @@ namespace GraphForge.Api.Services.GraphService
             return result;
         }
 
-        public async Task UpdateUserGraphContentAsync(Guid userId, Guid projectId, Guid graphId, JsonDocument content)
+        public async Task UpdateUserGraphContentAsync(Guid userId, Guid projectId, Guid graphId, GraphForge.Contracts.GraphDto content)
         {
             Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
                 (g) =>
@@ -161,7 +161,7 @@ namespace GraphForge.Api.Services.GraphService
 
             _graphJsonValidatorService.Validate(content);
 
-            graph.Content = content;
+            graph.Content = JsonSerializer.SerializeToDocument(content);
             graph.UpdatedAt = DateTimeOffset.UtcNow;
             await _db.SaveChangesAsync();
         }

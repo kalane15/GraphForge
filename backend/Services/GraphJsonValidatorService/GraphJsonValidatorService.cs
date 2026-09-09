@@ -1,24 +1,18 @@
-﻿using GraphForge.Contracts;
-using System.Text.Json;
+﻿using GraphForge.Api.Services.GraphService;
+using GraphForge.Contracts;
 
-namespace GraphForge.Api.Services.GraphService.GraphJsonValidatorService;
+namespace GraphForge.Api.Services.GraphJsonValidatorService;
 
 public class GraphJsonValidatorService : IGraphJsonValidatorService
 {
-    public void Validate(JsonDocument graphJson)
+    public void Validate(GraphDto? graph)
     {
-        try
+        if (graph is null)
         {
-            GraphDto? graph = JsonSerializer.Deserialize<GraphDto>(graphJson);
-            if (graph == null)
-            {
-                throw new GraphValidationException("Failed to deserialize json: null");
-            }
-            ValidateDto(graph);
+            throw new GraphValidationException("Graph content is required.");
         }
-        catch (JsonException ex) {
-            throw new GraphValidationException($"Error during parsing json: {ex.Message}");
-        }
+
+        ValidateDto(graph);
     }
 
     private void ValidateDto(GraphDto graph)
@@ -51,5 +45,16 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
                     $"Target node '{edge.Target}' does not exist.");
             }
         }
+
+        foreach (NodeDto node in graph.Nodes)
+        {
+            ValidateNodeData(node.Data);
+        }
+        
+    }
+
+    private void ValidateNodeData(NodeDataDto data)
+    {
+        
     }
 }
