@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphForge.Runtime.Tests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphForge.Validation", "GraphForge.Validation\GraphForge.Validation.csproj", "{B5ED57DF-07F0-4268-B68F-642FE7F4208D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphForge.Validation.Tests", "GraphForge.Validation.Tests\GraphForge.Validation.Tests.csproj", "{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{B5ED57DF-07F0-4268-B68F-642FE7F4208D}.Release|x64.Build.0 = Release|Any CPU
 		{B5ED57DF-07F0-4268-B68F-642FE7F4208D}.Release|x86.ActiveCfg = Release|Any CPU
 		{B5ED57DF-07F0-4268-B68F-642FE7F4208D}.Release|x86.Build.0 = Release|Any CPU
+		{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}.Debug|x64.Build.0 = Debug|Any CPU
+		{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}.Debug|x86.Build.0 = Debug|Any CPU
+		{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}.Release|x64.ActiveCfg = Release|Any CPU
+		{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}.Release|x64.Build.0 = Release|Any CPU
+		{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}.Release|x86.ActiveCfg = Release|Any CPU
+		{8C2DBF14-B0F3-420C-BDD0-B111944FB6B2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

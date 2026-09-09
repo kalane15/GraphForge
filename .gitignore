@@ -15,3 +15,5 @@ todo.txt
 /GraphForge.Runtime.Tests/obj
 /GraphForge.Validation/obj
 /GraphForge.Validation/bin
+/GraphForge.Validation.Tests/bin
+/GraphForge.Validation.Tests/obj

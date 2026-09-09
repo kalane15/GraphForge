@@ -21,7 +21,7 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
         {
             throw new GraphValidationException("Graph is null");
         }
-        if(graph.Nodes is null)
+        if (graph.Nodes is null)
         {
             throw new GraphValidationException("Graph nodes are required.");
         }
@@ -33,7 +33,7 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
 
         if (graph.Nodes.Any(node => string.IsNullOrWhiteSpace(node.Id)))
         {
-            throw new GraphValidationException("Node ids are required.");
+            throw new EmptyNodeIdException("Node ids are required.");
         }
 
         var nodeIds = new HashSet<string>(
@@ -41,12 +41,12 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
 
         if (nodeIds.Count != graph.Nodes.Count)
         {
-            throw new GraphValidationException("Nodes ids must be unique");
+            throw new NodeIdsNotUniqueException("Nodes ids must be unique");
         }
 
         if (graph.Edges.Any(edge => string.IsNullOrWhiteSpace(edge.Id)))
         {
-            throw new GraphValidationException("Edge ids are required.");
+            throw new EmptyEdgeIdException("Edge ids are required.");
         }
 
         var edgeIds = new HashSet<string>(
@@ -54,20 +54,20 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
 
         if (edgeIds.Count != graph.Edges.Count)
         {
-            throw new GraphValidationException("Edges ids must be unique");
+            throw new EdgeIdsNotUniqueException("Edges ids must be unique");
         }
 
         foreach (EdgeDto edge in graph.Edges)
         {
             if (!nodeIds.Contains(edge.Source))
             {
-                throw new GraphValidationException(
+                throw new IncorrectEdgeNodeRefException(
                     $"Source node '{edge.Source}' does not exist.");
             }
 
             if (!nodeIds.Contains(edge.Target))
             {
-                throw new GraphValidationException(
+                throw new IncorrectEdgeNodeRefException(
                     $"Target node '{edge.Target}' does not exist.");
             }
         }
@@ -77,7 +77,7 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
             SchemaDto schema = schemas.FirstOrDefault((schema) => schema.Id == node.Data.SchemaId);
             if (schema == null)
             {
-                throw new GraphValidationException(
+                throw new SchemaNotFoundException(
                     $"Schema {node.Data.SchemaTypeName} not found in schemas provided during validation"
                     );
             }
@@ -88,29 +88,36 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
 
     private void ValidateNodeData(NodeDataDto data, SchemaDto schema)
     {
-        var properties = data.Properties
-            .Deserialize<Dictionary<string, JsonElement>>()
-            ?? new Dictionary<string, JsonElement>();
+        var properties = new Dictionary<string, JsonElement>();
+        try
+        {
+            properties = data.Properties
+                .Deserialize<Dictionary<string, JsonElement>>()
+                ?? new Dictionary<string, JsonElement>();
+        } catch (InvalidOperationException ex)
+        {
+            throw new GraphJsonInvalidException($"Cannot parse properties json: {ex.Message}");
+        }
 
         foreach (var property in properties)
         {
             if (property.Key == string.Empty)
             {
-                throw new GraphValidationException("Empty field names are not allowed");
+                throw new EmptyFieldNameException("Empty field names are not allowed");
             }
 
             SchemaFieldDto relatedSchemaField = schema.Fields.FirstOrDefault((field) => field.Name == property.Key);
 
             if (relatedSchemaField == null)
             {
-                throw new GraphValidationException($"Property {property.Key} is not present in provided schema");
+                throw new PropertyIsNotPresentedInSchemaException($"Property {property.Key} is not present in provided schema");
             }
 
             JsonElement value = property.Value;
 
             if (ForbiddenJsonTypes.Contains(value.ValueKind))
             {
-                throw new GraphValidationException($"Property {property.Key} has forbidden json value kind: {value.ValueKind}");
+                throw new IncorrectJsonValueInPropertyException($"Property {property.Key} has forbidden json value kind: {value.ValueKind}");
             }
 
             if (value.ValueKind == JsonValueKind.Number)
@@ -132,7 +139,7 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
                     }
                 }
 
-                throw new GraphValidationException(
+                throw new PropertyTypeMismatchException(
                         $"Property {property.Key} value type doesnt match type of corresponding schema field\n" +
                         $"Expected: {relatedSchemaField.Type}\n" +
                         $"Provided: {value.ValueKind}"
@@ -146,7 +153,7 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
                 {
                     continue;
                 }
-                throw new GraphValidationException(
+                throw new PropertyTypeMismatchException(
                     $"Property {property.Key} value type doesnt match type of corresponding schema field\n" +
                     $"Expected: {relatedSchemaField.Type}\n" +
                     $"Provided: {value.ValueKind}"
@@ -155,7 +162,7 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
 
             if (value.ValueKind == JsonValueKind.String && relatedSchemaField.Type != "string")
             {
-                throw new GraphValidationException(
+                throw new PropertyTypeMismatchException(
                     $"Property {property.Key} value type doesnt match type of corresponding schema field\n" +
                     $"Expected: {relatedSchemaField.Type}\n" +
                     $"Provided: {value.ValueKind}"
