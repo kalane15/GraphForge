@@ -3,13 +3,11 @@ using GraphForge.Api.DTOs.Schemas;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.GraphService;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 
 namespace GraphForge.Api.Services.SchemasService;
 
 public class SchemasService : ISchemasService
 {
-    private const string DefaultSchemaContentJson = """{"fields":[]}""";
     private readonly AppDbContext _db;
 
     public SchemasService(AppDbContext db)
@@ -82,14 +80,33 @@ public class SchemasService : ISchemasService
             throw new NotFoundException("Schema not found");
         }
 
+        // Synchronize the stored fields with the full field list from the update request, in which some fields may have been added or removed
+
         schema.SchemaTypeName = request.SchemaTypeName;
-        schema.Fields = request.Fields
-            .Select(field => new SchemaField
+        var existingFields = schema.Fields.ToDictionary(field => field.Id);
+        var requestFieldIds = request.Fields
+            .Where(field => field.Id.HasValue)
+            .Select(field => field.Id!.Value)
+            .ToHashSet();
+
+        schema.Fields.RemoveAll(field => !requestFieldIds.Contains(field.Id));
+
+        foreach (SchemaFieldUpdateRequest fieldRequest in request.Fields)
+        {
+            if (fieldRequest.Id.HasValue &&
+                existingFields.TryGetValue(fieldRequest.Id.Value, out SchemaField? existingField))
             {
-                Name = field.Name,
-                Type = field.Type,
-            })
-            .ToList();
+                existingField.Name = fieldRequest.Name;
+                existingField.Type = fieldRequest.Type;
+                continue;
+            }
+
+            schema.Fields.Add(new SchemaField
+            {
+                Name = fieldRequest.Name,
+                Type = fieldRequest.Type,
+            });
+        }
 
         await _db.SaveChangesAsync();
     }

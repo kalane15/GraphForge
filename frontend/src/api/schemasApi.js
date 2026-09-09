@@ -11,6 +11,7 @@ function createSchemaUpdatePayload(schema) {
     return {
         schemaTypeName: schema.schemaTypeName,        
         fields: schema.fields.map((field) => ({
+            id: field.id,
             name: field.name,
             type: field.type,
         })),
