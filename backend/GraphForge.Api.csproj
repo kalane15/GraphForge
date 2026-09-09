@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GraphForge.Contracts\GraphForge.Contracts.csproj" />
+    <ProjectReference Include="..\GraphForge.Validation\GraphForge.Validation.csproj" />
   </ItemGroup>
 
 </Project>

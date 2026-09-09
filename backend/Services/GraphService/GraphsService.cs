@@ -1,179 +1,197 @@
 ﻿using GraphForge.Api.Database;
 using GraphForge.Api.DTOs.Graphs;
+using GraphForge.Api.Mappers;
 using GraphForge.Api.Models;
-using GraphForge.Api.Services.GraphJsonValidatorService;
 using GraphForge.Api.Services.ProjectService;
+using GraphForge.Contracts;
+using GraphForge.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Net;
 using System.Text.Json;
 
 
-namespace GraphForge.Api.Services.GraphService
+namespace GraphForge.Api.Services.GraphService;
+
+public class GraphsService : IGraphsService
 {
-    public class GraphsService : IGraphsService
+    private readonly AppDbContext _db;
+    private readonly IGraphJsonValidatorService _graphJsonValidatorService;
+
+
+    public GraphsService(AppDbContext db, IGraphJsonValidatorService graphJsonValidatorService)
     {
-        private readonly AppDbContext _db;
-        private readonly IGraphJsonValidatorService _graphJsonValidatorService;
+        _db = db;
+        _graphJsonValidatorService = graphJsonValidatorService;
+    }
 
+    async public Task<GraphInfoResponse> CreateUserGraphAsync(Guid userId, Guid projectId, GraphCreationRequest request)
+    {
+        string graphName = ValidateGraphName(request.Name);
 
-        public GraphsService(AppDbContext db, IGraphJsonValidatorService graphJsonValidatorService)
+        bool isProjectBelongsToUser = await _db.Projects.AnyAsync((p) => p.Id == projectId && p.OwnerId == userId);
+
+        if (!isProjectBelongsToUser)
         {
-            _db = db;
-            _graphJsonValidatorService = graphJsonValidatorService;
+            throw new IncorrectProjectOwnerException("Project does not belong to the user");
         }
 
-        async public Task<GraphInfoResponse> CreateUserGraphAsync(Guid userId, Guid projectId, GraphCreationRequest request)
+        var newGraph = new Graph
         {
-            string graphName = ValidateGraphName(request.Name);
+            Name = graphName,
+            ProjectId = projectId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
 
-            bool isProjectBelongsToUser = await _db.Projects.AnyAsync((p) => p.Id == projectId && p.OwnerId == userId);
+        _db.Graphs.Add(newGraph);
+        await _db.SaveChangesAsync();
 
-            if (!isProjectBelongsToUser)
-            {
-                throw new IncorrectProjectOwnerException("Project does not belong to the user");
-            }
+        var result = new GraphInfoResponse
+        (
+            newGraph.Id,
+            newGraph.ProjectId,
+            newGraph.Name,
+            newGraph.CreatedAt,
+            newGraph.UpdatedAt
+        );
 
-            var newGraph = new Graph
-            {
-                Name = graphName,
-                ProjectId = projectId,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+        return result;
+    }
 
-            _db.Graphs.Add(newGraph);
-            await _db.SaveChangesAsync();
+    public async Task DeleteUserGraphAsync(Guid userId, Guid projectId, Guid graphId)
+    {
+        Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
+            (g) => 
+                g.Id == graphId && 
+                g.ProjectId == projectId && 
+                g.Project.OwnerId == userId
+        );
 
-            var result = new GraphInfoResponse
-            (
-                newGraph.Id,
-                newGraph.ProjectId,
-                newGraph.Name,
-                newGraph.CreatedAt,
-                newGraph.UpdatedAt
-            );
-
-            return result;
+        if (graph == null)
+        {
+            throw new NotFoundException("Graph not found");
         }
 
-        public async Task DeleteUserGraphAsync(Guid userId, Guid projectId, Guid graphId)
+        _db.Graphs.Remove(graph);
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task<GraphDataResponse> GetUserGraphAsync(Guid userId, Guid projectId, Guid graphId)
+    {
+        Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
+            (g) =>
+                g.Id == graphId &&
+                g.ProjectId == projectId &&
+                g.Project.OwnerId == userId
+        );
+
+        if (graph == null)
         {
-            Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
-                (g) => 
-                    g.Id == graphId && 
-                    g.ProjectId == projectId && 
-                    g.Project.OwnerId == userId
-            );
-
-            if (graph == null)
-            {
-                throw new NotFoundException("Graph not found");
-            }
-
-            _db.Graphs.Remove(graph);
-            await _db.SaveChangesAsync();
+            throw new NotFoundException("Graph not found");
         }
 
-        public async Task<GraphDataResponse> GetUserGraphAsync(Guid userId, Guid projectId, Guid graphId)
-        {
-            Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
-                (g) =>
-                    g.Id == graphId &&
-                    g.ProjectId == projectId &&
-                    g.Project.OwnerId == userId
-            );
+        var result = new GraphDataResponse(
+            graph.Id,
+            graph.ProjectId,
+            graph.Name,
+            graph.Content
+        );
 
-            if (graph == null)
-            {
-                throw new NotFoundException("Graph not found");
-            }
+        return result;
+    }
 
-            var result = new GraphDataResponse(
+    public async Task<List<GraphInfoResponse>> GetUserProjectsGraphsAsync(Guid userId, Guid projectId)
+    {
+        var graphs = await _db.Graphs.Where((g) => g.ProjectId == projectId && g.Project.OwnerId == userId)
+            .Select(graph => new GraphInfoResponse(
                 graph.Id,
                 graph.ProjectId,
                 graph.Name,
-                graph.Content
-            );
+                graph.CreatedAt,
+                graph.UpdatedAt)
+        ).ToListAsync();
 
-            return result;
-        }
+        return graphs;
+    }
 
-        public async Task<List<GraphInfoResponse>> GetUserProjectsGraphsAsync(Guid userId, Guid projectId)
+    public async Task<GraphDataResponse> UpdateUserGraphAsync(Guid userId, Guid projectId, Guid graphId, GraphDataEditRequest request)
+    {
+        string graphName = ValidateGraphName(request.Name);
+        Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
+            (g) =>
+                g.Id == graphId &&
+                g.ProjectId == projectId &&
+                g.Project.OwnerId == userId
+        );
+
+        if (graph == null)
         {
-            var graphs = await _db.Graphs.Where((g) => g.ProjectId == projectId && g.Project.OwnerId == userId)
-                .Select(graph => new GraphInfoResponse(
-                    graph.Id,
-                    graph.ProjectId,
-                    graph.Name,
-                    graph.CreatedAt,
-                    graph.UpdatedAt)
-            ).ToListAsync();
-
-            return graphs;
+            throw new NotFoundException("Graph not found");
         }
 
-        public async Task<GraphDataResponse> UpdateUserGraphAsync(Guid userId, Guid projectId, Guid graphId, GraphDataEditRequest request)
+        List<SchemaDto> schemas = await LoadProjectSchemas(projectId);
+        _graphJsonValidatorService.Validate(request.Content, schemas);
+
+        graph.Name = graphName;
+        graph.Content = JsonSerializer.SerializeToDocument(request.Content);
+        graph.UpdatedAt = DateTimeOffset.UtcNow;
+        await _db.SaveChangesAsync();
+
+        var result = new GraphDataResponse(
+            graph.Id,
+            graph.ProjectId,
+            graph.Name,
+            graph.Content
+        );
+
+        return result;
+    }
+
+    public async Task UpdateUserGraphContentAsync(Guid userId, Guid projectId, Guid graphId, GraphForge.Contracts.GraphDto content)
+    {
+        Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
+            (g) =>
+                g.Id == graphId &&
+                g.ProjectId == projectId &&
+                g.Project.OwnerId == userId
+        );
+
+        if (graph == null)
         {
-            string graphName = ValidateGraphName(request.Name);
-            Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
-                (g) =>
-                    g.Id == graphId &&
-                    g.ProjectId == projectId &&
-                    g.Project.OwnerId == userId
-            );
-
-            if (graph == null)
-            {
-                throw new NotFoundException("Graph not found");
-            }
-
-            _graphJsonValidatorService.Validate(request.Content);
-
-            graph.Name = graphName;
-            graph.Content = JsonSerializer.SerializeToDocument(request.Content);
-            graph.UpdatedAt = DateTimeOffset.UtcNow;
-            await _db.SaveChangesAsync();
-
-            var result = new GraphDataResponse(
-                graph.Id,
-                graph.ProjectId,
-                graph.Name,
-                graph.Content
-            );
-
-            return result;
+            throw new NotFoundException("Graph not found");
         }
 
-        public async Task UpdateUserGraphContentAsync(Guid userId, Guid projectId, Guid graphId, GraphForge.Contracts.GraphDto content)
+        List<SchemaDto> schemas = await LoadProjectSchemas(projectId);
+        _graphJsonValidatorService.Validate(content, schemas);
+
+        graph.Content = JsonSerializer.SerializeToDocument(content);
+        graph.UpdatedAt = DateTimeOffset.UtcNow;
+        await _db.SaveChangesAsync();
+    }
+
+    private static string ValidateGraphName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
         {
-            Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
-                (g) =>
-                    g.Id == graphId &&
-                    g.ProjectId == projectId &&
-                    g.Project.OwnerId == userId
-            );
-
-            if (graph == null)
-            {
-                throw new NotFoundException("Graph not found");
-            }
-
-            _graphJsonValidatorService.Validate(content);
-
-            graph.Content = JsonSerializer.SerializeToDocument(content);
-            graph.UpdatedAt = DateTimeOffset.UtcNow;
-            await _db.SaveChangesAsync();
+            throw new GraphValidationException("Graph name is required");
         }
 
-        private static string ValidateGraphName(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new GraphValidationException("Graph name is required");
-            }
+        return name.Trim();
+    }
 
-            return name.Trim();
-        }
+    private async Task<List<SchemaDto>> LoadProjectSchemas(Guid projectId)
+    {
+        List<Schema> schemas = await _db.Schemas
+            .Where(schema => schema.ProjectId == projectId)
+            .Include(schema => schema.Fields)
+            .ToListAsync();
+
+        List<SchemaDto> schemaDtos = schemas
+            .Select(SchemaMapper.ToDto)
+            .ToList();
+
+        return schemaDtos;
     }
 }

@@ -10,9 +10,7 @@ export function buildEditableNode({ title = "New node", position = { x: 0, y: 0 
         data: {
             title,
             schemaTypeName: "dialogue",
-            "properties": {
-                "string": "asd"
-            },
+            "properties": {},
         },
     };
 }
@@ -27,7 +25,6 @@ export function EditableNode({ id, data, selected }) {
 
     const isSchemaMissing = schemas.length > 0 && !schema;
 
-    const onChange = (name, value) => data.onFieldChange(id, name, value);
 
 
     function handleTitleChange(event) {
@@ -85,7 +82,7 @@ export function EditableNode({ id, data, selected }) {
                                     name={field.name}
                                     value={properties[field.name] ?? ""}
                                     type={field.type}
-                                    onChange={onChange}
+                                    onChange={(name, value) => data.onFieldChange(id, name, value, field.type)}
                                     />
                             </div>
                         );

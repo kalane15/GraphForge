@@ -1,4 +1,4 @@
-namespace GraphForge.Api.Services.GraphService;
+namespace GraphForge.Validation;
 
 public class GraphValidationException : Exception
 {
