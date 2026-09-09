@@ -1,9 +1,8 @@
 import { useCallback, useMemo } from 'react';
-import { parseFieldValue } from "./parseFieldValue";
 
 
 export function useEditableNodesWithChangesCallbacks({ nodes, setNodes, schemas }) {
-	const handleNodeFieldChange = useCallback((nodeId, fieldName, value, type) => {
+	const handleNodeFieldChange = useCallback((nodeId, fieldName, value) => {
 		setNodes((nodes) =>
 			nodes.map((node) => {
 				if (node.id !== nodeId) {
@@ -16,7 +15,7 @@ export function useEditableNodesWithChangesCallbacks({ nodes, setNodes, schemas 
 						...node.data,
 						properties: {
 							...node.data.properties,
-							[fieldName]: parseFieldValue(value, type, fieldName),
+							[fieldName]: value,
 						},
 					},
 				};

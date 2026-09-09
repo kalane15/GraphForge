@@ -17,6 +17,7 @@ function GraphEditorPage() {
     const [schemas, setSchemas] = useState([]);
     const [nodes, setNodes] = useState(() => []);
     const [edges, setEdges] = useState([]);
+    const [message, setMessage] = useState("");
 
 
     useEffect(() => {
@@ -47,14 +48,41 @@ function GraphEditorPage() {
         return () => clearTimeout(timeoutId);
     }, [nodes, edges]);
 
+    useEffect(() => {
+        return () => {
+            if (messageTimeoutRef.current) {
+                clearTimeout(messageTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    const messageTimeoutRef = useRef(null);
+    function showMessage(text) {
+        setMessage(text);
+
+        if (messageTimeoutRef.current) {
+            clearTimeout(messageTimeoutRef.current);
+        }
+
+        messageTimeoutRef.current = setTimeout(() => {
+            setMessage("");
+            messageTimeoutRef.current = null;
+        }, 3000);
+    }
+
     async function returnToProjectPage() {
         await saveGraph();
         navigate(`/projects/${projectId}`);
     }
 
     async function saveGraph() {
-        const content = createGraphSavePayload(nodes, edges);
-        await updateGraphContentRequest(graphId, projectId, content);
+        try {
+            const content = createGraphSavePayload(nodes, edges, schemas);
+            await updateGraphContentRequest(graphId, projectId, content);
+            showMessage("Successfully saved")
+        } catch (ex) {
+            showMessage(`Error during saving: ${ex.message}`);
+        }
     }
 
     async function goToSchemas() {
@@ -92,6 +120,7 @@ function GraphEditorPage() {
                 saveGraph={saveGraph}
                 exportGraph={exportGraph}
                 importGraph={importGraph}
+                message={message}
             />
 
             <div className="graph-editor-shell">
@@ -102,7 +131,7 @@ function GraphEditorPage() {
                         setNodes={setNodes}
                         setEdges={setEdges}
                         projectId={projectId}
-                        schemas={schemas}
+                        schemas={schemas}                        
                     />
                 </ReactFlowProvider>
             </div>

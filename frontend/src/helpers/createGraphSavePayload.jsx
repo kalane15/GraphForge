@@ -1,4 +1,25 @@
-export function createGraphSavePayload(nodes, edges) {
+import { parseFieldValue } from "./parseFieldValue";
+
+function createNodeProperties(node, schemas) {
+    const schema = schemas.find(
+        (schema) => schema.schemaTypeName === node.data.schemaTypeName
+    );
+
+    if (!schema) {
+        throw new Error(`Schema "${node.data.schemaTypeName}" not found`);
+    }
+
+    const properties = node.data.properties ?? {};
+
+    return Object.fromEntries(
+        schema.fields.map((field) => [
+            field.name,
+            parseFieldValue(properties[field.name] ?? "", field.type, field.name)
+        ])
+    );
+}
+
+export function createGraphSavePayload(nodes, edges, schemas) {
     return {
         nodes: nodes.map((node) => ({
             id: node.id,
@@ -7,7 +28,7 @@ export function createGraphSavePayload(nodes, edges) {
             data: {
                 title: node.data.title,
                 schemaTypeName: node.data.schemaTypeName,
-                properties: node.data.properties,
+                properties: createNodeProperties(node, schemas),
             },
         })),
         edges: edges.map((edge) => ({
