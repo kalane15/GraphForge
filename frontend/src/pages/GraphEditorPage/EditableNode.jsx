@@ -9,7 +9,7 @@ export function buildEditableNode({ title = "New node", position = { x: 0, y: 0 
         position,
         data: {
             title,
-            schemaTypeName: "dialogue",
+            schemaTypeName: "",
             "properties": {},
         },
     };
