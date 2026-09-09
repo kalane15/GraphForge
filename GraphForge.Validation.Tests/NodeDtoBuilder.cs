@@ -34,6 +34,12 @@ public sealed class NodeDtoBuilder
         return this;
     }
 
+    public NodeDtoBuilder WithId(Guid id)
+    {
+        _node.Data.SchemaId = id;
+        return this;
+    }
+
     public NodeDtoBuilder WithProperty(string name, object? value)
     {
         _properties[name] = value;

@@ -24,6 +24,21 @@ public sealed class GraphDtoBuilder
         return this;
     }
 
+    public GraphDtoBuilder WithNode(Guid schemaId)
+    {
+        _graph.Nodes.Add(new NodeDto
+        {
+            Id = Guid.NewGuid().ToString(),
+            Data = new NodeDataDto
+            {
+                SchemaId = schemaId,
+                SchemaTypeName = "DialogueNode"
+            }
+        });
+
+        return this;
+    }
+
     public GraphDtoBuilder WithNode(NodeDto node)
     {
         _graph.Nodes.Add(node);

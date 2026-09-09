@@ -1,5 +1,4 @@
 using GraphForge.Contracts;
-using System.ComponentModel.Design;
 using System.Linq;
 using System.Text.Json;
 
@@ -19,21 +18,21 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
     {
         if (graph == null)
         {
-            throw new GraphValidationException("Graph is null");
+            throw new GraphRequiredException("Graph is required.");
         }
         if (graph.Nodes is null)
         {
-            throw new GraphValidationException("Graph nodes are required.");
+            throw new GraphNodesRequiredException("Graph nodes are required.");
         }
 
         if (graph.Edges is null)
         {
-            throw new GraphValidationException("Graph edges are required.");
+            throw new GraphEdgesRequiredException("Graph edges are required.");
         }
 
         if (graph.Nodes.Any(node => string.IsNullOrWhiteSpace(node.Id)))
         {
-            throw new EmptyNodeIdException("Node ids are required.");
+            throw new NodeIdRequiredException("Node ids are required.");
         }
 
         var nodeIds = new HashSet<string>(
@@ -41,12 +40,12 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
 
         if (nodeIds.Count != graph.Nodes.Count)
         {
-            throw new NodeIdsNotUniqueException("Nodes ids must be unique");
+            throw new DuplicateNodeIdException("Node ids must be unique.");
         }
 
         if (graph.Edges.Any(edge => string.IsNullOrWhiteSpace(edge.Id)))
         {
-            throw new EmptyEdgeIdException("Edge ids are required.");
+            throw new EdgeIdRequiredException("Edge ids are required.");
         }
 
         var edgeIds = new HashSet<string>(
@@ -54,20 +53,20 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
 
         if (edgeIds.Count != graph.Edges.Count)
         {
-            throw new EdgeIdsNotUniqueException("Edges ids must be unique");
+            throw new DuplicateEdgeIdException("Edge ids must be unique.");
         }
 
         foreach (EdgeDto edge in graph.Edges)
         {
             if (!nodeIds.Contains(edge.Source))
             {
-                throw new IncorrectEdgeNodeRefException(
+                throw new InvalidEdgeNodeReferenceException(
                     $"Source node '{edge.Source}' does not exist.");
             }
 
             if (!nodeIds.Contains(edge.Target))
             {
-                throw new IncorrectEdgeNodeRefException(
+                throw new InvalidEdgeNodeReferenceException(
                     $"Target node '{edge.Target}' does not exist.");
             }
         }
@@ -94,30 +93,30 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
             properties = data.Properties
                 .Deserialize<Dictionary<string, JsonElement>>()
                 ?? new Dictionary<string, JsonElement>();
-        } catch (InvalidOperationException ex)
+        } catch (Exception ex)
         {
-            throw new GraphJsonInvalidException($"Cannot parse properties json: {ex.Message}");
+            throw new GraphPropertiesJsonInvalidException($"Cannot parse properties json: {ex.Message}");
         }
 
         foreach (var property in properties)
         {
             if (property.Key == string.Empty)
             {
-                throw new EmptyFieldNameException("Empty field names are not allowed");
+                throw new PropertyNameRequiredException("Property names are required.");
             }
 
             SchemaFieldDto relatedSchemaField = schema.Fields.FirstOrDefault((field) => field.Name == property.Key);
 
             if (relatedSchemaField == null)
             {
-                throw new PropertyIsNotPresentedInSchemaException($"Property {property.Key} is not present in provided schema");
+                throw new PropertyNotDefinedInSchemaException($"Property {property.Key} is not defined in provided schema.");
             }
 
             JsonElement value = property.Value;
 
             if (ForbiddenJsonTypes.Contains(value.ValueKind))
             {
-                throw new IncorrectJsonValueInPropertyException($"Property {property.Key} has forbidden json value kind: {value.ValueKind}");
+                throw new InvalidPropertyJsonValueKindException($"Property {property.Key} has forbidden json value kind: {value.ValueKind}");
             }
 
             if (value.ValueKind == JsonValueKind.Number)
