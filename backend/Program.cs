@@ -7,7 +7,7 @@ using GraphForge.Api.Services.GraphService;
 using GraphForge.Api.Services.ProjectService;
 using GraphForge.Api.Services.SchemasService;
 using GraphForge.Api.Services.UserIdentityProviderService;
-using GraphForge.Validation;
+using GraphForge.Validation.GraphValidationService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;

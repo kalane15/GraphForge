@@ -4,7 +4,7 @@ using GraphForge.Api.Mappers;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.ProjectService;
 using GraphForge.Contracts;
-using GraphForge.Validation;
+using GraphForge.Validation.GraphValidationService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;

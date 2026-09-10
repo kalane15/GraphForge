@@ -1,13 +1,13 @@
 using GraphForge.Contracts;
 
-namespace GraphForge.Validation.Tests.TestData;
+namespace GraphForge.Validation.Tests;
 
 public sealed class SchemaDtoBuilder
 {
     private readonly SchemaDto _schema = new()
     {
         Id = Guid.NewGuid(),
-        SchemaTypeName = Guid.NewGuid().ToString()
+        SchemaTypeName = "DialogueNode"
     };
 
     public SchemaDtoBuilder WithId(Guid id)
@@ -27,6 +27,18 @@ public sealed class SchemaDtoBuilder
         _schema.Fields.Add(new SchemaFieldDto
         {
             Id = Guid.NewGuid(),
+            Name = name,
+            Type = type
+        });
+
+        return this;
+    }
+
+    public SchemaDtoBuilder WithField(Guid id, string name, string type)
+    {
+        _schema.Fields.Add(new SchemaFieldDto
+        {
+            Id = id,
             Name = name,
             Type = type
         });

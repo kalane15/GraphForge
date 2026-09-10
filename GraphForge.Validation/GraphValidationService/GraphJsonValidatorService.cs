@@ -2,7 +2,7 @@ using GraphForge.Contracts;
 using System.Linq;
 using System.Text.Json;
 
-namespace GraphForge.Validation;
+namespace GraphForge.Validation.GraphValidationService;
 
 public class GraphJsonValidatorService : IGraphJsonValidatorService
 {

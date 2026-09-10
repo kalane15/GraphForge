@@ -113,8 +113,8 @@ public class ProjectsController : ControllerBase
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        bool status = await _projectsService.DeleteUserProjectAsync(userId, projectId);
+        await _projectsService.DeleteUserProjectAsync(userId, projectId);
 
-        return status ? NoContent() : NotFound(ProjectDoesNotExistsDetails());
+        return NoContent();
     }
 }

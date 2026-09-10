@@ -367,9 +367,11 @@ Used by:
 
 - `schemaTypeName` must be present and non-empty.
 - `schemaTypeName` must be unique inside a project.
+- `schemaTypeName` must be in PascalCase, only letters and digits, starting with letter.
 - `fields` must be present.
 - field `id` must be present in API responses and update requests for existing fields.
 - field `name` must be present and non-empty.
+- field `name` must be present in camelCase, only letters and digits, starting with letter.
 - field `name` must be unique inside one schema.
 - field `type` must be one of `string`, `int`, `float`, or `bool`.
 
