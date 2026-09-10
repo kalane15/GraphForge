@@ -1,6 +1,6 @@
 using GraphForge.Contracts;
 
-namespace GraphForge.Validation;
+namespace GraphForge.Validation.GraphValidationService;
 
 public interface IGraphJsonValidatorService
 {
