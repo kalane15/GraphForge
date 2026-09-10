@@ -1,3 +1,4 @@
+using GraphForge.Api;
 using GraphForge.Api.Auth;
 using GraphForge.Api.Database;
 using GraphForge.Api.Models;
@@ -65,44 +66,9 @@ builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
-
 app.UseExceptionHandler(errorApp =>
 {
-    errorApp.Run(async context =>
-    {
-        var exception = context.Features
-            .Get<IExceptionHandlerFeature>()?
-            .Error;
-
-        context.Response.ContentType = "application/problem+json";
-
-        if (exception is NotFoundException)
-        {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-
-            await context.Response.WriteAsJsonAsync(new ProblemDetails
-            {
-                Status = StatusCodes.Status404NotFound,
-                Title = "Not found",
-                Detail = exception.Message
-            });
-
-            return;
-        }
-
-        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-
-        await context.Response.WriteAsJsonAsync(new ProblemDetails
-        {
-            Status = StatusCodes.Status500InternalServerError,
-            Title = "Internal server error",
-            Detail = "Unexpected server error"
-        });
-    });
+    errorApp.Run(ExceptionHandler.Handler);
 });
 
 

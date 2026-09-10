@@ -34,31 +34,8 @@ public class GraphsController : ControllerBase
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
         
-        try
-        {
-            GraphInfoResponse result = await _graphsService.CreateUserGraphAsync(userId, projectId, request);
-            return Ok(result);
-        }
-        catch (GraphValidationException exception)
-        {
-            return BadRequest(new ProblemDetails()
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Bad request",
-                    Detail = exception.Message
-                }
-            );
-        }
-        catch (IncorrectProjectOwnerException exception)
-        {
-            return BadRequest(new ProblemDetails()
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = "Incorrect project owner",
-                Detail = exception.Message
-            }
-            );
-        }        
+        GraphInfoResponse result = await _graphsService.CreateUserGraphAsync(userId, projectId, request);
+        return Ok(result);             
     }
 
     [HttpGet]
@@ -88,33 +65,9 @@ public class GraphsController : ControllerBase
         [FromBody] GraphDataEditRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-
-        try
-        {
-            GraphDataResponse? result = await _graphsService.UpdateUserGraphAsync(userId, projectId, graphId, request);
-
-            return Ok(result);
-        }
-        catch (GraphValidationException exception)
-        {
-            return BadRequest(new ProblemDetails()
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Bad request",
-                    Detail = exception.Message
-                }
-            );
-        }
-        catch (IncorrectProjectOwnerException exception)
-        {
-            return BadRequest(new ProblemDetails()
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Incorrect project owner",
-                    Detail = exception.Message
-                }
-            );
-        }
+        
+        GraphDataResponse? result = await _graphsService.UpdateUserGraphAsync(userId, projectId, graphId, request);
+        return Ok(result);       
     }
 
     [HttpDelete("{graphId}")]
@@ -135,24 +88,14 @@ public class GraphsController : ControllerBase
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        try
-        {
-            await _graphsService.UpdateUserGraphContentAsync(
-                userId,
-                projectId,
-                graphId,
-                request.Content);
-        }
-        catch (GraphValidationException exception)
-        {
-            return BadRequest(new ProblemDetails()
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Bad request",
-                    Detail = exception.Message
-                }
-            );
-        }
+        
+        await _graphsService.UpdateUserGraphContentAsync
+            (
+            userId,
+            projectId,
+            graphId,
+            request.Content
+            );       
 
         return NoContent();
     }

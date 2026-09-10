@@ -1,4 +1,5 @@
-﻿using GraphForge.Api.Models;
+﻿using GraphForge.Api.DTOs.Auth;
+using GraphForge.Api.Models;
 
 namespace GraphForge.Api.Services.AuthService
 {
@@ -7,6 +8,11 @@ namespace GraphForge.Api.Services.AuthService
         Task ProvideAccessTokenAsync(User user);
         Task ProvideSessionAsync(User user);
         Task EndCurrentSessionAsync();
-        Task<bool> RefreshAccessTokenAsync();
+        Task RefreshAccessTokenAsync();
+        Task SignInAsync(SignInRequest request);
+        Task SignUpAsync(SignUpRequest request);
+        Task LogOutAsync();
+        Task RefreshTokenAsync();
+        Task<CurrentUserInfoResponse> Me();
     }
 }
