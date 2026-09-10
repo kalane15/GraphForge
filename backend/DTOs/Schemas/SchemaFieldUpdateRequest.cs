@@ -1,4 +1,9 @@
-﻿namespace GraphForge.Api.DTOs.Schemas;
+﻿using System.ComponentModel.DataAnnotations;
 
-public record SchemaFieldUpdateRequest(Guid? Id, string Name, string Type);
+namespace GraphForge.Api.DTOs.Schemas;
 
+public record SchemaFieldUpdateRequest(
+    Guid? Id,
+    [Required] string Name,
+    [Required] string Type
+);

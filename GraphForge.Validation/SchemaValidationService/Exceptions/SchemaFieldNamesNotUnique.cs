@@ -4,7 +4,7 @@ using System.Text;
 
 namespace GraphForge.Validation.SchemaValidationService.Exceptions;
 
-public class SchemaFieldNamesNotUnique : Exception
+public class SchemaFieldNamesNotUnique : SchemaValidationException
 {
     public SchemaFieldNamesNotUnique(string message) : base(message)
     {

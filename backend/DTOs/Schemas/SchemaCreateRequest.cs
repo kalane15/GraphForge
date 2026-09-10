@@ -1,5 +1,8 @@
-﻿using System.Text.Json;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace GraphForge.Api.DTOs.Schemas;
 
-public sealed record SchemaCreateRequest(string SchemaTypeName, List<SchemaFieldCreationRequest> Fields);
+public sealed record SchemaCreateRequest(
+    [Required] string SchemaTypeName,
+    [Required] List<SchemaFieldCreationRequest> Fields
+);

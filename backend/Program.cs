@@ -2,7 +2,6 @@ using GraphForge.Api;
 using GraphForge.Api.Auth;
 using GraphForge.Api.Database;
 using GraphForge.Api.Models;
-using GraphForge.Api.Services;
 using GraphForge.Api.Services.AuthService;
 using GraphForge.Api.Services.GraphService;
 using GraphForge.Api.Services.ProjectService;
@@ -11,7 +10,6 @@ using GraphForge.Api.Services.UserIdentityProviderService;
 using GraphForge.Validation;
 using GraphForge.Validation.GraphValidationService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -50,6 +48,26 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         .UseSnakeCaseNamingConvention()
 );
 
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(entry => entry.Value?.Errors.Count > 0)
+            .SelectMany(entry => entry.Value!.Errors.Select(error =>
+                $"{entry.Key}: {error.ErrorMessage}"
+            ));
+
+        var problem = new ProblemDetails
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Title = "Validation error",
+            Detail = string.Join("; ", errors)
+        };
+
+        return new BadRequestObjectResult(problem);
+    };
+});
 
 builder.Services.AddHttpContextAccessor();
 

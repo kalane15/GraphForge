@@ -20,6 +20,7 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
         {
             throw new GraphRequiredException("Graph is required.");
         }
+
         if (graph.Nodes is null)
         {
             throw new GraphNodesRequiredException("Graph nodes are required.");
@@ -28,6 +29,16 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
         if (graph.Edges is null)
         {
             throw new GraphEdgesRequiredException("Graph edges are required.");
+        }
+
+        if (graph.Nodes.Any(node => node is null))
+        {
+            throw new GraphValidationException("Nodes cannot contain null values");
+        }
+
+        if (graph.Edges.Any(edge => edge is null))
+        {
+            throw new GraphValidationException("Edges cannot contain null values");
         }
 
         if (graph.Nodes.Any(node => string.IsNullOrWhiteSpace(node.Id)))
@@ -95,16 +106,18 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
 
         foreach (EdgeDto edge in graph.Edges)
         {
-            if (!nodeIds.Contains(edge.Source))
+            if (string.IsNullOrWhiteSpace(edge.Source) || string.IsNullOrWhiteSpace(edge.Target))
             {
                 throw new InvalidEdgeNodeReferenceException(
-                    $"Source node '{edge.Source}' does not exist.");
+                    $"Edge '{edge.Id}' target or source is invalid.");
             }
 
-            if (!nodeIds.Contains(edge.Target))
+            if (!nodeIds.Contains(edge.Source) || !nodeIds.Contains(edge.Target))
             {
+                string notExistNode = !nodeIds.Contains(edge.Source) ? edge.Source : edge.Target;
+
                 throw new InvalidEdgeNodeReferenceException(
-                    $"Target node '{edge.Target}' does not exist.");
+                    $"Referenced node does not exist '{notExistNode}' does not exist.");
             }
         }
 

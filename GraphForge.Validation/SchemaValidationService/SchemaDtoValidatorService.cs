@@ -16,6 +16,16 @@ public class SchemaDtoValidatorService : ISchemaDtoValidatorService
     /// <param name="schemas">Unique list of schemas</param>
     public void ValidateSchemasListUnique(List<SchemaDto> schemas)
     {
+        if (schemas == null)
+        {
+            throw new SchemaValidationException("Schema list is null");
+        }
+
+        if (schemas.Count((s) => s is null) > 0)
+        {
+            throw new SchemasIdsNotUniqueException("Found duplicate id");
+        }
+
         if (schemas.Select((s) => s.Id).Distinct().Count() != schemas.Count)
         {
             throw new SchemasIdsNotUniqueException("Found duplicate id");
@@ -29,7 +39,27 @@ public class SchemaDtoValidatorService : ISchemaDtoValidatorService
 
     public void ValidateSchema(SchemaDto schema)
     {
-        if (string.IsNullOrEmpty(schema.SchemaTypeName))
+        if (schema == null)
+        {
+            throw new SchemaValidationException("Schema is null");
+        }
+
+        if (schema.Fields is null)
+        {
+            throw new SchemaValidationException("Fields are required");
+        }
+
+        if (schema.Fields.Any(field => field is null))
+        {
+            throw new SchemaValidationException("Fields cannot contain null values");
+        }
+
+        if (schema.Id == Guid.Empty)
+        {
+            throw new SchemaValidationException("Schema id is empty");
+        }
+
+        if (string.IsNullOrWhiteSpace(schema.SchemaTypeName))
         {
             throw new SchemaIncorrectTypeNameException("Name is empty");
         }
@@ -52,7 +82,13 @@ public class SchemaDtoValidatorService : ISchemaDtoValidatorService
 
         foreach (SchemaFieldDto fieldDto in schema.Fields)
         {
-            if (string.IsNullOrEmpty(fieldDto.Name))
+
+            if (fieldDto.Id == Guid.Empty)
+            {
+                throw new SchemaValidationException("Field id is empty");
+            }
+
+            if (string.IsNullOrWhiteSpace(fieldDto.Name))
             {
                 throw new SchemaFieldIncorrectNameException($"Field name of field with id={fieldDto.Id} is empty.");
             }
@@ -63,7 +99,7 @@ public class SchemaDtoValidatorService : ISchemaDtoValidatorService
                                                             $"or contains incorrect characters");
             }
 
-            if (string.IsNullOrEmpty(fieldDto.Type))
+            if (string.IsNullOrWhiteSpace(fieldDto.Type))
             {
                 throw new SchemaFieldIncorrectTypeException($"Type of field with id={fieldDto.Id} is empty.");
             }
