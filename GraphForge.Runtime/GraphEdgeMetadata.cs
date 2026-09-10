@@ -11,10 +11,13 @@ namespace GraphForge.Runtime;
 /// </summary>
 internal sealed class GraphEdgeMetadata
 {
+    public string Id = string.Empty;
     public string SourceHandle = "left";
     public string TargetHandle = "right";
-    public GraphEdgeMetadata(string sourceHandle, string targetHandle)
+
+    public GraphEdgeMetadata(string id, string sourceHandle, string targetHandle)
     {
+        Id = id;
         SourceHandle = sourceHandle;
         TargetHandle = targetHandle;
     }

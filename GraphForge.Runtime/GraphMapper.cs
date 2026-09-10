@@ -32,6 +32,7 @@ public static class GraphMapper
 
             node.graphNodeMetadata = new GraphNodeMetadata(
                 nodeDto.Id,
+                nodeDto.ReactFlowType,
                 nodeDto.Position,
                 nodeDto.Data.SchemaId);
             node.Title = nodeDto.Data.Title;

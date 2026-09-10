@@ -16,9 +16,10 @@ internal sealed class GraphNodeMetadata
     public string ReactFlowType = "editableNode";
     public Guid SchemaId;
 
-    public GraphNodeMetadata(string id, PositionDto pos, Guid schemaId)
+    public GraphNodeMetadata(string id, string reactFlowType, PositionDto pos, Guid schemaId)
     {
         Id = id;
+        ReactFlowType = reactFlowType;
         Position = pos;
         SchemaId = schemaId;
     }

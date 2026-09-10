@@ -78,6 +78,7 @@ internal static class SchemaClassGenerator
 
         foreach (Field field in schema.Fields)
         {
+            sourceBuilder.AppendLine($"    [global::System.Text.Json.Serialization.JsonPropertyName(\"{field.Name}\")]");
             sourceBuilder.AppendLine($"    public {GetCSharpType(field.Type)} {ToPropertyName(field.Name)} {{ get; set; }}{GetDefaultValue(field.Type)}");
         }
 
