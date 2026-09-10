@@ -59,15 +59,9 @@ public class ProjectsService : IProjectsService
     }
 
 
-    public async Task<ProjectDataResponse?> GetUserProjectAsync(Guid userId, Guid projectId)
+    public async Task<ProjectDataResponse> GetUserProjectAsync(Guid userId, Guid projectId)
     {
-        var project = await _db.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId && p.OwnerId == userId);
-
-        if (project == null)
-        {
-            return null;
-        }
+        Project project = await EnsureProject(userId, projectId);
 
         var result = new ProjectDataResponse(
             project.Id,
@@ -82,17 +76,11 @@ public class ProjectsService : IProjectsService
         return result;
     }
 
-    public async Task<ProjectInfoResponse?> UpdateUserProjectAsync(Guid userId, Guid projectId, ProjectInfoEditRequest request)
+    public async Task<ProjectInfoResponse> UpdateUserProjectAsync(Guid userId, Guid projectId, ProjectInfoEditRequest request)
     {
         string projectName = ValidateProjectName(request);
 
-        var project = await _db.Projects
-           .FirstOrDefaultAsync(p => p.Id == projectId && p.OwnerId == userId);
-
-        if (project == null)
-        {
-            return null;
-        }
+        Project project = await EnsureProject(userId, projectId);
 
         project.Name = projectName;
         project.Description = request.Description;
@@ -112,19 +100,12 @@ public class ProjectsService : IProjectsService
         return result;
     }
 
-    public async Task<bool> DeleteUserProjectAsync(Guid userId, Guid projectId)
+    public async Task DeleteUserProjectAsync(Guid userId, Guid projectId)
     {
-        var project = await _db.Projects
-           .FirstOrDefaultAsync(p => p.Id == projectId && p.OwnerId == userId);
-
-        if (project == null)
-        {
-            return false;
-        }
+        Project project = await EnsureProject(userId, projectId);
 
         _db.Projects.Remove(project);
         await _db.SaveChangesAsync();
-        return true;
     }
 
     private static string ValidateProjectName(ProjectInfoEditRequest request)
@@ -135,5 +116,17 @@ public class ProjectsService : IProjectsService
         }
 
         return request.Name.Trim();
+    }
+
+    private async Task<Project> EnsureProject(Guid userId, Guid projectId)
+    {
+        var project = await _db.Projects
+            .FirstOrDefaultAsync(p => p.Id == projectId && p.OwnerId == userId);
+
+        if (project == null)
+        {
+            throw new NotFoundException("Project not found");
+        }
+        return project;
     }
 }
