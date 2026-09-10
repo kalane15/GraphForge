@@ -55,10 +55,22 @@ CREATE TABLE IF NOT EXISTS schemas
     id         UUID PRIMARY KEY,
     project_id UUID NOT NULL,
     schema_type_name VARCHAR(255) NOT NULL,
-    content    JSONB NOT NULL,
 
     CONSTRAINT fk_schemas_project
         FOREIGN KEY (project_id)
         REFERENCES projects(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS schema_fields
+(
+    id         UUID PRIMARY KEY,
+    schema_id  UUID NOT NULL,
+	name      VARCHAR(255) NOT NULL,
+	type      VARCHAR(255) NOT NULL DEFAULT 'string',
+
+    CONSTRAINT fk_fields_schemas
+        FOREIGN KEY (schema_id)
+        REFERENCES schemas(id)
         ON DELETE CASCADE
 );

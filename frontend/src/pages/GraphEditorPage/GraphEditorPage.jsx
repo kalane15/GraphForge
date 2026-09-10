@@ -17,6 +17,8 @@ function GraphEditorPage() {
     const [schemas, setSchemas] = useState([]);
     const [nodes, setNodes] = useState(() => []);
     const [edges, setEdges] = useState([]);
+    const [message, setMessage] = useState(null);
+    const messageTimeoutRef = useRef(null);
 
 
     useEffect(() => {
@@ -47,14 +49,40 @@ function GraphEditorPage() {
         return () => clearTimeout(timeoutId);
     }, [nodes, edges]);
 
+    useEffect(() => {
+        return () => {
+            if (messageTimeoutRef.current) {
+                clearTimeout(messageTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    function showMessage(text, type = "success") {
+        setMessage({ text, type });
+
+        if (messageTimeoutRef.current) {
+            clearTimeout(messageTimeoutRef.current);
+        }
+
+        messageTimeoutRef.current = setTimeout(() => {
+            setMessage(null);
+            messageTimeoutRef.current = null;
+        }, 3000);
+    }
+
     async function returnToProjectPage() {
         await saveGraph();
         navigate(`/projects/${projectId}`);
     }
 
     async function saveGraph() {
-        const content = createGraphSavePayload(nodes, edges);
-        await updateGraphContentRequest(graphId, projectId, content);
+        try {
+            const content = createGraphSavePayload(nodes, edges, schemas);
+            await updateGraphContentRequest(graphId, projectId, content);
+            showMessage("Successfully saved", "success");
+        } catch (ex) {
+            showMessage(`Error during saving: ${ex.message}`, "error");
+        }
     }
 
     async function goToSchemas() {
@@ -63,6 +91,8 @@ function GraphEditorPage() {
     }
 
     async function exportGraph() {
+        await saveGraph();
+
         const graph = await getGraphRequest(graphId, projectId);
         downloadJsonFile("graph.json", graph.content);
     }
@@ -90,6 +120,7 @@ function GraphEditorPage() {
                 saveGraph={saveGraph}
                 exportGraph={exportGraph}
                 importGraph={importGraph}
+                message={message}
             />
 
             <div className="graph-editor-shell">
@@ -100,7 +131,7 @@ function GraphEditorPage() {
                         setNodes={setNodes}
                         setEdges={setEdges}
                         projectId={projectId}
-                        schemas={schemas}
+                        schemas={schemas}                        
                     />
                 </ReactFlowProvider>
             </div>

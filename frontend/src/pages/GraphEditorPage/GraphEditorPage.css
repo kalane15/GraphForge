@@ -218,3 +218,16 @@
     border-bottom: 1px solid #d1d5db;
     background: transparent;
 }
+
+.graph-editor-toolbar__message {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.graph-editor-toolbar__message--success {
+    color: #15803d;
+}
+
+.graph-editor-toolbar__message--error {
+    color: #b91c1c;
+}

@@ -9,10 +9,8 @@ export function buildEditableNode({ title = "New node", position = { x: 0, y: 0 
         position,
         data: {
             title,
-            schemaTypeName: "dialogue",
-            "properties": {
-                "string": "asd"
-            },
+            schemaTypeName: "",
+            "properties": {},
         },
     };
 }
@@ -22,12 +20,11 @@ export function EditableNode({ id, data, selected }) {
     const schemas = data.schemas ?? [];
     const properties = data.properties ?? {};
     const schema = schemas.find(
-        (schema) => schema.schemaTypeName === data.schemaTypeName
+        (schema) => schema.id === data.schemaId
     );
 
     const isSchemaMissing = schemas.length > 0 && !schema;
 
-    const onChange = (name, value) => data.onFieldChange(id, name, value);
 
 
     function handleTitleChange(event) {
@@ -54,26 +51,25 @@ export function EditableNode({ id, data, selected }) {
             )}
             <div className="editable-node__type">
                 <span className="editable-node__type-label">schemaTypeName:</span>
-                <select
-                    className="editable-node__schema-select"
-                    value={data.schemaTypeName}
-                        onChange={(event) => data.onSchemaTypeChange(id, event.target.value)}>
 
+
+                <select
+                    value={data.schemaId}
+                    onChange={(event) => data.onSchemaTypeChange(id, event.target.value)}
+                >
                     {isSchemaMissing && (
-                        <option key={"missing"} value={data.schemaTypeName}>
+                        <option key={"missing"} value={data.schemaId}>
                             {data.schemaTypeName}
                         </option>
                     )}
 
                     {schemas.map((schema) => (
-                        <option key={schema.id} value={schema.schemaTypeName}>
+                        <option key={schema.id} value={schema.id}>
                             {schema.schemaTypeName}
-                        </option>       
+                        </option>
                     ))}
-
-
-
                 </select>
+
             </div>
 
             <div className="editable-node__fields">
@@ -85,7 +81,7 @@ export function EditableNode({ id, data, selected }) {
                                     name={field.name}
                                     value={properties[field.name] ?? ""}
                                     type={field.type}
-                                    onChange={onChange}
+                                    onChange={(name, value) => data.onFieldChange(id, name, value, field.type)}
                                     />
                             </div>
                         );

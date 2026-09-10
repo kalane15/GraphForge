@@ -1,4 +1,4 @@
-﻿using GraphForge.Api.DTOs;
+﻿using GraphForge.Api.DTOs.Graphs;
 using System.Text.Json;
 
 namespace GraphForge.Api.Services.GraphService
@@ -11,6 +11,6 @@ namespace GraphForge.Api.Services.GraphService
         Task<GraphDataResponse> UpdateUserGraphAsync(Guid userId, Guid projectId, Guid graphId, GraphDataEditRequest request);
         Task DeleteUserGraphAsync(Guid userId, Guid projectId, Guid graphId);
 
-        Task UpdateUserGraphContentAsync(Guid userId, Guid projectId, Guid graphId, JsonDocument content);
+        Task UpdateUserGraphContentAsync(Guid userId, Guid projectId, Guid graphId, GraphForge.Contracts.GraphDto content);
     }
 }

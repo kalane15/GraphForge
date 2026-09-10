@@ -1,5 +1,5 @@
 ﻿using GraphForge.Api.Database;
-using GraphForge.Api.DTOs;
+using GraphForge.Api.DTOs.Projects;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.GraphService;
 using Microsoft.EntityFrameworkCore;

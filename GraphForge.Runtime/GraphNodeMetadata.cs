@@ -11,11 +11,17 @@ namespace GraphForge.Runtime;
 /// </summary>
 internal sealed class GraphNodeMetadata
 {
+    public string Id = string.Empty;
     public PositionDto Position;
     public string ReactFlowType = "editableNode";
-    public GraphNodeMetadata(PositionDto pos)
+    public Guid SchemaId;
+
+    public GraphNodeMetadata(string id, string reactFlowType, PositionDto pos, Guid schemaId)
     {
+        Id = id;
+        ReactFlowType = reactFlowType;
         Position = pos;
+        SchemaId = schemaId;
     }
 
     public GraphNodeMetadata()
@@ -25,5 +31,6 @@ internal sealed class GraphNodeMetadata
             X = 0,
             Y = 0
         };
+        SchemaId = Guid.Empty;
     }
 }

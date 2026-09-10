@@ -1,7 +1,7 @@
 import { useRef } from "react";
 
 
-function GraphEditorToolbar({ returnToProjectPage, goToSchemas, saveGraph, exportGraph, importGraph }) {
+function GraphEditorToolbar({ returnToProjectPage, goToSchemas, saveGraph, exportGraph, importGraph, message }) {
     const inputRef = useRef(null);
 
     return (
@@ -33,6 +33,11 @@ function GraphEditorToolbar({ returnToProjectPage, goToSchemas, saveGraph, expor
                 hidden
                 onChange={importGraph}
             />
+            {message && (
+                <span className={`graph-editor-toolbar__message graph-editor-toolbar__message--${message.type}`}>
+                    {message.text}
+                </span>
+            )}
         </div>
     )
 }

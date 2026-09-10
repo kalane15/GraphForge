@@ -4,10 +4,12 @@ WORKDIR /src
 
 COPY backend/GraphForge.Api.csproj backend/
 COPY GraphForge.Contracts/GraphForge.Contracts.csproj GraphForge.Contracts/
+COPY GraphForge.Validation/GraphForge.Validation.csproj GraphForge.Validation/
 RUN dotnet restore backend/GraphForge.Api.csproj
 
 COPY backend/ backend/
 COPY GraphForge.Contracts/ GraphForge.Contracts/
+COPY GraphForge.Validation/ GraphForge.Validation/
 RUN dotnet publish backend/GraphForge.Api.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0

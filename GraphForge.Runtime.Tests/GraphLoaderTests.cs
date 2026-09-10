@@ -5,7 +5,7 @@ namespace GraphForge.Runtime.Tests;
 public sealed class GraphLoaderTests
 {
     [Fact]
-    public void LoadGraphFromFile_LoadsDialogueGraph()
+    public void LoadGraphFromFile_LoadsDialogueGraph_Success()
     {
         string path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "dialogue-graph.json");
 
@@ -20,7 +20,7 @@ public sealed class GraphLoaderTests
     }
 
     [Fact]
-    public void LoadGraphAndSavePreservesTitleChangesInRuntime()
+    public void LoadGraph_LoadAndSaveGraph_PreservesTitleChangesInRuntime()
     {
         string path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "dialogue-graph.json");
 

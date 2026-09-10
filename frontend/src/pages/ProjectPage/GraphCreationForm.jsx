@@ -18,7 +18,7 @@ function GraphCreationForm({ onCreate, onClose }) {
     return (
         <div className="modal-overlay">
             <form className="modal" onSubmit={handleSubmit}>
-                <h2>Create project</h2>
+                <h2>Create graph</h2>
 
                 <input
                     placeholder="Graph name"

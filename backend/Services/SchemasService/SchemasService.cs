@@ -1,15 +1,13 @@
-using GraphForge.Api.Database;
-using GraphForge.Api.DTOs;
+﻿using GraphForge.Api.Database;
+using GraphForge.Api.DTOs.Schemas;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.GraphService;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 
 namespace GraphForge.Api.Services.SchemasService;
 
 public class SchemasService : ISchemasService
 {
-    private const string DefaultSchemaContentJson = """{"fields":[]}""";
     private readonly AppDbContext _db;
 
     public SchemasService(AppDbContext db)
@@ -28,7 +26,9 @@ public class SchemasService : ISchemasService
                 (
                 s.Id,
                 s.SchemaTypeName,
-                s.Content
+                s.Fields
+                .Select(f => new SchemaFieldDefinitionResponse(f.Id, f.Name, f.Type))
+                .ToList()
                 )
             )
             .ToListAsync();
@@ -40,35 +40,73 @@ public class SchemasService : ISchemasService
     {
         await EnsureProjectBelongsToUser(userId, projectId);
 
+        var schemaId = Guid.NewGuid();
+
         var schema = new Schema
         {
             ProjectId = projectId,
             SchemaTypeName = request.SchemaTypeName,
-            Content = request.Content ?? JsonDocument.Parse(DefaultSchemaContentJson)
+            Fields = request.Fields.Select(f => new SchemaField
+            {
+                Name = f.Name,
+                Type = f.Type
+            }).ToList()
         };
 
         _db.Schemas.Add(schema);
         await _db.SaveChangesAsync();
 
-        return new SchemaResponse(schema.Id, schema.SchemaTypeName, schema.Content);
+        List <SchemaFieldDefinitionResponse> fieldsDefinions = schema.Fields
+            .Select(f => new SchemaFieldDefinitionResponse(f.Id, f.Name, f.Type)).ToList();
+
+        return new SchemaResponse(schema.Id, schema.SchemaTypeName, fieldsDefinions);
     }
 
     public async Task UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaDataRequest request)
     {
-        Schema? schema = await _db.Schemas.FirstOrDefaultAsync(
+        await EnsureProjectBelongsToUser(userId, projectId);
+
+        Schema? schema = await _db.Schemas
+            .Include(schema => schema.Fields)
+            .FirstOrDefaultAsync(
             (schema) =>
                 schema.Id == schemaId &&
                 schema.ProjectId == projectId &&
                 schema.Project.OwnerId == userId
-        );
+            );
 
         if (schema is null)
         {
             throw new NotFoundException("Schema not found");
         }
 
+        // Synchronize the stored fields with the full field list from the update request, in which some fields may have been added or removed
+
         schema.SchemaTypeName = request.SchemaTypeName;
-        schema.Content = request.Content;
+        var existingFields = schema.Fields.ToDictionary(field => field.Id);
+        var requestFieldIds = request.Fields
+            .Where(field => field.Id.HasValue)
+            .Select(field => field.Id!.Value)
+            .ToHashSet();
+
+        schema.Fields.RemoveAll(field => !requestFieldIds.Contains(field.Id));
+
+        foreach (SchemaFieldUpdateRequest fieldRequest in request.Fields)
+        {
+            if (fieldRequest.Id.HasValue &&
+                existingFields.TryGetValue(fieldRequest.Id.Value, out SchemaField? existingField))
+            {
+                existingField.Name = fieldRequest.Name;
+                existingField.Type = fieldRequest.Type;
+                continue;
+            }
+
+            schema.Fields.Add(new SchemaField
+            {
+                Name = fieldRequest.Name,
+                Type = fieldRequest.Type,
+            });
+        }
 
         await _db.SaveChangesAsync();
     }

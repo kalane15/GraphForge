@@ -1,4 +1,4 @@
-﻿namespace GraphForge.Api.DTOs;
+﻿namespace GraphForge.Api.DTOs.Projects;
 
 /// <summary>
 /// light project info for purposes when graphs are not needed, e.g. for listing projects or managing project metadata

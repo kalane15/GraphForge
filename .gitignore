@@ -13,3 +13,7 @@ todo.txt
 /GraphForge.Contracts/bin
 /GraphForge.Runtime.Tests/bin
 /GraphForge.Runtime.Tests/obj
+/GraphForge.Validation/obj
+/GraphForge.Validation/bin
+/GraphForge.Validation.Tests/bin
+/GraphForge.Validation.Tests/obj
