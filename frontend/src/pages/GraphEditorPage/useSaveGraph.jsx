@@ -1,11 +1,13 @@
 import { createGraphSavePayload } from "@/helpers/createGraphSavePayload";
-import { updateGraphContentRequest, getGraphRequest } from "@/api/graphsApi";
-import { useEffect } from "react";
+import { updateGraphContentRequest } from "@/api/graphsApi";
+import { useCallback, useEffect, useRef } from "react";
 
 
-function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage) {
+export function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage, schemas, isGraphLoaded) {
     const messageTimeoutRef = useRef(null);
-    function showMessage(text, type = "success") {
+
+
+    const showMessage = useCallback((text, type = "success") => {
         setSaveStatusMessage({ text, type });
 
         if (messageTimeoutRef.current) {
@@ -16,9 +18,14 @@ function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage) {
             setSaveStatusMessage(null);
             messageTimeoutRef.current = null;
         }, 3000);
-    }
+    }, [setSaveStatusMessage]);
 
-    async function saveGraph() {
+
+    const saveGraph = useCallback(async () => {
+        if (!isGraphLoaded) {
+            return;
+        }
+
         try {
             const content = createGraphSavePayload(nodes, edges, schemas);
             await updateGraphContentRequest(graphId, projectId, content);
@@ -26,13 +33,28 @@ function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage) {
         } catch (ex) {
             showMessage(`Error during saving: ${ex.message}`, "error");
         }
-    }
+    }, [nodes, edges, projectId, graphId, schemas, isGraphLoaded, showMessage]);
+
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            saveGraph();
-        }, 1000);
+        if (!isGraphLoaded) {
+            return;
+        }
 
-        return () => clearTimeout(timeoutId);
-    }, [nodes, edges]);
+        const intervalId = setInterval(() => {
+            saveGraph();
+        }, 10_000);
+
+        return () => clearInterval(intervalId);
+    }, [saveGraph, isGraphLoaded]);
+
+    useEffect(() => {
+        return () => {
+            if (messageTimeoutRef.current) {
+                clearTimeout(messageTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    return saveGraph;
 }
