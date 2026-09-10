@@ -7,6 +7,7 @@ import { downloadJsonFile } from "@/helpers/downloadJsonFile";
 import { mapSchemaToViewModel } from "@/helpers/schemaMappers";
 import GraphEditorToolbar from "./GraphEditorToolbar";
 import { useSaveGraph } from "./useSaveGraph"
+import { getGraphRequest } from "@/api/graphsApi";
 
 
 function GraphEditorPage() {
@@ -18,7 +19,7 @@ function GraphEditorPage() {
     const [edges, setEdges] = useState([]);
     const [saveStatucMessage, setSaveStatusMessage] = useState(null);
     
-    useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage);
+    const saveGraph = useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage);
 
     useEffect(() => {
         async function loadGraph() {
@@ -62,22 +63,10 @@ function GraphEditorPage() {
         loadGraph();
     }, [projectId, graphId]);
 
-
-    useEffect(() => {
-        return () => {
-            if (messageTimeoutRef.current) {
-                clearTimeout(messageTimeoutRef.current);
-            }
-        };
-    }, []);
-
-
     async function returnToProjectPage() {
         await saveGraph();
         navigate(`/projects/${projectId}`);
-    }
-
-    
+    }    
 
     async function goToSchemas() {
         await saveGraph();

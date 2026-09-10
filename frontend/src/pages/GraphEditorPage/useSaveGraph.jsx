@@ -1,10 +1,12 @@
 import { createGraphSavePayload } from "@/helpers/createGraphSavePayload";
 import { updateGraphContentRequest, getGraphRequest } from "@/api/graphsApi";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 
-function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage) {
+export function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage) {
     const messageTimeoutRef = useRef(null);
+
+
     function showMessage(text, type = "success") {
         setSaveStatusMessage({ text, type });
 
@@ -18,6 +20,7 @@ function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage) {
         }, 3000);
     }
 
+
     async function saveGraph() {
         try {
             const content = createGraphSavePayload(nodes, edges, schemas);
@@ -28,6 +31,7 @@ function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage) {
         }
     }
 
+
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             saveGraph();
@@ -35,4 +39,14 @@ function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage) {
 
         return () => clearTimeout(timeoutId);
     }, [nodes, edges]);
+
+    useEffect(() => {
+        return () => {
+            if (messageTimeoutRef.current) {
+                clearTimeout(messageTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    return saveGraph;
 }
