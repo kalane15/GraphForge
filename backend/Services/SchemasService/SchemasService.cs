@@ -2,6 +2,8 @@
 using GraphForge.Api.DTOs.Schemas;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.GraphService;
+using GraphForge.Contracts;
+using GraphForge.Validation;
 using Microsoft.EntityFrameworkCore;
 
 namespace GraphForge.Api.Services.SchemasService;
@@ -9,10 +11,12 @@ namespace GraphForge.Api.Services.SchemasService;
 public class SchemasService : ISchemasService
 {
     private readonly AppDbContext _db;
+    private readonly ISchemaDtoValidatorService _schemaDtoValidator;
 
-    public SchemasService(AppDbContext db)
+    public SchemasService(AppDbContext db, ISchemaDtoValidatorService validator)
     {
         _db = db;
+        _schemaDtoValidator = validator;
     }
 
     public async Task<SchemasListResponse> GetSchemasList(Guid userId, Guid projectId)
@@ -40,6 +44,11 @@ public class SchemasService : ISchemasService
     {
         await EnsureProjectBelongsToUser(userId, projectId);
 
+
+        SchemaDto dto = SchemaRequestToDToMapper.ToDto(request);
+        _schemaDtoValidator.ValidateSchema(dto);
+
+
         var schemaId = Guid.NewGuid();
 
         var schema = new Schema
@@ -65,6 +74,11 @@ public class SchemasService : ISchemasService
     public async Task UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaDataRequest request)
     {
         await EnsureProjectBelongsToUser(userId, projectId);
+
+
+        SchemaDto dto = SchemaRequestToDToMapper.ToDto(schemaId, request);
+        _schemaDtoValidator.ValidateSchema(dto);
+
 
         Schema? schema = await _db.Schemas
             .Include(schema => schema.Fields)

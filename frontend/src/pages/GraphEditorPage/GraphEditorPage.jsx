@@ -22,24 +22,47 @@ function GraphEditorPage() {
 
 
     useEffect(() => {
-        async function loadSchemas() {
-            const data = await getSchemasRequest(projectId);
-            const loadedSchemas = data?.schemas ?? [];
-
-            setSchemas(loadedSchemas.map(mapSchemaToViewModel));
-        }        
-
         async function loadGraph() {
-            await loadSchemas();
+            const data = await getSchemasRequest(projectId);
+            const loadedSchemas = (data?.schemas ?? [])
+                .map(mapSchemaToViewModel);
 
             const graph = await getGraphRequest(graphId, projectId);
 
-            setNodes(graph.content.nodes);
+            const loadedNodes = graph.content.nodes.map((node) => {
+                const contains = loadedSchemas.some(
+                    schema => schema.id === node.schemaId
+                );
+                
+                if (contains) {
+                    return node;
+                }
+
+                const schema = loadedSchemas.find(
+                    schema => schema.schemaTypeName === node.data.schemaTypeName
+                );
+                console.log(schema);
+                if (!schema) {
+                    return node;
+                }
+
+                return {
+                    ...node,
+                    data: {
+                        ...node.data,
+                        schemaId: schema.id
+                    }                    
+                };
+            });
+
+            setSchemas(loadedSchemas);
+            setNodes(loadedNodes);
             setEdges(graph.content.edges);
         }
 
         loadGraph();
     }, [projectId, graphId]);
+
 
     useEffect(() => {
         const timeoutId = setTimeout(() => {
@@ -56,6 +79,7 @@ function GraphEditorPage() {
             }
         };
     }, []);
+
 
     function showMessage(text, type = "success") {
         setMessage({ text, type });

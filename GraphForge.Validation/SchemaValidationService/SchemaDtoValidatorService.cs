@@ -36,7 +36,8 @@ public class SchemaDtoValidatorService : ISchemaDtoValidatorService
 
         if (!PascalCaseRegex.IsMatch(schema.SchemaTypeName))
         {
-            throw new SchemaIncorrectTypeNameException("Name is empty");
+            throw new SchemaIncorrectTypeNameException($"SchemaTypeName={schema.SchemaTypeName} is not in PascalCase" +
+                                                       $"or contains incorrect characters");
         }
 
         if (schema.Fields.Select((s) => s.Id).Distinct().Count() != schema.Fields.Count)
