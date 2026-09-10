@@ -6,16 +6,21 @@ import {
     updateSchemaRequest,
     createSchemaRequest
 } from "@/api/schemasApi";
-import { downloadJsonFile } from "@/helpers/downloadJsonFile";
 import Schema from "./Schema";
 import { mapSchemaToViewModel } from "@/helpers/schemaMappers";
 import SchemasToolbar from "./SchemasToolbar";
 import { getSchemaDefaultName } from "@/helpers/schemaNames";
+import { useImportExportSchemas } from "./useImportExportSchemas";
 
 
 function SchemasPage() {
     const { projectId } = useParams();
     const [schemas, setSchemas] = useState([]);
+    const { exportSchemas, importSchemas } = useImportExportSchemas({
+        projectId,
+        schemas,
+        setSchemas
+    });
 
     useEffect(() => {
         async function loadSchemas() {
@@ -59,51 +64,6 @@ function SchemasPage() {
         setSchemas(schemas.filter((schema) => schema.id != schemaId));
     }
 
-    function exportSchemas() {
-        const exportData = {
-            schemas: schemas.map((schema) => ({
-                schemaTypeName: schema.schemaTypeName,
-                fields: schema.fields.map((field) => ({
-                    name: field.name,
-                    type: field.type,
-                })),
-            })),
-        };
-
-        downloadJsonFile("schemas.schema.json", exportData);
-    }
-
-    async function importSchemas(event) {
-        const file = event.target.files[0];
-
-        if (!file) {
-            return;
-        }
-
-        const text = await file.text();
-        const parsedFile = JSON.parse(text);
-        let importedSchemas = Array.isArray(parsedFile)
-            ? parsedFile
-            : parsedFile?.schemas ?? [];
-
-        importedSchemas = await Promise.all(
-            importedSchemas.map((schema) =>
-                createSchemaRequest(
-                    projectId,
-                    schema.schemaTypeName,
-                    schema.fields
-                )
-            )
-        );        
-
-        importedSchemas = importedSchemas.map(mapSchemaToViewModel)
-
-        setSchemas((schemas) => ([...schemas, ...importedSchemas]));
-
-        event.target.value = "";
-    };
-
-    
     return (
         <div>
             <SchemasToolbar

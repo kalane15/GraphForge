@@ -41,11 +41,11 @@ export function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMess
             return;
         }
 
-        const timeoutId = setTimeout(() => {
+        const intervalId = setInterval(() => {
             saveGraph();
-        }, 1000);
+        }, 10_000);
 
-        return () => clearTimeout(timeoutId);
+        return () => clearInterval(intervalId);
     }, [saveGraph, isGraphLoaded]);
 
     useEffect(() => {
