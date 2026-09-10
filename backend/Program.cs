@@ -54,6 +54,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
+builder.Services.AddScoped<IAuthCookieService, AuthCookieService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectsService, ProjectsService>();
 builder.Services.AddScoped<IGraphsService, GraphsService>();
