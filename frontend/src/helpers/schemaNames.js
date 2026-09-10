@@ -1,4 +1,4 @@
-const defaultSchemaName = "New schema";
+const defaultSchemaName = "NewSchema";
 
 export function getSchemaDefaultName(schemas) {
     let possibleName = defaultSchemaName;
@@ -6,7 +6,7 @@ export function getSchemaDefaultName(schemas) {
     let number = 0;
 
     while (exists) {
-        possibleName = defaultSchemaName + " " + String(++number);
+        possibleName = defaultSchemaName + String(++number);
         exists = schemas.some((schema) => schema.schemaTypeName === possibleName);
     }
 
