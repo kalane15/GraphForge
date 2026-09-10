@@ -58,7 +58,7 @@ export function EditableNode({ id, data, selected }) {
                     onChange={(event) => data.onSchemaTypeChange(id, event.target.value)}
                 >
                     {isSchemaMissing && (
-                        <option key={"missing"} value={data.schemaTypeName}>
+                        <option key={"missing"} value={data.schemaId}>
                             {data.schemaTypeName}
                         </option>
                     )}

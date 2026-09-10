@@ -145,12 +145,14 @@ Used by:
 - schema import
 - code generation
 
-Database ids are not exported.
+Field ids are not exported, but schema ids are preserved because graph nodes
+reference schemas by `schemaId`.
 
 ```json
 {
   "schemas": [
     {
+      "id": "6f3a2f1a-9b6d-4c5e-9b1a-123456789abc",
       "schemaTypeName": "DialogueNode",
       "fields": [
         {
@@ -188,6 +190,7 @@ Used by:
       },
       "data": {
         "title": "Start",
+        "schemaId": "6f3a2f1a-9b6d-4c5e-9b1a-123456789abc",
         "schemaTypeName": "DialogueNode",
         "properties": {
           "speaker": "Alice"
@@ -203,6 +206,7 @@ Used by:
       },
       "data": {
         "title": "Reply",
+        "schemaId": "6f3a2f1a-9b6d-4c5e-9b1a-123456789abc",
         "schemaTypeName": "DialogueNode",
         "properties": {
           "speaker": "Bob"
@@ -239,6 +243,7 @@ Used by:
   },
   "data": {
     "title": "Start",
+    "schemaId": "6f3a2f1a-9b6d-4c5e-9b1a-123456789abc",
     "schemaTypeName": "DialogueNode",
     "properties": {
       "speaker": "Alice"
@@ -259,6 +264,7 @@ Used by:
 ```json
 {
   "title": "Start",
+  "schemaId": "6f3a2f1a-9b6d-4c5e-9b1a-123456789abc",
   "schemaTypeName": "DialogueNode",
   "properties": {
     "speaker": "Alice",
@@ -271,11 +277,12 @@ Used by:
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `title` | `string` | yes | Display title of the node. |
-| `schemaTypeName` | `string` | yes | Schema type name used to interpret `properties`. |
+| `schemaId` | `uuid` | yes | Stable schema id used to identify the schema for validation. |
+| `schemaTypeName` | `string` | yes | Schema type name used for display and generated runtime classes. |
 | `properties` | `object` | yes | Node values keyed by schema field name. |
 
 `properties` is a dynamic object. Its keys should match field names from the
-schema identified by `schemaTypeName`.
+schema identified by `schemaId`.
 
 ### Position
 
@@ -375,6 +382,7 @@ Used by:
 - node `position` must be present.
 - node `data` must be present.
 - node `data.title` must be present.
+- node `data.schemaId` must be present.
 - node `data.schemaTypeName` must be present and non-empty.
 - node `data.properties` must be an object.
 - every edge `id` must be present and unique inside one graph.
@@ -382,7 +390,7 @@ Used by:
 - every edge `target` must reference an existing node id.
 - every edge `sourceHandle` must be present.
 - every edge `targetHandle` must be present.
-- when schema definitions are available, every node `schemaTypeName` should reference an existing schema.
+- when schema definitions are available, every node `schemaId` should reference an existing schema.
 - when schema definitions are available, every key in `properties` should match a field in the referenced schema.
 - when schema definitions are available, every property value should match the type declared by the referenced schema field.
 

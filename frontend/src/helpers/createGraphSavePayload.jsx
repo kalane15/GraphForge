@@ -21,17 +21,23 @@ function createNodeProperties(node, schemas) {
 
 export function createGraphSavePayload(nodes, edges, schemas) {
     return {
-        nodes: nodes.map((node) => ({
-            id: node.id,
-            type: node.type,
-            position: node.position,
-            data: {
-                title: node.data.title,
-                schemaId: node.data.schemaId,
-                schemaTypeName: node.data.schemaTypeName,
-                properties: createNodeProperties(node, schemas),
-            },
-        })),
+        nodes: nodes.map((node) => {
+            const schema = schemas.find(
+                (schema) => schema.id === node.data.schemaId
+            );
+
+            return {
+                id: node.id,
+                type: node.type,
+                position: node.position,
+                data: {
+                    title: node.data.title,
+                    schemaId: node.data.schemaId,
+                    schemaTypeName: schema?.schemaTypeName ?? node.data.schemaTypeName,
+                    properties: createNodeProperties(node, schemas),
+                },
+            };
+        }),
         edges: edges.map((edge) => ({
             id: edge.id,
             source: edge.source,

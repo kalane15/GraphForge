@@ -35,6 +35,48 @@ public sealed class NodeIdRequiredException : GraphValidationException
     }
 }
 
+public sealed class NodeTypeRequiredException : GraphValidationException
+{
+    public NodeTypeRequiredException(string message) : base(message)
+    {
+    }
+}
+
+public sealed class NodePositionRequiredException : GraphValidationException
+{
+    public NodePositionRequiredException(string message) : base(message)
+    {
+    }
+}
+
+public sealed class NodeDataRequiredException : GraphValidationException
+{
+    public NodeDataRequiredException(string message) : base(message)
+    {
+    }
+}
+
+public sealed class NodeTitleRequiredException : GraphValidationException
+{
+    public NodeTitleRequiredException(string message) : base(message)
+    {
+    }
+}
+
+public sealed class NodeSchemaIdRequiredException : GraphValidationException
+{
+    public NodeSchemaIdRequiredException(string message) : base(message)
+    {
+    }
+}
+
+public sealed class NodeSchemaTypeNameRequiredException : GraphValidationException
+{
+    public NodeSchemaTypeNameRequiredException(string message) : base(message)
+    {
+    }
+}
+
 public sealed class DuplicateNodeIdException : GraphValidationException
 {
     public DuplicateNodeIdException(string message) : base(message)
@@ -52,6 +94,13 @@ public sealed class EdgeIdRequiredException : GraphValidationException
 public sealed class DuplicateEdgeIdException : GraphValidationException
 {
     public DuplicateEdgeIdException(string message) : base(message)
+    {
+    }
+}
+
+public sealed class EdgeHandleRequiredException : GraphValidationException
+{
+    public EdgeHandleRequiredException(string message) : base(message)
     {
     }
 }

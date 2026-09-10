@@ -1,7 +1,5 @@
-﻿using GraphForge.Contracts;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using GraphForge.Contracts;
+using System.Text.Json;
 
 namespace GraphForge.Validation.Tests;
 
@@ -14,11 +12,7 @@ public sealed class GraphDtoBuilder
         _graph.Nodes.Add(new NodeDto
         {
             Id = id,
-            Data = new NodeDataDto
-            {
-                SchemaId = schemaId,
-                SchemaTypeName = "DialogueNode"
-            }
+            Data = CreateNodeData(schemaId)
         });
 
         return this;
@@ -29,11 +23,7 @@ public sealed class GraphDtoBuilder
         _graph.Nodes.Add(new NodeDto
         {
             Id = Guid.NewGuid().ToString(),
-            Data = new NodeDataDto
-            {
-                SchemaId = schemaId,
-                SchemaTypeName = "DialogueNode"
-            }
+            Data = CreateNodeData(schemaId)
         });
 
         return this;
@@ -64,8 +54,8 @@ public sealed class GraphDtoBuilder
     }
 
     public GraphDtoBuilder WithEdge(
-    string source = "node-1",
-    string target = "node-2")
+        string source = "node-1",
+        string target = "node-2")
     {
         _graph.Edges.Add(new EdgeDto
         {
@@ -80,4 +70,15 @@ public sealed class GraphDtoBuilder
     }
 
     public GraphDto Build() => _graph;
+
+    private static NodeDataDto CreateNodeData(Guid schemaId)
+    {
+        return new NodeDataDto
+        {
+            Title = "Node",
+            SchemaId = schemaId,
+            SchemaTypeName = "DialogueNode",
+            Properties = JsonSerializer.SerializeToElement(new Dictionary<string, object?>())
+        };
+    }
 }

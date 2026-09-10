@@ -9,6 +9,7 @@
       },
       "data": {
         "title": "Start",
+        "schemaId": "6f3a2f1a-9b6d-4c5e-9b1a-123456789abc",
         "schemaTypeName": "DialogueNode",
         "properties": {
           "speaker": "Alice"
@@ -24,6 +25,7 @@
       },
       "data": {
         "title": "Reply",
+        "schemaId": "6f3a2f1a-9b6d-4c5e-9b1a-123456789abc",
         "schemaTypeName": "DialogueNode",
         "properties": {
           "speaker": "Bob"

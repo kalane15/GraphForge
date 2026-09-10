@@ -40,7 +40,9 @@ public class GraphJsonValidatorServiceTests
                     Id="node",
                     Data=new NodeDataDto()
                     {
+                        Title = "Node",
                         SchemaId = schemaId,
+                        SchemaTypeName = "DialogueNode",
                         Properties = JsonSerializer.SerializeToElement("not an object")
                     }
                 }
@@ -77,6 +79,38 @@ public class GraphJsonValidatorServiceTests
         };
 
         Assert.Throws<PropertyNameRequiredException>(() => validator.Validate(graph, schemas));
+    }
+
+    [Fact]
+    public void Validate_WhenPropertiesJsonNull_ThrowsGraphPropertiesJsonInvalidException()
+    {
+        var validator = new GraphJsonValidatorService();
+        var schemaId = Guid.NewGuid();
+
+        var graph = new GraphDtoBuilder()
+            .WithNode(
+                new NodeDto()
+                {
+                    Id = "node",
+                    Data = new NodeDataDto()
+                    {
+                        Title = "Node",
+                        SchemaId = schemaId,
+                        SchemaTypeName = "DialogueNode",
+                        Properties = JsonSerializer.SerializeToElement<object?>(null)
+                    }
+                }
+            )
+            .Build();
+
+        var schemas = new List<SchemaDto>
+        {
+            new SchemaDtoBuilder()
+                .WithId(schemaId)
+                .Build()
+        };
+
+        Assert.Throws<GraphPropertiesJsonInvalidException>(() => validator.Validate(graph, schemas));
     }
 
     [Fact]
@@ -124,6 +158,137 @@ public class GraphJsonValidatorServiceTests
     }
 
     [Fact]
+    public void Validate_WhenNodeTypeIsEmpty_ThrowsNodeTypeRequiredException()
+    {
+        var validator = new GraphJsonValidatorService();
+        var schemaId = Guid.NewGuid();
+
+        var node = new NodeDtoBuilder().WithSchemaId(schemaId).Build();
+        node.ReactFlowType = "";
+
+        var graph = new GraphDtoBuilder()
+            .WithNode(node)
+            .Build();
+
+        var schemas = new List<SchemaDto>
+        {
+            new SchemaDtoBuilder()
+                .WithId(schemaId)
+                .Build()
+        };
+
+        Assert.Throws<NodeTypeRequiredException>(() => validator.Validate(graph, schemas));
+    }
+
+    [Fact]
+    public void Validate_WhenNodePositionIsNull_ThrowsNodePositionRequiredException()
+    {
+        var validator = new GraphJsonValidatorService();
+        var schemaId = Guid.NewGuid();
+
+        var node = new NodeDtoBuilder().WithSchemaId(schemaId).Build();
+        node.Position = null!;
+
+        var graph = new GraphDtoBuilder()
+            .WithNode(node)
+            .Build();
+
+        var schemas = new List<SchemaDto>
+        {
+            new SchemaDtoBuilder()
+                .WithId(schemaId)
+                .Build()
+        };
+
+        Assert.Throws<NodePositionRequiredException>(() => validator.Validate(graph, schemas));
+    }
+
+    [Fact]
+    public void Validate_WhenNodeDataIsNull_ThrowsNodeDataRequiredException()
+    {
+        var validator = new GraphJsonValidatorService();
+        var schemaId = Guid.NewGuid();
+
+        var node = new NodeDtoBuilder().WithSchemaId(schemaId).Build();
+        node.Data = null!;
+
+        var graph = new GraphDtoBuilder()
+            .WithNode(node)
+            .Build();
+
+        var schemas = new List<SchemaDto>
+        {
+            new SchemaDtoBuilder()
+                .WithId(schemaId)
+                .Build()
+        };
+
+        Assert.Throws<NodeDataRequiredException>(() => validator.Validate(graph, schemas));
+    }
+
+    [Fact]
+    public void Validate_WhenNodeTitleIsEmpty_ThrowsNodeTitleRequiredException()
+    {
+        var validator = new GraphJsonValidatorService();
+        var schemaId = Guid.NewGuid();
+
+        var node = new NodeDtoBuilder().WithSchemaId(schemaId).Build();
+        node.Data.Title = "";
+
+        var graph = new GraphDtoBuilder()
+            .WithNode(node)
+            .Build();
+
+        var schemas = new List<SchemaDto>
+        {
+            new SchemaDtoBuilder()
+                .WithId(schemaId)
+                .Build()
+        };
+
+        Assert.Throws<NodeTitleRequiredException>(() => validator.Validate(graph, schemas));
+    }
+
+    [Fact]
+    public void Validate_WhenNodeSchemaIdIsEmpty_ThrowsNodeSchemaIdRequiredException()
+    {
+        var validator = new GraphJsonValidatorService();
+
+        var graph = new GraphDtoBuilder()
+            .WithNode(Guid.Empty)
+            .Build();
+
+        var schemas = new List<SchemaDto>();
+
+        Assert.Throws<NodeSchemaIdRequiredException>(() => validator.Validate(graph, schemas));
+    }
+
+    [Fact]
+    public void Validate_WhenNodeSchemaTypeNameIsEmpty_ThrowsNodeSchemaTypeNameRequiredException()
+    {
+        var validator = new GraphJsonValidatorService();
+        var schemaId = Guid.NewGuid();
+
+        var node = new NodeDtoBuilder()
+            .WithSchemaId(schemaId)
+            .WithSchemaTypeName("")
+            .Build();
+
+        var graph = new GraphDtoBuilder()
+            .WithNode(node)
+            .Build();
+
+        var schemas = new List<SchemaDto>
+        {
+            new SchemaDtoBuilder()
+                .WithId(schemaId)
+                .Build()
+        };
+
+        Assert.Throws<NodeSchemaTypeNameRequiredException>(() => validator.Validate(graph, schemas));
+    }
+
+    [Fact]
     public void Validate_WhenEdgeIdIsEmpty_ThrowsEdgeIdRequiredException()
     {
         var validator = new GraphJsonValidatorService();
@@ -143,6 +308,30 @@ public class GraphJsonValidatorServiceTests
         };
 
         Assert.Throws<EdgeIdRequiredException>(() => validator.Validate(graph, schemas));
+    }
+
+    [Fact]
+    public void Validate_WhenEdgeHandleIsEmpty_ThrowsEdgeHandleRequiredException()
+    {
+        var validator = new GraphJsonValidatorService();
+        var schemaId = Guid.NewGuid();
+
+        var graph = new GraphDtoBuilder()
+            .WithNode("node-1", schemaId)
+            .WithNode("node-2", schemaId)
+            .WithEdge(id: "edge-1")
+            .Build();
+
+        graph.Edges[0].SourceHandle = "";
+
+        var schemas = new List<SchemaDto>
+        {
+            new SchemaDtoBuilder()
+                .WithId(schemaId)
+                .Build()
+        };
+
+        Assert.Throws<EdgeHandleRequiredException>(() => validator.Validate(graph, schemas));
     }
 
     [Fact]
@@ -269,7 +458,7 @@ public class GraphJsonValidatorServiceTests
     {
         var validator = new GraphJsonValidatorService();
 
-        Assert.Throws<GraphRequiredException>(() => validator.Validate(null, null));
+        Assert.Throws<GraphRequiredException>(() => validator.Validate(null!, null!));
     }
 
     [Fact]
@@ -278,7 +467,7 @@ public class GraphJsonValidatorServiceTests
         var validator = new GraphJsonValidatorService();
 
         var graph = new GraphDtoBuilder().WithEdge().Build();
-        graph.Nodes = null;
+        graph.Nodes = null!;
 
         var schemas = new List<SchemaDto>
         {
@@ -300,7 +489,7 @@ public class GraphJsonValidatorServiceTests
 
         var graph = new GraphDtoBuilder().WithNode(schemaId).Build();
 
-        graph.Edges = null;
+        graph.Edges = null!;
 
         var schemas = new List<SchemaDto>
         {

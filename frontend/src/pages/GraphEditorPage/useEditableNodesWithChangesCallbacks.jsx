@@ -42,6 +42,8 @@ export function useEditableNodesWithChangesCallbacks({ nodes, setNodes, schemas 
 	}, [setNodes]);
 
 	const handleNodeSchemaTypeChange = useCallback((nodeId, schemaId) => {
+		const selectedSchema = schemas.find((schema) => schema.id === schemaId);
+
 		setNodes((nodes) =>
 			nodes.map((node) => {
 				if (node.id !== nodeId) {
@@ -53,12 +55,13 @@ export function useEditableNodesWithChangesCallbacks({ nodes, setNodes, schemas 
 					data: {
 						...node.data,
                         schemaId,
+						schemaTypeName: selectedSchema?.schemaTypeName ?? "",
                         properties: {}
 					},
 				};
 			})
 		);
-	}, [setNodes]);
+	}, [setNodes, schemas]);
 
 	const nodesWithCallbacks = useMemo(() => nodes.map((node) => ({
 		...node,

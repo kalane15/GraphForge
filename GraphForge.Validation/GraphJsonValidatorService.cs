@@ -35,6 +35,36 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
             throw new NodeIdRequiredException("Node ids are required.");
         }
 
+        if (graph.Nodes.Any(node => string.IsNullOrWhiteSpace(node.ReactFlowType)))
+        {
+            throw new NodeTypeRequiredException("Node types are required.");
+        }
+
+        if (graph.Nodes.Any(node => node.Position is null))
+        {
+            throw new NodePositionRequiredException("Node positions are required.");
+        }
+
+        if (graph.Nodes.Any(node => node.Data is null))
+        {
+            throw new NodeDataRequiredException("Node data is required.");
+        }
+
+        if (graph.Nodes.Any(node => string.IsNullOrWhiteSpace(node.Data.Title)))
+        {
+            throw new NodeTitleRequiredException("Node titles are required.");
+        }
+
+        if (graph.Nodes.Any(node => node.Data.SchemaId == Guid.Empty))
+        {
+            throw new NodeSchemaIdRequiredException("Node schema ids are required.");
+        }
+
+        if (graph.Nodes.Any(node => string.IsNullOrWhiteSpace(node.Data.SchemaTypeName)))
+        {
+            throw new NodeSchemaTypeNameRequiredException("Node schema type names are required.");
+        }
+
         var nodeIds = new HashSet<string>(
             graph.Nodes.Select(node => node.Id));
 
@@ -46,6 +76,13 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
         if (graph.Edges.Any(edge => string.IsNullOrWhiteSpace(edge.Id)))
         {
             throw new EdgeIdRequiredException("Edge ids are required.");
+        }
+
+        if (graph.Edges.Any(edge =>
+                string.IsNullOrWhiteSpace(edge.SourceHandle) ||
+                string.IsNullOrWhiteSpace(edge.TargetHandle)))
+        {
+            throw new EdgeHandleRequiredException("Edge handles are required.");
         }
 
         var edgeIds = new HashSet<string>(
@@ -87,6 +124,11 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
 
     private void ValidateNodeData(NodeDataDto data, SchemaDto schema)
     {
+        if (data.Properties.ValueKind != JsonValueKind.Object)
+        {
+            throw new GraphPropertiesJsonInvalidException("Node properties must be a json object.");
+        }
+
         var properties = new Dictionary<string, JsonElement>();
         try
         {
@@ -100,7 +142,7 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
 
         foreach (var property in properties)
         {
-            if (property.Key == string.Empty)
+            if (string.IsNullOrWhiteSpace(property.Key))
             {
                 throw new PropertyNameRequiredException("Property names are required.");
             }

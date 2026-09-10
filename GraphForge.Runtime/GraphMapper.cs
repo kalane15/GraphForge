@@ -30,7 +30,10 @@ public static class GraphMapper
 
             GraphNode node = (GraphNode)nodeDto.Data.Properties.Deserialize(nodeType)!;
 
-            node.graphNodeMetadata = new GraphNodeMetadata(nodeDto.Position);
+            node.graphNodeMetadata = new GraphNodeMetadata(
+                nodeDto.Id,
+                nodeDto.Position,
+                nodeDto.Data.SchemaId);
             node.Title = nodeDto.Data.Title;
 
             IdToGraphNodeMap[nodeDto.Id] = node;
@@ -44,7 +47,10 @@ public static class GraphMapper
 
             var edge = new GraphEdge(sourceNode, targetNode)
             {
-                graphEdgeMetadata = new GraphEdgeMetadata(edgeDto.SourceHandle, edgeDto.TargetHandle)
+                graphEdgeMetadata = new GraphEdgeMetadata(
+                    edgeDto.Id,
+                    edgeDto.SourceHandle,
+                    edgeDto.TargetHandle)
             };
 
             result.Edges.Add(edge);
@@ -68,12 +74,13 @@ public static class GraphMapper
 
             var nodeDto = new NodeDto
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = GetOrCreateId(node.graphNodeMetadata.Id),
                 ReactFlowType = node.graphNodeMetadata.ReactFlowType,
                 Position = node.graphNodeMetadata.Position,
                 Data = new NodeDataDto
                 {
                     Title = node.Title,
+                    SchemaId = node.graphNodeMetadata.SchemaId,
                     SchemaTypeName = node.GetType().Name,
                     Properties = properties
                 }
@@ -89,6 +96,7 @@ public static class GraphMapper
         {
             var dto = new EdgeDto
             {
+                Id = GetOrCreateId(edge.graphEdgeMetadata.Id),
                 Source = GraphNodeToIdMap[edge.SourceNode],
                 Target = GraphNodeToIdMap[edge.TargetNode],
                 SourceHandle = edge.graphEdgeMetadata.SourceHandle,
@@ -99,5 +107,15 @@ public static class GraphMapper
         }
 
         return result;
+    }
+
+    private static string GetOrCreateId(string id)
+    {
+        if (!string.IsNullOrWhiteSpace(id))
+        {
+            return id;
+        }
+
+        return Guid.NewGuid().ToString();
     }
 }

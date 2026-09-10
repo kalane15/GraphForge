@@ -12,6 +12,7 @@ public sealed class NodeDtoBuilder
         Id = Guid.NewGuid().ToString(),
         Data = new NodeDataDto
         {
+            Title = "Node",
             SchemaTypeName = "DialogueNode"
         }
     };
