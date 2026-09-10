@@ -1,12 +1,7 @@
-﻿using GraphForge.Api.Database;
-using GraphForge.Api.DTOs.Auth;
-using GraphForge.Api.Models;
+﻿using GraphForge.Api.DTOs.Auth;
 using GraphForge.Api.Services.AuthService;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace GraphForge.Api.Controllers;
 
@@ -14,17 +9,10 @@ namespace GraphForge.Api.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly AppDbContext _db;
-    private readonly IPasswordHasher<User> _passwordHasher;
     private readonly IAuthService _authService;
 
-    public AuthController(
-       AppDbContext db,
-       IPasswordHasher<User> passwordHasher,
-       IAuthService authService)
+    public AuthController(IAuthService authService)
     {
-        _db = db;
-        _passwordHasher = passwordHasher;
         _authService = authService;
     }
 
