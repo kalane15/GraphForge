@@ -46,22 +46,8 @@ public class SchemasService : ISchemasService
         await EnsureProjectBelongsToUser(userId, projectId);
         await EnsureSchemaTypeNameUniqueInsideProject(projectId, request.SchemaTypeName);
 
-        SchemaDto dto = SchemaRequestToDToMapper.ToDto(request);
+        SchemaDto dto = SchemaRequestToDtoMapper.ToDto(request);
         _schemaDtoValidator.ValidateSchema(dto);
-
-        bool exists = await _db.Schemas.AnyAsync(schema =>
-            schema.ProjectId == projectId &&
-            schema.SchemaTypeName == request.SchemaTypeName
-        );
-
-        if (exists)
-        {
-            throw new SchemaValidationException(
-                $"Schema with name '{request.SchemaTypeName}' already exists."
-            );
-        }
-
-        var schemaId = Guid.NewGuid();
 
         var schema = new Schema
         {
@@ -86,9 +72,9 @@ public class SchemasService : ISchemasService
     public async Task UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaDataRequest request)
     {
         await EnsureProjectBelongsToUser(userId, projectId);
-        await EnsureSchemaTypeNameUniqueInsideProject(projectId, request.SchemaTypeName);
+        await EnsureSchemaTypeNameUniqueInsideProject(projectId, request.SchemaTypeName, schemaId);
 
-        SchemaDto dto = SchemaRequestToDToMapper.ToDto(schemaId, request);
+        SchemaDto dto = SchemaRequestToDtoMapper.ToDto(schemaId, request);
         _schemaDtoValidator.ValidateSchema(dto);
 
 
@@ -168,11 +154,15 @@ public class SchemasService : ISchemasService
         }
     }
 
-    private async Task EnsureSchemaTypeNameUniqueInsideProject(Guid projectId, string schemaTypeName)
+    private async Task EnsureSchemaTypeNameUniqueInsideProject(
+        Guid projectId,
+        string schemaTypeName,
+        Guid? exceptSchemaId = null)
     {
         bool exists = await _db.Schemas.AnyAsync(schema =>
             schema.ProjectId == projectId &&
-            schema.SchemaTypeName == schemaTypeName
+            schema.SchemaTypeName == schemaTypeName &&
+            schema.Id != exceptSchemaId
         );
 
         if (exists)
