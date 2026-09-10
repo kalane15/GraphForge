@@ -1,12 +1,16 @@
 ﻿using GraphForge.Api.Auth;
 using GraphForge.Api.Database;
+using GraphForge.Api.DTOs.Auth;
 using GraphForge.Api.Models;
+using GraphForge.Api.Services.UserIdentityProviderService;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 
 namespace GraphForge.Api.Services.AuthService
 {
@@ -18,16 +22,22 @@ namespace GraphForge.Api.Services.AuthService
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly AppDbContext _db;
         private readonly AuthOptions _authOptions;
+        private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly IUserIdentityProvider _userIdentityProvider;
 
 
         public AuthService(
             AppDbContext db,
             AuthOptions authOptions,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor, 
+            IPasswordHasher<User> hasher,
+            IUserIdentityProvider userIdentityProvider)
         {
             _authOptions = authOptions;
             _db = db;
             _httpContextAccessor = httpContextAccessor;
+            _passwordHasher = hasher;
+            _userIdentityProvider = userIdentityProvider;
         }
 
         private async Task<string> CreateAccessTokenAsync(User user)
@@ -141,7 +151,7 @@ namespace GraphForge.Api.Services.AuthService
             response.Cookies.Delete("refresh_token");
         }
 
-        public async Task<bool> RefreshAccessTokenAsync()
+        public async Task RefreshAccessTokenAsync()
         {
             HttpRequest request = _httpContextAccessor.HttpContext!.Request;
 
@@ -149,7 +159,7 @@ namespace GraphForge.Api.Services.AuthService
 
             if (refreshToken is null)
             {
-                return false;
+                throw new UnauthorizedUserException("Failed to get refresh token");
             }
 
             string hash = HashRefreshToken(refreshToken);
@@ -159,7 +169,7 @@ namespace GraphForge.Api.Services.AuthService
 
             if (session is null)
             {
-                return false;
+                throw new UnauthorizedUserException("Session not found");
             }
 
             if (session.ExpiresAt <= DateTimeOffset.UtcNow)
@@ -167,7 +177,7 @@ namespace GraphForge.Api.Services.AuthService
                 _db.Sessions.Remove(session);
                 await _db.SaveChangesAsync();
 
-                return false;
+                throw new UnauthorizedUserException("Session expired");
             }
 
             User? user = await _db.Users
@@ -178,12 +188,83 @@ namespace GraphForge.Api.Services.AuthService
                 _db.Sessions.Remove(session);
                 await _db.SaveChangesAsync();
 
-                return false;
+                throw new UnauthorizedUserException("User not found");
             }
 
             await ProvideAccessTokenAsync(user);
+        }
 
-            return true;
+        public async Task SignInAsync(SignInRequest request)
+        {
+            User? user = await _db.Users
+           .FirstOrDefaultAsync(u => u.Login == request.Login);
+
+            if (user is null)
+            {
+                throw new UnauthorizedUserException("User does not exist");
+            }
+
+            PasswordVerificationResult verifyPasswordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+            bool isCorrectPassword = verifyPasswordResult != PasswordVerificationResult.Failed;
+
+            if (!isCorrectPassword)
+            {
+                throw new UnauthorizedUserException("Incorrect password");
+            }
+
+            await ProvideAccessTokenAsync(user);
+            await ProvideSessionAsync(user);
+        }
+
+        public async Task SignUpAsync(SignUpRequest request)
+        {
+            bool userExists = await _db.Users
+             .AnyAsync(user => user.Login == request.Login);
+
+            if (userExists)
+            {
+                throw new UserAlreadyExistsException("User already exists");
+            }
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Login = request.Login,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+
+            user.PasswordHash =
+                _passwordHasher.HashPassword(user, request.Password);
+
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
+
+            await ProvideAccessTokenAsync(user);
+            await ProvideSessionAsync(user);
+        }
+
+        public async Task LogOutAsync()
+        {
+            await EndCurrentSessionAsync();
+        }
+
+        public async Task RefreshTokenAsync()
+        {
+            await RefreshAccessTokenAsync();
+        }
+
+        public async Task<CurrentUserInfoResponse> Me()
+        {
+            Guid userId = _userIdentityProvider.GetCurrentUserId();
+
+            User? user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+            {
+                throw new UnauthorizedUserException("User not found");
+            }
+
+            return new CurrentUserInfoResponse(user.Login, user.CreatedAt);
         }
     }
 }

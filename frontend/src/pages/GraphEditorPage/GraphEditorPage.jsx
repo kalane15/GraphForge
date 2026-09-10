@@ -2,12 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import Flow from "./Flow"
 import { useNavigate, useParams } from "react-router"
 import { ReactFlowProvider } from "@xyflow/react";
-import { createGraphSavePayload } from "@/helpers/createGraphSavePayload";
-import { updateGraphContentRequest, getGraphRequest } from "@/api/graphsApi";
 import { getSchemasRequest } from "@/api/schemasApi";
 import { downloadJsonFile } from "@/helpers/downloadJsonFile";
 import { mapSchemaToViewModel } from "@/helpers/schemaMappers";
 import GraphEditorToolbar from "./GraphEditorToolbar";
+import { useSaveGraph } from "./useSaveGraph"
 
 
 function GraphEditorPage() {
@@ -17,9 +16,9 @@ function GraphEditorPage() {
     const [schemas, setSchemas] = useState([]);
     const [nodes, setNodes] = useState(() => []);
     const [edges, setEdges] = useState([]);
-    const [message, setMessage] = useState(null);
-    const messageTimeoutRef = useRef(null);
-
+    const [saveStatucMessage, setSaveStatusMessage] = useState(null);
+    
+    useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage);
 
     useEffect(() => {
         async function loadGraph() {
@@ -65,14 +64,6 @@ function GraphEditorPage() {
 
 
     useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            saveGraph();
-        }, 1000);
-
-        return () => clearTimeout(timeoutId);
-    }, [nodes, edges]);
-
-    useEffect(() => {
         return () => {
             if (messageTimeoutRef.current) {
                 clearTimeout(messageTimeoutRef.current);
@@ -81,33 +72,12 @@ function GraphEditorPage() {
     }, []);
 
 
-    function showMessage(text, type = "success") {
-        setMessage({ text, type });
-
-        if (messageTimeoutRef.current) {
-            clearTimeout(messageTimeoutRef.current);
-        }
-
-        messageTimeoutRef.current = setTimeout(() => {
-            setMessage(null);
-            messageTimeoutRef.current = null;
-        }, 3000);
-    }
-
     async function returnToProjectPage() {
         await saveGraph();
         navigate(`/projects/${projectId}`);
     }
 
-    async function saveGraph() {
-        try {
-            const content = createGraphSavePayload(nodes, edges, schemas);
-            await updateGraphContentRequest(graphId, projectId, content);
-            showMessage("Successfully saved", "success");
-        } catch (ex) {
-            showMessage(`Error during saving: ${ex.message}`, "error");
-        }
-    }
+    
 
     async function goToSchemas() {
         await saveGraph();
@@ -144,7 +114,7 @@ function GraphEditorPage() {
                 saveGraph={saveGraph}
                 exportGraph={exportGraph}
                 importGraph={importGraph}
-                message={message}
+                message={saveStatucMessage}
             />
 
             <div className="graph-editor-shell">

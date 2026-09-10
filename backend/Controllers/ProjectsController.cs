@@ -15,12 +15,7 @@ public class ProjectsController : ControllerBase
 {
     private readonly IProjectsService _projectsService;
     private readonly IUserIdentityProvider _userIdentityProvider;
-    private static ProblemDetails ProjectDoesNotExistsDetails() => new ()
-    {
-        Status = StatusCodes.Status404NotFound,
-        Title = "Not found",
-        Detail = "Project does not exist"
-    };
+
 
     public ProjectsController(
         IAuthService authService,
@@ -35,22 +30,9 @@ public class ProjectsController : ControllerBase
     public async Task<IActionResult> CreateProject(ProjectInfoEditRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-
-        try
-        {
-            ProjectInfoResponse result = await _projectsService.CreateUserProjectAsync(userId, request);
-            return Ok(result);
-        }
-        catch (ProjectValidationException exception)
-        {
-            return BadRequest(new ProblemDetails()
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Bad request",
-                    Detail = exception.Message
-                }
-            );
-        }
+        
+        ProjectInfoResponse result = await _projectsService.CreateUserProjectAsync(userId, request);
+        return Ok(result);        
     }
 
     [HttpGet]
@@ -68,12 +50,7 @@ public class ProjectsController : ControllerBase
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        ProjectDataResponse? result = await _projectsService.GetUserProjectAsync(userId, projectId);
-
-        if (result == null)
-        {
-            return NotFound(ProjectDoesNotExistsDetails());
-        }
+        ProjectDataResponse result = await _projectsService.GetUserProjectAsync(userId, projectId);
 
         return Ok(result);
     }
@@ -84,28 +61,10 @@ public class ProjectsController : ControllerBase
         [FromBody] ProjectInfoEditRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
+       
+        ProjectInfoResponse result = await _projectsService.UpdateUserProjectAsync(userId, projectId, request);
 
-        try
-        {
-            ProjectInfoResponse? result = await _projectsService.UpdateUserProjectAsync(userId, projectId, request);
-
-            if (result == null)
-            {
-                return NotFound(ProjectDoesNotExistsDetails());
-            }
-
-            return Ok(result);
-        }
-        catch (ProjectValidationException exception)
-        {
-            return BadRequest(new ProblemDetails()
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Bad request",
-                    Detail = exception.Message
-                }
-            );
-        }
+        return Ok(result);        
     }
 
     [HttpDelete("{projectId}")]
