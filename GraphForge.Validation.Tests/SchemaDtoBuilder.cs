@@ -7,7 +7,7 @@ public sealed class SchemaDtoBuilder
     private readonly SchemaDto _schema = new()
     {
         Id = Guid.NewGuid(),
-        SchemaTypeName = Guid.NewGuid().ToString()
+        SchemaTypeName = "DialogueNode"
     };
 
     public SchemaDtoBuilder WithId(Guid id)

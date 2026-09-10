@@ -37,6 +37,24 @@ public sealed class SchemaDtoValidatorServiceTests
         Assert.Throws<SchemaIncorrectTypeNameException>(() => validator.ValidateSchema(schema));
     }
 
+    [Theory]
+    [InlineData("dialogueNode")]
+    [InlineData("Dialogue Node")]
+    [InlineData("Dialogue_Node")]
+    [InlineData("1DialogueNode")]
+    [InlineData("DialogueNode!")]
+    public void ValidateSchema_WhenSchemaTypeNameIsNotPascalCase_ThrowsSchemaIncorrectTypeNameException(
+        string schemaTypeName)
+    {
+        var validator = new SchemaDtoValidatorService();
+
+        SchemaDto schema = new SchemaBuilder()
+            .WithSchemaTypeName(schemaTypeName)
+            .Build();
+
+        Assert.Throws<SchemaIncorrectTypeNameException>(() => validator.ValidateSchema(schema));
+    }
+
     [Fact]
     public void ValidateSchema_WhenFieldIdsAreDuplicated_ThrowsSchemaFieldIdsNotUnique()
     {
@@ -71,6 +89,25 @@ public sealed class SchemaDtoValidatorServiceTests
 
         SchemaDto schema = new SchemaBuilder()
             .WithField("", "string")
+            .Build();
+
+        Assert.Throws<SchemaFieldIncorrectNameException>(() => validator.ValidateSchema(schema));
+    }
+
+    [Theory]
+    [InlineData("SpeakerName")]
+    [InlineData("speaker_name")]
+    [InlineData("speaker-name")]
+    [InlineData("speaker name")]
+    [InlineData("1speaker")]
+    [InlineData("speaker!")]
+    public void ValidateSchema_WhenFieldNameIsNotCamelCase_ThrowsSchemaFieldIncorrectNameException(
+        string fieldName)
+    {
+        var validator = new SchemaDtoValidatorService();
+
+        SchemaDto schema = new SchemaBuilder()
+            .WithField(fieldName, "string")
             .Build();
 
         Assert.Throws<SchemaFieldIncorrectNameException>(() => validator.ValidateSchema(schema));

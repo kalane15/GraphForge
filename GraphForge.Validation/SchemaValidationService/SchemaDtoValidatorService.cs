@@ -1,11 +1,15 @@
 using GraphForge.Contracts;
 using GraphForge.Validation.SchemaValidationService;
 using GraphForge.Validation.SchemaValidationService.Exceptions;
+using System.Text.RegularExpressions;
 
 namespace GraphForge.Validation;
 
 public class SchemaDtoValidatorService : ISchemaDtoValidatorService
 {
+    private static readonly Regex CamelCaseRegex = new("^[a-z][A-Za-z0-9]*$");
+    private static readonly Regex PascalCaseRegex = new("^[A-Z][A-Za-z0-9]*$");
+
     /// <summary>
     /// Validates schemas list. Schemas in the list MUST BE unique
     /// </summary>
@@ -30,6 +34,11 @@ public class SchemaDtoValidatorService : ISchemaDtoValidatorService
             throw new SchemaIncorrectTypeNameException("Name is empty");
         }
 
+        if (!PascalCaseRegex.IsMatch(schema.SchemaTypeName))
+        {
+            throw new SchemaIncorrectTypeNameException("Name is empty");
+        }
+
         if (schema.Fields.Select((s) => s.Id).Distinct().Count() != schema.Fields.Count)
         {
             throw new SchemaFieldIdsNotUnique("Ids of fields inside one schema must be unique");
@@ -45,6 +54,12 @@ public class SchemaDtoValidatorService : ISchemaDtoValidatorService
             if (string.IsNullOrEmpty(fieldDto.Name))
             {
                 throw new SchemaFieldIncorrectNameException($"Field name of field with id={fieldDto.Id} is empty.");
+            }
+
+            if (!CamelCaseRegex.IsMatch(fieldDto.Name))
+            {
+                throw new SchemaFieldIncorrectNameException($"Field name of field with id={fieldDto.Id} is not in camelCase, " +
+                                                            $"or contains incorrect characters");
             }
 
             if (string.IsNullOrEmpty(fieldDto.Type))
