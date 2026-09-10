@@ -1,4 +1,9 @@
-﻿namespace GraphForge.Api.DTOs.Auth;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace GraphForge.Api.DTOs.Auth;
 
 
-public record SignInRequest(string Login, string Password);
+public record SignInRequest(
+    [Required] string Login,
+    [Required] string Password
+);

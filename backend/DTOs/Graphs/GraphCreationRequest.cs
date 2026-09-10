@@ -1,3 +1,7 @@
-﻿namespace GraphForge.Api.DTOs.Graphs;
+﻿using System.ComponentModel.DataAnnotations;
 
-public record GraphCreationRequest(string Name);
+namespace GraphForge.Api.DTOs.Graphs;
+
+public record GraphCreationRequest(
+    [Required] string Name
+);

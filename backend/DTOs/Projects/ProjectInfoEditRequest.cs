@@ -1,3 +1,8 @@
-﻿namespace GraphForge.Api.DTOs.Projects;
+﻿using System.ComponentModel.DataAnnotations;
 
-public record ProjectInfoEditRequest(string Name, string? Description);
+namespace GraphForge.Api.DTOs.Projects;
+
+public record ProjectInfoEditRequest(
+    [Required] string Name,
+    string? Description
+);

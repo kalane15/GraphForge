@@ -1,6 +1,8 @@
-﻿namespace GraphForge.Api.DTOs.Schemas;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace GraphForge.Api.DTOs.Schemas;
 
 public sealed record SchemaFieldCreationRequest(
-    string Name,
-    string Type
+    [Required] string Name,
+    [Required] string Type
 );

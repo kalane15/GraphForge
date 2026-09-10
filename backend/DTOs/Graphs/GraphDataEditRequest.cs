@@ -1,6 +1,9 @@
-﻿using GraphForge.Api.Models;
-using System.Text.Json;
+﻿using GraphForge.Contracts;
+using System.ComponentModel.DataAnnotations;
 
 namespace GraphForge.Api.DTOs.Graphs;
 
-public record GraphDataEditRequest(string Name, GraphForge.Contracts.GraphDto Content);
+public record GraphDataEditRequest(
+    [Required] string Name,
+    [Required] GraphDto Content
+);
