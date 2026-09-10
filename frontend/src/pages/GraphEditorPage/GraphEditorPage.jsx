@@ -3,11 +3,12 @@ import Flow from "./Flow"
 import { useNavigate, useParams } from "react-router"
 import { ReactFlowProvider } from "@xyflow/react";
 import { getSchemasRequest } from "@/api/schemasApi";
-import { downloadJsonFile } from "@/helpers/downloadJsonFile";
 import { mapSchemaToViewModel } from "@/helpers/schemaMappers";
 import GraphEditorToolbar from "./GraphEditorToolbar";
 import { useSaveGraph } from "./useSaveGraph"
 import { getGraphRequest } from "@/api/graphsApi";
+import { resolveGraphSchemaReferences } from "./resolveGraphSchemaReferences";
+import { useImportExportGraph } from "./useImportExportGraph";
 
 
 function GraphEditorPage() {
@@ -17,9 +18,10 @@ function GraphEditorPage() {
     const [schemas, setSchemas] = useState([]);
     const [nodes, setNodes] = useState(() => []);
     const [edges, setEdges] = useState([]);
-    const [saveStatucMessage, setSaveStatusMessage] = useState(null);
+    const [saveStatusMessage, setSaveStatusMessage] = useState(null);
     
-    const saveGraph = useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage);
+    const saveGraph = useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage, schemas);
+    const { importGraph, exportGraph } = useImportExportGraph();
 
     useEffect(() => {
         async function loadGraph() {
@@ -29,31 +31,7 @@ function GraphEditorPage() {
 
             const graph = await getGraphRequest(graphId, projectId);
 
-            const loadedNodes = graph.content.nodes.map((node) => {
-                const contains = loadedSchemas.some(
-                    schema => schema.id === node.data.schemaId
-                );
-                
-                if (contains) {
-                    return node;
-                }
-
-                const schema = loadedSchemas.find(
-                    schema => schema.schemaTypeName === node.data.schemaTypeName
-                );
-                console.log(schema);
-                if (!schema) {
-                    return node;
-                }
-
-                return {
-                    ...node,
-                    data: {
-                        ...node.data,
-                        schemaId: schema.id
-                    }                    
-                };
-            });
+            const loadedNodes = resolveGraphSchemaReferences(graph.content.nodes, loadedSchemas);
 
             setSchemas(loadedSchemas);
             setNodes(loadedNodes);
@@ -71,29 +49,7 @@ function GraphEditorPage() {
     async function goToSchemas() {
         await saveGraph();
         navigate(`/projects/${projectId}/schemas`);
-    }
-
-    async function exportGraph() {
-        await saveGraph();
-
-        const graph = await getGraphRequest(graphId, projectId);
-        downloadJsonFile("graph.json", graph.content);
-    }
-
-    async function importGraph(event) {
-        const file = event.target.files[0];
-
-        if (!file) {
-            return;
-        }
-
-        const text = await file.text();
-        const graph = JSON.parse(text);
-
-        setNodes(graph.nodes);
-        setEdges(graph.edges);
-    };
-    
+    }    
 
     return (
         <div className="graph-editor-page">
@@ -103,7 +59,7 @@ function GraphEditorPage() {
                 saveGraph={saveGraph}
                 exportGraph={exportGraph}
                 importGraph={importGraph}
-                message={saveStatucMessage}
+                message={saveStatusMessage}
             />
 
             <div className="graph-editor-shell">

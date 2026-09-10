@@ -3,7 +3,7 @@ import { updateGraphContentRequest, getGraphRequest } from "@/api/graphsApi";
 import { useEffect, useRef } from "react";
 
 
-export function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage) {
+export function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage, schemas) {
     const messageTimeoutRef = useRef(null);
 
 
