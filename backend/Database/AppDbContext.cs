@@ -47,5 +47,13 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Schema>()
             .Property(schema => schema.SchemaTypeName)
             .HasColumnName("schema_type_name");
+
+        modelBuilder.Entity<Schema>()
+            .HasIndex(schema => new { schema.ProjectId, schema.Id })
+            .IsUnique();
+
+        modelBuilder.Entity<Schema>()
+            .HasIndex(schema => new { schema.ProjectId, schema.SchemaTypeName })
+            .IsUnique();
     }
 }
