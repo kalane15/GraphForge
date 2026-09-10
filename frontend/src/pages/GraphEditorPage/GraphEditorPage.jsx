@@ -31,7 +31,7 @@ function GraphEditorPage() {
 
             const loadedNodes = graph.content.nodes.map((node) => {
                 const contains = loadedSchemas.some(
-                    schema => schema.id === node.schemaId
+                    schema => schema.id === node.data.schemaId
                 );
                 
                 if (contains) {

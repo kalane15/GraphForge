@@ -145,14 +145,19 @@ Used by:
 - schema import
 - code generation
 
-Field ids are not exported, but schema ids are preserved because graph nodes
-reference schemas by `schemaId`.
+Schema export does not include schema ids or field ids. Regular schema create
+requests do not accept client-provided ids, so imported schemas are persisted
+with backend-generated ids.
+
+Graph nodes still store `schemaId` in graph data. When importing graph data that
+references schemas created in another project or environment, the editor should
+resolve missing schema ids by `schemaTypeName` when possible and then save the
+graph with current backend-generated schema ids.
 
 ```json
 {
   "schemas": [
     {
-      "id": "6f3a2f1a-9b6d-4c5e-9b1a-123456789abc",
       "schemaTypeName": "DialogueNode",
       "fields": [
         {
@@ -322,12 +327,15 @@ schema identified by `schemaId`.
 
 Used by:
 
-- saving graph nodes and edges
+- `PUT /api/projects/{projectId}/graphs/{graphId}/content`
+- saving graph nodes and edges without changing graph metadata
 
 ```json
 {
-  "nodes": [],
-  "edges": []
+  "content": {
+    "nodes": [],
+    "edges": []
+  }
 }
 ```
 
@@ -335,13 +343,16 @@ Used by:
 
 Used by:
 
-- updating graph metadata and graph data
+- `PUT /api/projects/{projectId}/graphs/{graphId}`
+- updating graph metadata and graph data together
 
 ```json
 {
   "name": "Dialogue graph",
-  "nodes": [],
-  "edges": []
+  "content": {
+    "nodes": [],
+    "edges": []
+  }
 }
 ```
 
@@ -356,8 +367,10 @@ Used by:
   "id": "01a071e8-1375-7393-8d90-5c490a83ad39",
   "projectId": "4de1cf43-bc7c-436e-85e1-24283ebd4bcc",
   "name": "Dialogue graph",
-  "nodes": [],
-  "edges": []
+  "content": {
+    "nodes": [],
+    "edges": []
+  }
 }
 ```
 

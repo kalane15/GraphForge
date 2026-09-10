@@ -59,7 +59,13 @@ CREATE TABLE IF NOT EXISTS schemas
     CONSTRAINT fk_schemas_project
         FOREIGN KEY (project_id)
         REFERENCES projects(id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_schemas_project_id
+        UNIQUE (project_id, id),
+
+    CONSTRAINT uq_schemas_project_schema_type_name
+        UNIQUE (project_id, schema_type_name)
 );
 
 CREATE TABLE IF NOT EXISTS schema_fields

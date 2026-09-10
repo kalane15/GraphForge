@@ -3,7 +3,7 @@ using GraphForge.Contracts;
 
 namespace GraphForge.Api.Services.SchemasService;
 
-public static class SchemaRequestToDToMapper
+public static class SchemaRequestToDtoMapper
 {
     public static SchemaDto ToDto(SchemaCreateRequest request)
     {
