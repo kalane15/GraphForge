@@ -1,14 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import Flow from "./Flow"
 import { useNavigate, useParams } from "react-router"
 import { ReactFlowProvider } from "@xyflow/react";
-import { getSchemasRequest } from "@/api/schemasApi";
-import { mapSchemaToViewModel } from "@/helpers/schemaMappers";
 import GraphEditorToolbar from "./GraphEditorToolbar";
 import { useSaveGraph } from "./useSaveGraph"
-import { getGraphRequest } from "@/api/graphsApi";
-import { resolveGraphSchemaReferences } from "./resolveGraphSchemaReferences";
 import { useImportExportGraph } from "./useImportExportGraph";
+import { useGraphLoad } from "./useGraphLoad";
 
 
 function GraphEditorPage() {
@@ -19,27 +16,33 @@ function GraphEditorPage() {
     const [nodes, setNodes] = useState(() => []);
     const [edges, setEdges] = useState([]);
     const [saveStatusMessage, setSaveStatusMessage] = useState(null);
-    
-    const saveGraph = useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage, schemas);
-    const { importGraph, exportGraph } = useImportExportGraph();
 
-    useEffect(() => {
-        async function loadGraph() {
-            const data = await getSchemasRequest(projectId);
-            const loadedSchemas = (data?.schemas ?? [])
-                .map(mapSchemaToViewModel);
+    const isGraphLoaded = useGraphLoad({
+        projectId,
+        graphId,
+        setSchemas,
+        setNodes,
+        setEdges
+    });
 
-            const graph = await getGraphRequest(graphId, projectId);
+    const saveGraph = useSaveGraph(
+        nodes,
+        edges,
+        projectId,
+        graphId,
+        setSaveStatusMessage,
+        schemas,
+        isGraphLoaded
+    );
 
-            const loadedNodes = resolveGraphSchemaReferences(graph.content.nodes, loadedSchemas);
-
-            setSchemas(loadedSchemas);
-            setNodes(loadedNodes);
-            setEdges(graph.content.edges);
-        }
-
-        loadGraph();
-    }, [projectId, graphId]);
+    const { importGraph, exportGraph } = useImportExportGraph({
+        saveGraph,
+        graphId,
+        projectId,
+        schemas,
+        setNodes,
+        setEdges
+    });
 
     async function returnToProjectPage() {
         await saveGraph();

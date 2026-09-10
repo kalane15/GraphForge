@@ -1,13 +1,13 @@
 import { createGraphSavePayload } from "@/helpers/createGraphSavePayload";
-import { updateGraphContentRequest, getGraphRequest } from "@/api/graphsApi";
-import { useEffect, useRef } from "react";
+import { updateGraphContentRequest } from "@/api/graphsApi";
+import { useCallback, useEffect, useRef } from "react";
 
 
-export function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage, schemas) {
+export function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMessage, schemas, isGraphLoaded) {
     const messageTimeoutRef = useRef(null);
 
 
-    function showMessage(text, type = "success") {
+    const showMessage = useCallback((text, type = "success") => {
         setSaveStatusMessage({ text, type });
 
         if (messageTimeoutRef.current) {
@@ -18,10 +18,14 @@ export function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMess
             setSaveStatusMessage(null);
             messageTimeoutRef.current = null;
         }, 3000);
-    }
+    }, [setSaveStatusMessage]);
 
 
-    async function saveGraph() {
+    const saveGraph = useCallback(async () => {
+        if (!isGraphLoaded) {
+            return;
+        }
+
         try {
             const content = createGraphSavePayload(nodes, edges, schemas);
             await updateGraphContentRequest(graphId, projectId, content);
@@ -29,16 +33,20 @@ export function useSaveGraph(nodes, edges, projectId, graphId, setSaveStatusMess
         } catch (ex) {
             showMessage(`Error during saving: ${ex.message}`, "error");
         }
-    }
+    }, [nodes, edges, projectId, graphId, schemas, isGraphLoaded, showMessage]);
 
 
     useEffect(() => {
+        if (!isGraphLoaded) {
+            return;
+        }
+
         const timeoutId = setTimeout(() => {
             saveGraph();
         }, 1000);
 
         return () => clearTimeout(timeoutId);
-    }, [nodes, edges]);
+    }, [saveGraph, isGraphLoaded]);
 
     useEffect(() => {
         return () => {

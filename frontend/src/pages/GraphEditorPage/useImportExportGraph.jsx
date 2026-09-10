@@ -1,10 +1,9 @@
-import { useSaveGraph } from "./useSaveGraph";
 import { getGraphRequest } from "@/api/graphsApi";
 import { downloadJsonFile } from "@/helpers/downloadJsonFile";
 import { resolveGraphSchemaReferences } from "./resolveGraphSchemaReferences";
 
 
-export function useImportExportGraph(saveGraph, graphId, projectId, schemas, setNodes, setEdges) {
+export function useImportExportGraph({ saveGraph, graphId, projectId, schemas, setNodes, setEdges }) {
     async function exportGraph() {
         await saveGraph();
 
