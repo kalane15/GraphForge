@@ -1,5 +1,5 @@
 const defaultFieldType = "string";
-const defaultFieldName = "new field";
+const defaultFieldName = "newField";
 
 export function renameSchemaField(schema, fieldId, name) {
     return {
@@ -60,7 +60,7 @@ function getSchemaFieldDefaultName(fields) {
     let number = 0;
 
     while (exists) {
-        possibleName = defaultFieldName + " " + String(++number);
+        possibleName = defaultFieldName + String(++number);
         exists = fields.some((field) => field.name === possibleName);
     }
 

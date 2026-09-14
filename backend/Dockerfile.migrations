@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+
+WORKDIR /src
+
+COPY backend/GraphForge.Api.csproj backend/
+COPY GraphForge.Contracts/GraphForge.Contracts.csproj GraphForge.Contracts/
+COPY GraphForge.Validation/GraphForge.Validation.csproj GraphForge.Validation/
+
+RUN dotnet restore backend/GraphForge.Api.csproj
+
+COPY backend/ backend/
+COPY GraphForge.Contracts/ GraphForge.Contracts/
+COPY GraphForge.Validation/ GraphForge.Validation/
+
+RUN dotnet tool install --global dotnet-ef --version 10.0.11
+
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+ENTRYPOINT ["dotnet", "ef", "database", "update", "--project", "backend/GraphForge.Api.csproj", "--startup-project", "backend/GraphForge.Api.csproj"]
