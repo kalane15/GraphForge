@@ -36,7 +36,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProjects()
+    public async Task<IActionResult> GetProjectsList()
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 

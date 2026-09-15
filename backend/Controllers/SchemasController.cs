@@ -43,8 +43,8 @@ public class SchemasController : ControllerBase
     public async Task<IActionResult> UpdateSchema(Guid projectId, Guid schemaId, SchemaDataRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-        await _schemasService.UpdateSchema(userId, projectId, schemaId, request);
-        return NoContent();
+        SchemaResponse result = await _schemasService.UpdateSchema(userId, projectId, schemaId, request);
+        return Ok(result);
     }
 
     [HttpDelete("{schemaId}")]

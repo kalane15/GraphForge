@@ -69,7 +69,7 @@ public class SchemasService : ISchemasService
         return new SchemaResponse(schema.Id, schema.SchemaTypeName, fieldsDefinions);
     }
 
-    public async Task UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaDataRequest request)
+    public async Task<SchemaResponse> UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaDataRequest request)
     {
         await EnsureProjectBelongsToUser(userId, projectId);
         await EnsureSchemaTypeNameUniqueInsideProject(projectId, request.SchemaTypeName, schemaId);
@@ -121,6 +121,12 @@ public class SchemasService : ISchemasService
         }
 
         await _db.SaveChangesAsync();
+
+        var fields = schema.Fields
+            .Select(field => new SchemaFieldDefinitionResponse(field.Id, field.Name, field.Type))
+            .ToList();
+
+        return new SchemaResponse(schema.Id, schema.SchemaTypeName, fields);
     }
 
     public async Task DeleteSchema(Guid userId, Guid projectId, Guid schemaId)
