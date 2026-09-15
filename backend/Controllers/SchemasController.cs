@@ -30,6 +30,16 @@ public class SchemasController : ControllerBase
         return Ok(result);
     }
 
+
+    [HttpGet("{schemaId}")]
+    public async Task<IActionResult> GetSchema(Guid projectId, Guid schemaId)
+    {
+        Guid userId = _userIdentityProvider.GetCurrentUserId();
+        SchemaResponse result = await _schemasService.GetSchema(userId, projectId, schemaId);
+        return Ok(result);
+    }
+
+
     [HttpPost]
     public async Task<IActionResult> CreateSchema(Guid projectId, SchemaCreateRequest request)
     {

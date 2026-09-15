@@ -1,6 +1,5 @@
 ﻿using GraphForge.Api.DTOs.Projects;
 using GraphForge.Api.DTOs.Schemas;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
 using GraphForge.Validation;

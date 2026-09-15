@@ -41,6 +41,28 @@ public class SchemasService : ISchemasService
         return new SchemasListResponse(schemas);
     }
 
+    public async Task<SchemaResponse> GetSchema(Guid userId, Guid projectId, Guid schemaId)
+    {
+        await EnsureProjectBelongsToUser(userId, projectId);
+
+        var schema = await _db.Schemas.FirstOrDefaultAsync(
+            (schema) => 
+                schema.Id == schemaId &&
+                schema.ProjectId == projectId &&
+                schema.Project.Owner.Id == userId
+        );
+
+        if (schema == null)
+        {
+            throw new NotFoundException("Schema not found");
+        }
+
+        List<SchemaFieldDefinitionResponse> fieldsDefinions = schema.Fields
+            .Select(f => new SchemaFieldDefinitionResponse(f.Id, f.Name, f.Type)).ToList();
+
+        return new SchemaResponse(schema.Id, schema.SchemaTypeName, fieldsDefinions);
+    }
+
     public async Task<SchemaResponse> CreateSchema(Guid userId, Guid projectId, SchemaCreateRequest request)
     {
         await EnsureProjectBelongsToUser(userId, projectId);
