@@ -20,7 +20,7 @@ public static class SchemaRequestToDtoMapper
         };
     }
 
-    public static SchemaDto ToDto(Guid schemaId, SchemaDataRequest request)
+    public static SchemaDto ToDto(Guid schemaId, SchemaEditDataRequest request)
     {
         return new SchemaDto
         {

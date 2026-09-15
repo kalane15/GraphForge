@@ -1,14 +1,12 @@
 using GraphForge.Api.DTOs.Projects;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Http.Json;
 
 namespace GraphForge.Api.IntegrationTests.ProjectControllerTests;
-public sealed class ProjectDeleteTests : IClassFixture<ApiPostgresTestFactory>
+public sealed class DeleteProjectTests : IClassFixture<ApiPostgresTestFactory>
 {
     private readonly ApiPostgresTestFactory _apiTestFactory;
-    public ProjectDeleteTests(ApiPostgresTestFactory factory)
+    public DeleteProjectTests(ApiPostgresTestFactory factory)
     {
         _apiTestFactory = factory;
     }
@@ -23,12 +21,7 @@ public sealed class ProjectDeleteTests : IClassFixture<ApiPostgresTestFactory>
         HttpResponseMessage response = await client.DeleteAsync($"api/projects/{Guid.NewGuid()}");
 
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-
-        ProblemDetails? problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-
-        Assert.Equal(StatusCodes.Status404NotFound, problem.Status);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
 
 
@@ -86,12 +79,7 @@ public sealed class ProjectDeleteTests : IClassFixture<ApiPostgresTestFactory>
         HttpResponseMessage deleteResponse = await otherclient.DeleteAsync($"api/projects/{createdProjectId}");
 
 
-        Assert.Equal(HttpStatusCode.NotFound, deleteResponse.StatusCode);
-
-        ProblemDetails? problem = await deleteResponse.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-
-        Assert.Equal(StatusCodes.Status404NotFound, problem.Status);
+        await AssertProblemDetailsAsync(deleteResponse, HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -115,12 +103,7 @@ public sealed class ProjectDeleteTests : IClassFixture<ApiPostgresTestFactory>
 
         HttpResponseMessage deleteResponse = await client.DeleteAsync($"api/projects/{info.Id}");
 
-        Assert.Equal(HttpStatusCode.Unauthorized, deleteResponse.StatusCode);
-
-        ProblemDetails? problem = await deleteResponse.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-
-        Assert.Equal(StatusCodes.Status401Unauthorized, problem.Status);
+        await AssertProblemDetailsAsync(deleteResponse, HttpStatusCode.Unauthorized);
     }
 }
 

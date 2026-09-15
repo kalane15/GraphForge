@@ -1,6 +1,4 @@
 using GraphForge.Api.DTOs.Auth;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -59,9 +57,7 @@ public class AuthSignInSignUpTests : IClassFixture<ApiPostgresTestFactory>
             password="some trash"
         });
 
-        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-        Assert.Equal(StatusCodes.Status401Unauthorized, problem.Status);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -84,9 +80,7 @@ public class AuthSignInSignUpTests : IClassFixture<ApiPostgresTestFactory>
             password="1234"
         });
 
-        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-        Assert.Equal(StatusCodes.Status409Conflict, problem.Status);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.Conflict);
     }
 
     [Fact]
@@ -101,9 +95,7 @@ public class AuthSignInSignUpTests : IClassFixture<ApiPostgresTestFactory>
             password
         });
 
-        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-        Assert.Equal(StatusCodes.Status401Unauthorized, problem.Status);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
     }
 
     [Fact]

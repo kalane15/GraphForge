@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GraphForge.Api.IntegrationTests.AuthTests.AuthTests;
@@ -36,12 +35,7 @@ public sealed class AuthInvalidBodyTests : IClassFixture<ApiTestFactory>
     {
         var response = await _client.PostAsJsonAsync("/api/auth/signin", body);
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-
-        Assert.NotNull(problem);
-        Assert.Equal(StatusCodes.Status400BadRequest, problem.Status);
+        ProblemDetails problem = await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
         Assert.Equal("Validation error", problem.Title);
         Assert.Contains("Password", problem.Detail, StringComparison.OrdinalIgnoreCase);
     }
@@ -52,11 +46,7 @@ public sealed class AuthInvalidBodyTests : IClassFixture<ApiTestFactory>
     {
         var response = await _client.PostAsJsonAsync("/api/auth/signup", body);
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-        var problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-        Assert.Equal(StatusCodes.Status400BadRequest, problem.Status);
+        ProblemDetails problem = await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
         Assert.Equal("Validation error", problem.Title);
         Assert.Contains("Password", problem.Detail, StringComparison.OrdinalIgnoreCase);
     }

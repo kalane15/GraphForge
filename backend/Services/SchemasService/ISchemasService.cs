@@ -6,6 +6,6 @@ public interface ISchemasService
 {
     Task<SchemasListResponse> GetSchemasList(Guid userId, Guid projectId);
     Task<SchemaResponse> CreateSchema(Guid userId, Guid projectId, SchemaCreateRequest request);
-    Task<SchemaResponse> UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaDataRequest request);
+    Task<SchemaResponse> UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaEditDataRequest request);
     Task DeleteSchema(Guid userId, Guid projectId, Guid schemaId);
 }

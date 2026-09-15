@@ -1,15 +1,13 @@
 using GraphForge.Api.DTOs.Projects;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Http.Json;
 
 namespace GraphForge.Api.IntegrationTests.ProjectControllerTests;
 
-public class ProjectCreateTests : IClassFixture<ApiPostgresTestFactory>
+public class CreateProjectTests : IClassFixture<ApiPostgresTestFactory>
 {
     private readonly ApiPostgresTestFactory _apiTestFactory;
-    public ProjectCreateTests(ApiPostgresTestFactory factory)
+    public CreateProjectTests(ApiPostgresTestFactory factory)
     {
         _apiTestFactory = factory;
     }
@@ -27,12 +25,7 @@ public class ProjectCreateTests : IClassFixture<ApiPostgresTestFactory>
         });
 
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-
-        ProblemDetails? problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-
-        Assert.Equal(StatusCodes.Status401Unauthorized, problem.Status);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -44,13 +37,7 @@ public class ProjectCreateTests : IClassFixture<ApiPostgresTestFactory>
         HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new { description = "desc" });
 
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-        ProblemDetails? problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-
-        Assert.NotNull(problem);
-
-        Assert.Equal(StatusCodes.Status400BadRequest, problem.Status);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
 
     /// <summary>
@@ -89,13 +76,7 @@ public class ProjectCreateTests : IClassFixture<ApiPostgresTestFactory>
         });
 
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-        ProblemDetails? problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-
-        Assert.NotNull(problem);
-
-        Assert.Equal(StatusCodes.Status400BadRequest, problem.Status);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
 
 

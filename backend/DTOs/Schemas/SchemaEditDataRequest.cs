@@ -2,7 +2,7 @@
 
 namespace GraphForge.Api.DTOs.Schemas;
 
-public sealed record SchemaDataRequest(
+public sealed record SchemaEditDataRequest(
     [Required] string SchemaTypeName,
     [Required] List<SchemaFieldUpdateRequest> Fields
 );

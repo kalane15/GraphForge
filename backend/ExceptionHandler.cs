@@ -34,8 +34,8 @@ public static class ExceptionHandler
                 exception.Message),
 
             IncorrectProjectOwnerException => CreateProblemDetails(
-                StatusCodes.Status403Forbidden,
-                "Forbidden",
+                StatusCodes.Status404NotFound,
+                "Not found",
                 exception.Message),
 
             UnauthorizedUserException => CreateProblemDetails(

@@ -1,16 +1,14 @@
 using GraphForge.Api.DTOs.Projects;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Http.Json;
 
 namespace GraphForge.Api.IntegrationTests.ProjectControllerTests;
 
-public sealed class ProjectUpdateTests : IClassFixture<ApiPostgresTestFactory>
+public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
 {
     private readonly ApiPostgresTestFactory _apiTestFactory;
 
-    public ProjectUpdateTests(ApiPostgresTestFactory factory)
+    public UpdateProjectTests(ApiPostgresTestFactory factory)
     {
         _apiTestFactory = factory;
     }
@@ -40,12 +38,7 @@ public sealed class ProjectUpdateTests : IClassFixture<ApiPostgresTestFactory>
         });
 
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-        ProblemDetails? problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-
-        Assert.Equal(StatusCodes.Status400BadRequest, problem.Status);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
 
 
@@ -72,12 +65,7 @@ public sealed class ProjectUpdateTests : IClassFixture<ApiPostgresTestFactory>
             description = "description",
         });
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-
-        ProblemDetails? problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-
-        Assert.Equal(StatusCodes.Status400BadRequest, problem.Status);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
 
 
@@ -92,12 +80,7 @@ public sealed class ProjectUpdateTests : IClassFixture<ApiPostgresTestFactory>
             description = "description",
         });
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-
-        ProblemDetails? problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-
-        Assert.Equal(StatusCodes.Status404NotFound, problem.Status);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -131,12 +114,7 @@ public sealed class ProjectUpdateTests : IClassFixture<ApiPostgresTestFactory>
         });
 
 
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-
-        ProblemDetails? problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-
-        Assert.Equal(StatusCodes.Status404NotFound, problem.Status);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
 
         response = await ownerClient.GetAsync($"/api/projects/{createdProjectId}");
         info = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
@@ -170,12 +148,7 @@ public sealed class ProjectUpdateTests : IClassFixture<ApiPostgresTestFactory>
             description = "description",
         });
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-
-        ProblemDetails? problem = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        Assert.NotNull(problem);
-
-        Assert.Equal(StatusCodes.Status401Unauthorized, problem.Status);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
     }
 
 

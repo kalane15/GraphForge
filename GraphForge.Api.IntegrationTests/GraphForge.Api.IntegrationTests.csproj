@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="GraphForge.Api.IntegrationTests.ProblemDetailsAssert" Static="true" />
   </ItemGroup>
 
   <ItemGroup>

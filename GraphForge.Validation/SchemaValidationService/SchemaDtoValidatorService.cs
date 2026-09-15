@@ -104,7 +104,7 @@ public class SchemaDtoValidatorService : ISchemaDtoValidatorService
                 throw new SchemaFieldIncorrectTypeException($"Type of field with id={fieldDto.Id} is empty.");
             }
 
-            if (!AllowedTypes.AllowedTypesString.Contains(fieldDto.Type))
+            if (!AllowedSchemaFieldTypes.AllowedTypesString.Contains(fieldDto.Type))
             {
                 throw new SchemaFieldIncorrectTypeException($"Type of field with id={fieldDto.Id} is incorrect.\n" +
                                                             $"{fieldDto.Type} is not allowed.");
