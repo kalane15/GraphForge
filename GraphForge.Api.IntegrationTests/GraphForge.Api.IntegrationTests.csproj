@@ -21,6 +21,7 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="GraphForge.Api.IntegrationTests.ProblemDetailsAssert" Static="true" />
+    <Using Include="GraphForge.Api.IntegrationTests.SchemaFieldsAssert" Static="true" />
   </ItemGroup>
 
   <ItemGroup>

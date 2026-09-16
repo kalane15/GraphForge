@@ -8,15 +8,14 @@ namespace GraphForge.Api.IntegrationTests.SchemasControllerTests;
 
 internal class RandomFieldsFactory
 {
-    internal static List<SchemaFieldCreationRequest> GetFieldsRandomValidData(int count = 5)
+    public static string GetRandomType()
     {
-        static string GetRandomType()
-        {
-            int index = Random.Shared.Next(AllowedSchemaFieldTypes.AllowedTypesString.Count);
-            return AllowedSchemaFieldTypes.AllowedTypesString[index];
-        }
+        int index = Random.Shared.Next(AllowedSchemaFieldTypes.AllowedTypesString.Count);
+        return AllowedSchemaFieldTypes.AllowedTypesString[index];
+    }
 
-
+    public static List<SchemaFieldCreationRequest> GetFieldsRandomValidData(int count = 5)
+    {
         List<SchemaFieldCreationRequest> result = new List<SchemaFieldCreationRequest>();
 
         for (int i = 0; i < count; i++)

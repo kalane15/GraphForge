@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace GraphForge.Api.IntegrationTests;
 
-public static class ProblemDetailsAssert
+internal static class ProblemDetailsAssert
 {
     public static async Task<ProblemDetails> AssertProblemDetailsAsync(
         HttpResponseMessage response,

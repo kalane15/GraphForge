@@ -37,17 +37,7 @@ public sealed class GetSchemaTests : IClassFixture<ApiPostgresTestFactory>
         Assert.NotNull(result);
         Assert.Equal(schema.Id, result.Id);
         Assert.Equal(schema.SchemaTypeName, result.SchemaTypeName);
-        Assert.Equal(expectedFields.Count, result.Fields.Count);
-
-        foreach (SchemaFieldCreationRequest expectedField in expectedFields)
-        {
-            SchemaFieldDefinitionResponse? actualField =
-                result.Fields.FirstOrDefault(field => field.Name == expectedField.Name);
-
-            Assert.NotNull(actualField);
-            Assert.Equal(expectedField.Type, actualField.Type);
-            Assert.NotEqual(Guid.Empty, actualField.Id);
-        }
+        AssertSchemaFieldsEqual(expectedFields, result.Fields);
     }
 
 
