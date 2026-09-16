@@ -3,7 +3,6 @@ using GraphForge.Api.DTOs.Projects;
 using GraphForge.Contracts;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
 
 namespace GraphForge.Api.IntegrationTests.GraphControllerTests;
 
@@ -20,8 +19,8 @@ public sealed class GetGraphTests : IClassFixture<ApiPostgresTestFactory>
     [Fact]
     public async Task GetGraph_WhenGraphExistsAndAccessValid_Returns200WithCorrectData()
     {
-        (HttpClient client, ProjectInfoResponse project, GraphInfoResponse graph) =
-            await _apiTestFactory.CreateAuthorizedClientWithBaseGraphAsync();
+        (HttpClient client, ProjectInfoResponse project, GraphInfoResponse graph, GraphDto expectedContent) =
+            await _apiTestFactory.CreateAuthorizedClientWithBaseGraphContentAsync();
 
 
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{project.Id}/graphs/{graph.Id}");
@@ -35,10 +34,7 @@ public sealed class GetGraphTests : IClassFixture<ApiPostgresTestFactory>
         Assert.Equal(project.Id, result.ProjectId);
         Assert.Equal(graph.Name, result.Name);
 
-        GraphDto? content = result.Content.RootElement.Deserialize<GraphDto>();
-        Assert.NotNull(content);
-        Assert.NotEmpty(content.Nodes);
-        Assert.NotEmpty(content.Edges);
+        AssertGraphDtoEqual(expectedContent, result.Content);
     }
 
 

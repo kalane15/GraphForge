@@ -90,7 +90,7 @@ public class GraphsService : IGraphsService
             graph.Id,
             graph.ProjectId,
             graph.Name,
-            graph.Content
+            DeserializeGraphContent(graph.Content)
         );
 
         return result;
@@ -100,13 +100,15 @@ public class GraphsService : IGraphsService
     {
         await EnsureProjectBelongsToUser(userId, projectId);
 
-        var graphs = await _db.Graphs.Where((g) => g.ProjectId == projectId && g.Project.OwnerId == userId)
+        var graphs = await _db.Graphs.Where(
+            (g) => g.ProjectId == projectId && g.Project.OwnerId == userId)
             .Select(graph => new GraphInfoResponse(
                 graph.Id,
                 graph.ProjectId,
                 graph.Name,
                 graph.CreatedAt,
-                graph.UpdatedAt)
+                graph.UpdatedAt
+                )
         ).ToListAsync();
 
         return graphs;
@@ -139,7 +141,7 @@ public class GraphsService : IGraphsService
             graph.Id,
             graph.ProjectId,
             graph.Name,
-            graph.Content
+            request.Content
         );
 
         return result;
@@ -175,6 +177,18 @@ public class GraphsService : IGraphsService
         }
 
         return name.Trim();
+    }
+
+    private static GraphDto DeserializeGraphContent(JsonDocument content)
+    {
+        GraphDto? graphDto = content.RootElement.Deserialize<GraphDto>();
+
+        if (graphDto is null)
+        {
+            throw new GraphValidationException("Graph content is invalid");
+        }
+
+        return graphDto;
     }
 
     private async Task EnsureProjectBelongsToUser(Guid userId, Guid projectId)

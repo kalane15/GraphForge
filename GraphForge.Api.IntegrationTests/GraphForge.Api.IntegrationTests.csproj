@@ -23,6 +23,7 @@
     <Using Include="GraphForge.Api.IntegrationTests.ProblemDetailsAssert" Static="true" />
     <Using Include="GraphForge.Api.IntegrationTests.AuthorizationAssert" Static="true" />
     <Using Include="GraphForge.Api.IntegrationTests.SchemaFieldsAssert" Static="true" />
+    <Using Include="GraphForge.Api.IntegrationTests.GraphDtoAssert" Static="true" />
   </ItemGroup>
 
   <ItemGroup>

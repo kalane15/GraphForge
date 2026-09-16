@@ -16,17 +16,23 @@ public static class GraphTestClientExtensions
         this ApiPostgresTestFactory factory,
         string graphName = "GraphName")
     {
+        (HttpClient client, ProjectInfoResponse project, GraphInfoResponse graph, _) =
+            await factory.CreateAuthorizedClientWithBaseGraphContentAsync(graphName);
+
+        return (client, project, graph);
+    }
+
+    /// <summary>
+    /// Creates authorized client, project, schema and graph with valid base content, then returns that content for assertions.
+    /// </summary>
+    public static async Task<(HttpClient, ProjectInfoResponse, GraphInfoResponse, GraphDto)> CreateAuthorizedClientWithBaseGraphContentAsync(
+        this ApiPostgresTestFactory factory,
+        string graphName = "GraphName")
+    {
         (HttpClient client, ProjectInfoResponse project, SchemaResponse schema) =
             await factory.CreateAuthorizedClientWithSchemaAsync();
 
-        string firstNodeId = Guid.NewGuid().ToString();
-        string secondNodeId = Guid.NewGuid().ToString();
-
-        GraphDto validGraph = new GraphDtoBuilder()
-            .WithNode(firstNodeId, schema.Id)
-            .WithNode(secondNodeId, schema.Id)
-            .WithEdge(source: firstNodeId, target: secondNodeId)
-            .Build();
+        GraphDto validGraph = GraphDtoFactory.CreateValidGraph(schema.Id);
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
             $"/api/projects/{project.Id}/graphs",
@@ -49,6 +55,6 @@ public static class GraphTestClientExtensions
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        return (client, project, graph);
+        return (client, project, graph, validGraph);
     }
 }
