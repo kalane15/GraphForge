@@ -56,17 +56,7 @@ public class GraphsService : IGraphsService
 
     public async Task DeleteUserGraphAsync(Guid userId, Guid projectId, Guid graphId)
     {
-        Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
-            (g) => 
-                g.Id == graphId && 
-                g.ProjectId == projectId && 
-                g.Project.OwnerId == userId
-        );
-
-        if (graph == null)
-        {
-            throw new NotFoundException("Graph not found");
-        }
+        Graph graph = await GetUserGraphOrThrowAsync(userId, projectId, graphId);
 
         _db.Graphs.Remove(graph);
         await _db.SaveChangesAsync();
@@ -74,17 +64,7 @@ public class GraphsService : IGraphsService
 
     public async Task<GraphDataResponse> GetUserGraphAsync(Guid userId, Guid projectId, Guid graphId)
     {
-        Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
-            (g) =>
-                g.Id == graphId &&
-                g.ProjectId == projectId &&
-                g.Project.OwnerId == userId
-        );
-
-        if (graph == null)
-        {
-            throw new NotFoundException("Graph not found");
-        }
+        Graph graph = await GetUserGraphOrThrowAsync(userId, projectId, graphId);
 
         var result = new GraphDataResponse(
             graph.Id,
@@ -117,17 +97,7 @@ public class GraphsService : IGraphsService
     public async Task<GraphDataResponse> UpdateUserGraphAsync(Guid userId, Guid projectId, Guid graphId, GraphDataEditRequest request)
     {
         string graphName = ValidateGraphName(request.Name);
-        Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
-            (g) =>
-                g.Id == graphId &&
-                g.ProjectId == projectId &&
-                g.Project.OwnerId == userId
-        );
-
-        if (graph == null)
-        {
-            throw new NotFoundException("Graph not found");
-        }
+        Graph graph = await GetUserGraphOrThrowAsync(userId, projectId, graphId);
 
         List<SchemaDto> schemas = await LoadProjectSchemas(projectId);
         _graphJsonValidatorService.Validate(request.Content, schemas);
@@ -149,17 +119,7 @@ public class GraphsService : IGraphsService
 
     public async Task UpdateUserGraphContentAsync(Guid userId, Guid projectId, Guid graphId, GraphForge.Contracts.GraphDto content)
     {
-        Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
-            (g) =>
-                g.Id == graphId &&
-                g.ProjectId == projectId &&
-                g.Project.OwnerId == userId
-        );
-
-        if (graph == null)
-        {
-            throw new NotFoundException("Graph not found");
-        }
+        Graph graph = await GetUserGraphOrThrowAsync(userId, projectId, graphId);
 
         List<SchemaDto> schemas = await LoadProjectSchemas(projectId);
         _graphJsonValidatorService.Validate(content, schemas);
@@ -189,6 +149,23 @@ public class GraphsService : IGraphsService
         }
 
         return graphDto;
+    }
+
+    private async Task<Graph> GetUserGraphOrThrowAsync(Guid userId, Guid projectId, Guid graphId)
+    {
+        Graph? graph = await _db.Graphs.FirstOrDefaultAsync(
+            graph =>
+                graph.Id == graphId &&
+                graph.ProjectId == projectId &&
+                graph.Project.OwnerId == userId
+        );
+
+        if (graph is null)
+        {
+            throw new NotFoundException("Graph not found");
+        }
+
+        return graph;
     }
 
     private async Task EnsureProjectBelongsToUser(Guid userId, Guid projectId)

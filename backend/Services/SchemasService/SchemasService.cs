@@ -43,21 +43,7 @@ public class SchemasService : ISchemasService
 
     public async Task<SchemaResponse> GetSchema(Guid userId, Guid projectId, Guid schemaId)
     {
-        await EnsureProjectBelongsToUser(userId, projectId);
-
-        var schema = await _db.Schemas
-            .Include(schema => schema.Fields)
-            .FirstOrDefaultAsync(
-            (schema) => 
-                schema.Id == schemaId &&
-                schema.ProjectId == projectId &&
-                schema.Project.Owner.Id == userId
-        );
-
-        if (schema == null)
-        {
-            throw new NotFoundException("Schema not found");
-        }
+        Schema schema = await GetUserSchemaOrThrowAsync(userId, projectId, schemaId);
 
         List<SchemaFieldDefinitionResponse> fieldsDefinions = schema.Fields
             .Select(f => new SchemaFieldDefinitionResponse(f.Id, f.Name, f.Type)).ToList();
@@ -102,19 +88,7 @@ public class SchemasService : ISchemasService
         _schemaDtoValidator.ValidateSchema(dto);
 
 
-        Schema? schema = await _db.Schemas
-            .Include(schema => schema.Fields)
-            .FirstOrDefaultAsync(
-            (schema) =>
-                schema.Id == schemaId &&
-                schema.ProjectId == projectId &&
-                schema.Project.OwnerId == userId
-            );
-
-        if (schema is null)
-        {
-            throw new NotFoundException("Schema not found");
-        }
+        Schema schema = await GetUserSchemaOrThrowAsync(userId, projectId, schemaId);
 
         // Synchronize the stored fields with the full field list from the update request, in which some fields may have been added or removed
 
@@ -155,20 +129,29 @@ public class SchemasService : ISchemasService
 
     public async Task DeleteSchema(Guid userId, Guid projectId, Guid schemaId)
     {
-        Schema? schema = await _db.Schemas.FirstOrDefaultAsync(
-            (schema) =>
-                schema.Id == schemaId &&
-                schema.ProjectId == projectId &&
-                schema.Project.OwnerId == userId
-        );
+        Schema schema = await GetUserSchemaOrThrowAsync(userId, projectId, schemaId);
+
+        _db.Schemas.Remove(schema);
+        await _db.SaveChangesAsync();
+    }
+
+    private async Task<Schema> GetUserSchemaOrThrowAsync(Guid userId, Guid projectId, Guid schemaId)
+    {
+        Schema? schema = await _db.Schemas
+            .Include(schema => schema.Fields)
+            .FirstOrDefaultAsync(
+                schema =>
+                    schema.Id == schemaId &&
+                    schema.ProjectId == projectId &&
+                    schema.Project.OwnerId == userId
+            );
 
         if (schema is null)
         {
             throw new NotFoundException("Schema not found");
         }
 
-        _db.Schemas.Remove(schema);
-        await _db.SaveChangesAsync();
+        return schema;
     }
 
     private async Task EnsureProjectBelongsToUser(Guid userId, Guid projectId)
