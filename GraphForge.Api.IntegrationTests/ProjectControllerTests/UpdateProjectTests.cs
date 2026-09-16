@@ -96,7 +96,7 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
     [Fact]
     public async Task UpdateProject_WhenUnauthorized_Returns401ProblemDetails()
     {
-        (var _, ProjectInfoResponse info) =
+        (_, ProjectInfoResponse info) =
             await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
         HttpClient client = _apiTestFactory.CreateClient();

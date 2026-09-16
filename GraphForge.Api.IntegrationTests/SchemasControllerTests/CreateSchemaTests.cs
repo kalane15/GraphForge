@@ -17,28 +17,6 @@ public sealed class CreateSchemaTests : IClassFixture<ApiPostgresTestFactory>
     }
 
 
-    internal List<SchemaFieldCreationRequest> GetFieldsRandomValidData(int count=5)
-    {
-        static string GetRandomType()
-        {
-            int index = Random.Shared.Next(AllowedSchemaFieldTypes.AllowedTypesString.Count);
-            return AllowedSchemaFieldTypes.AllowedTypesString[index];
-        }
-
-
-        List<SchemaFieldCreationRequest> result = new List<SchemaFieldCreationRequest>();
-
-        for (int i = 0; i < count; i++)
-        {
-            string type = GetRandomType();
-            SchemaFieldCreationRequest def = new SchemaFieldCreationRequest($"field{i}", type);
-            result.Add(def);
-        }
-
-        return result;
-    }
-
-
     [Theory]
     [InlineData(SchemaDefaultTypeName)]
     public async Task CreateSchema_WhenDataCorrectEmptyFields_Returns200WithSameData(string schemaTypeName)
@@ -70,7 +48,7 @@ public sealed class CreateSchemaTests : IClassFixture<ApiPostgresTestFactory>
     {
         (HttpClient client, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-        List<SchemaFieldCreationRequest> expectedFields = GetFieldsRandomValidData();
+        List<SchemaFieldCreationRequest> expectedFields = RandomFieldsFactory.GetFieldsRandomValidData();
 
 
         HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{info.Id}/schemas", new
@@ -110,7 +88,7 @@ public sealed class CreateSchemaTests : IClassFixture<ApiPostgresTestFactory>
         HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{info.Id}/schemas", new
         {
             schemaTypeName,
-            fields = GetFieldsRandomValidData()
+            fields = RandomFieldsFactory.GetFieldsRandomValidData()
         });
 
 
@@ -128,7 +106,7 @@ public sealed class CreateSchemaTests : IClassFixture<ApiPostgresTestFactory>
         HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{Guid.NewGuid()}/schemas", new
         {
             schemaTypeName,
-            fields = GetFieldsRandomValidData()
+            fields = RandomFieldsFactory.GetFieldsRandomValidData()
         });
 
 
@@ -141,7 +119,7 @@ public sealed class CreateSchemaTests : IClassFixture<ApiPostgresTestFactory>
     [InlineData(SchemaDefaultTypeName)]
     public async Task CreateSchema_WhenProjectBelongsToOtherUser_Returns404ProblemDetails(string schemaTypeName)
     {
-        (var _, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
+        (_, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
 
@@ -149,7 +127,7 @@ public sealed class CreateSchemaTests : IClassFixture<ApiPostgresTestFactory>
         HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{info.Id}/schemas", new
         {
             schemaTypeName,
-            fields = GetFieldsRandomValidData()
+            fields = RandomFieldsFactory.GetFieldsRandomValidData()
         });
 
 
@@ -165,7 +143,7 @@ public sealed class CreateSchemaTests : IClassFixture<ApiPostgresTestFactory>
 
         HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{info.Id}/schemas", new
         {
-            fields = GetFieldsRandomValidData()
+            fields = RandomFieldsFactory.GetFieldsRandomValidData()
         });
 
 
@@ -218,7 +196,7 @@ public sealed class CreateSchemaTests : IClassFixture<ApiPostgresTestFactory>
         HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{info.Id}/schemas", new
         {
             schemaTypeName,
-            fields = GetFieldsRandomValidData()
+            fields = RandomFieldsFactory.GetFieldsRandomValidData()
         });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -227,7 +205,7 @@ public sealed class CreateSchemaTests : IClassFixture<ApiPostgresTestFactory>
         response = await client.PostAsJsonAsync($"/api/projects/{info.Id}/schemas", new
         {
             schemaTypeName,
-            fields = GetFieldsRandomValidData()
+            fields = RandomFieldsFactory.GetFieldsRandomValidData()
         });
 
 

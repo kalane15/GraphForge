@@ -23,7 +23,7 @@ public class SchemasController : ControllerBase
 
 
     [HttpGet]
-    public async Task<IActionResult> GetSchemas(Guid projectId)
+    public async Task<IActionResult> GetSchemasList(Guid projectId)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
         SchemasListResponse result = await _schemasService.GetSchemasList(userId, projectId);

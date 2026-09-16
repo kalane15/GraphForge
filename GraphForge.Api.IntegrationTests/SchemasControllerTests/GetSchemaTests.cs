@@ -54,7 +54,7 @@ public sealed class GetSchemaTests : IClassFixture<ApiPostgresTestFactory>
     [Fact]
     public async Task GetSchema_WhenUnauthorized_Returns401ProblemDetails()
     {
-        (var _, ProjectInfoResponse project, SchemaResponse schema) =
+        (_, ProjectInfoResponse project, SchemaResponse schema) =
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync();
 
         HttpClient client = _apiTestFactory.CreateClient();
@@ -97,7 +97,7 @@ public sealed class GetSchemaTests : IClassFixture<ApiPostgresTestFactory>
     [Fact]
     public async Task GetSchema_WhenSchemaBelongsToOtherUser_Returns404ProblemDetails()
     {
-        (var _, ProjectInfoResponse project, SchemaResponse schema) =
+        (_, ProjectInfoResponse project, SchemaResponse schema) =
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync();
 
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();

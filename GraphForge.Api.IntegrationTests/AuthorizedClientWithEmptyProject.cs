@@ -40,7 +40,7 @@ public static class SchemasTestClientExtensions
     public static async Task<(HttpClient, ProjectInfoResponse)> CreateUnauthorizedClientWithEmptyProjectAsync(
     this ApiPostgresTestFactory factory, string? inputName = null, string? inputDescription = null)
     {
-        (var _, ProjectInfoResponse info) = await factory.CreateAuthorizedClientWithEmptyProjectAsync();
+        (_, ProjectInfoResponse info) = await factory.CreateAuthorizedClientWithEmptyProjectAsync();
 
         return (factory.CreateClient(), info);
     }

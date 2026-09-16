@@ -59,7 +59,7 @@ public sealed class DeleteProjectTests : IClassFixture<ApiPostgresTestFactory>
     [Fact]
     public async Task DeleteProject_WhenUnauthorized_Returns401ProblemDetails()
     {
-        (var _, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
+        (_, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
         HttpClient client = _apiTestFactory.CreateClient();
 

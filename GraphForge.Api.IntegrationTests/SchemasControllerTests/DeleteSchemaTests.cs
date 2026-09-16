@@ -36,7 +36,7 @@ public sealed class DeleteSchemaTests : IClassFixture<ApiPostgresTestFactory>
     [Fact]
     public async Task DeleteSchema_WhenUnauthorized_Returns401ProblemDetails()
     {
-        (var _, ProjectInfoResponse project, SchemaResponse schema) =
+        (_, ProjectInfoResponse project, SchemaResponse schema) =
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync();
 
         HttpClient client = _apiTestFactory.CreateClient();
