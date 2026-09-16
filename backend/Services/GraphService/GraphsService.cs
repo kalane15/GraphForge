@@ -29,13 +29,7 @@ public class GraphsService : IGraphsService
     async public Task<GraphInfoResponse> CreateUserGraphAsync(Guid userId, Guid projectId, GraphCreationRequest request)
     {
         string graphName = ValidateGraphName(request.Name);
-
-        bool isProjectBelongsToUser = await _db.Projects.AnyAsync((p) => p.Id == projectId && p.OwnerId == userId);
-
-        if (!isProjectBelongsToUser)
-        {
-            throw new IncorrectProjectOwnerException("Project does not belong to the user");
-        }
+        await EnsureProjectBelongsToUser(userId, projectId);
 
         var newGraph = new Graph
         {
@@ -104,6 +98,8 @@ public class GraphsService : IGraphsService
 
     public async Task<List<GraphInfoResponse>> GetUserProjectsGraphsAsync(Guid userId, Guid projectId)
     {
+        await EnsureProjectBelongsToUser(userId, projectId);
+
         var graphs = await _db.Graphs.Where((g) => g.ProjectId == projectId && g.Project.OwnerId == userId)
             .Select(graph => new GraphInfoResponse(
                 graph.Id,
@@ -179,6 +175,19 @@ public class GraphsService : IGraphsService
         }
 
         return name.Trim();
+    }
+
+    private async Task EnsureProjectBelongsToUser(Guid userId, Guid projectId)
+    {
+        bool isProjectBelongsToUser = await _db.Projects.AnyAsync(project =>
+            project.Id == projectId &&
+            project.OwnerId == userId
+        );
+
+        if (!isProjectBelongsToUser)
+        {
+            throw new IncorrectProjectOwnerException("Project does not belong to the user");
+        }
     }
 
     private async Task<List<SchemaDto>> LoadProjectSchemas(Guid projectId)
