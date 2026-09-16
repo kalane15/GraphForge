@@ -1,11 +1,12 @@
-using GraphForge.Contracts;
+using System;
+using System.Collections.Generic;
 using System.Text.Json;
 
-namespace GraphForge.Validation.Tests;
+namespace GraphForge.Contracts;
 
 public sealed class GraphDtoBuilder
 {
-    private readonly GraphDto _graph = new();
+    private readonly GraphDto _graph = new GraphDto();
 
     public GraphDtoBuilder WithNode(string id, Guid schemaId)
     {

@@ -1,8 +1,6 @@
 using GraphForge.Contracts;
 using GraphForge.Validation.GraphValidationService;
-using GraphForge.Validation.Tests.TestData;
 using System.Text.Json;
-using SchemaDtoBuilder = GraphForge.Validation.Tests.SchemaDtoBuilder;
 
 namespace GraphForge.Validation.Tests;
 

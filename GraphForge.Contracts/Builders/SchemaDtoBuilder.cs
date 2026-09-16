@@ -1,10 +1,10 @@
-using GraphForge.Contracts;
+using System;
 
-namespace GraphForge.Validation.Tests;
+namespace GraphForge.Contracts;
 
 public sealed class SchemaDtoBuilder
 {
-    private readonly SchemaDto _schema = new()
+    private readonly SchemaDto _schema = new SchemaDto
     {
         Id = Guid.NewGuid(),
         SchemaTypeName = "DialogueNode"

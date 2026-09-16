@@ -1,10 +1,6 @@
 ﻿using GraphForge.Api.DTOs.Projects;
-using Microsoft.AspNetCore.Mvc.Testing;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text;
 
 namespace GraphForge.Api.IntegrationTests;
 

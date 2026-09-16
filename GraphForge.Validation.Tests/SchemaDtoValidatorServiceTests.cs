@@ -1,6 +1,6 @@
 using GraphForge.Contracts;
 using GraphForge.Validation.SchemaValidationService.Exceptions;
-using SchemaBuilder = GraphForge.Validation.Tests.SchemaDtoBuilder;
+using SchemaBuilder = GraphForge.Contracts.SchemaDtoBuilder;
 
 namespace GraphForge.Validation.Tests;
 

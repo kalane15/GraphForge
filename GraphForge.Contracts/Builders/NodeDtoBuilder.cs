@@ -1,13 +1,14 @@
-﻿using GraphForge.Contracts;
+using System;
+using System.Collections.Generic;
 using System.Text.Json;
 
-namespace GraphForge.Validation.Tests.TestData;
+namespace GraphForge.Contracts;
 
 public sealed class NodeDtoBuilder
 {
-    private readonly Dictionary<string, object?> _properties = new();
+    private readonly Dictionary<string, object?> _properties = new Dictionary<string, object?>();
 
-    private readonly NodeDto _node = new()
+    private readonly NodeDto _node = new NodeDto
     {
         Id = Guid.NewGuid().ToString(),
         Data = new NodeDataDto
@@ -32,12 +33,6 @@ public sealed class NodeDtoBuilder
     public NodeDtoBuilder WithSchemaTypeName(string schemaTypeName)
     {
         _node.Data.SchemaTypeName = schemaTypeName;
-        return this;
-    }
-
-    public NodeDtoBuilder WithId(Guid id)
-    {
-        _node.Data.SchemaId = id;
         return this;
     }
 
