@@ -56,7 +56,7 @@ public sealed class SchemaDtoValidatorServiceTests
     }
 
     [Fact]
-    public void ValidateSchema_WhenFieldIdsAreDuplicated_ThrowsSchemaFieldIdsNotUnique()
+    public void ValidateSchema_WhenFieldIdsAreDuplicated_ThrowsSchemaFieldIdsNotUniqueException()
     {
         var validator = new SchemaDtoValidatorService();
         Guid fieldId = Guid.NewGuid();
@@ -66,11 +66,11 @@ public sealed class SchemaDtoValidatorServiceTests
             .WithField(fieldId, "secondField", "int")
             .Build();
 
-        Assert.Throws<SchemaFieldIdsNotUnique>(() => validator.ValidateSchema(schema));
+        Assert.Throws<SchemaFieldIdsNotUniqueException>(() => validator.ValidateSchema(schema));
     }
 
     [Fact]
-    public void ValidateSchema_WhenFieldNamesAreDuplicated_ThrowsSchemaFieldNamesNotUnique()
+    public void ValidateSchema_WhenFieldNamesAreDuplicated_ThrowsSchemaFieldNamesNotUniqueException()
     {
         var validator = new SchemaDtoValidatorService();
 
@@ -79,7 +79,7 @@ public sealed class SchemaDtoValidatorServiceTests
             .WithField("sameField", "int")
             .Build();
 
-        Assert.Throws<SchemaFieldNamesNotUnique>(() => validator.ValidateSchema(schema));
+        Assert.Throws<SchemaFieldNamesNotUniqueException>(() => validator.ValidateSchema(schema));
     }
 
     [Fact]

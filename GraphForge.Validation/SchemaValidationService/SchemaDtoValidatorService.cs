@@ -72,12 +72,12 @@ public class SchemaDtoValidatorService : ISchemaDtoValidatorService
 
         if (schema.Fields.Select((s) => s.Id).Distinct().Count() != schema.Fields.Count)
         {
-            throw new SchemaFieldIdsNotUnique("Ids of fields inside one schema must be unique");
+            throw new SchemaFieldIdsNotUniqueException("Ids of fields inside one schema must be unique");
         }
 
         if (schema.Fields.Select((s) => s.Name).Distinct().Count() != schema.Fields.Count)
         {
-            throw new SchemaFieldNamesNotUnique("Names of fields inside one schema must be unique");
+            throw new SchemaFieldNamesNotUniqueException("Names of fields inside one schema must be unique");
         }
 
         foreach (SchemaFieldDto fieldDto in schema.Fields)
