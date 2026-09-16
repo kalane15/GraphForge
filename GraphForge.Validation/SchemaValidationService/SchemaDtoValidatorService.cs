@@ -23,7 +23,7 @@ public class SchemaDtoValidatorService : ISchemaDtoValidatorService
 
         if (schemas.Count((s) => s is null) > 0)
         {
-            throw new SchemasIdsNotUniqueException("Found duplicate id");
+            throw new SchemaValidationException("Schemas list contains null values");
         }
 
         if (schemas.Select((s) => s.Id).Distinct().Count() != schemas.Count)
