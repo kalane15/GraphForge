@@ -20,6 +20,7 @@ public class AuthRefreshTests : IClassFixture<ApiPostgresTestFactory>
         });
     }
 
+
     [Fact]
     public async Task Refresh_WhenSignedIn_ReturnsNoContentAndKeepsUserAuthorized()
     {
@@ -59,11 +60,12 @@ public class AuthRefreshTests : IClassFixture<ApiPostgresTestFactory>
         Assert.Equal(login, info.Login);
     }
 
+
     [Fact]
-    public async Task Refresh_WhenNotSignedIn_ReturnsUnauthorized()
+    public async Task Refresh_WhenNotSignedIn_Returns401ProblemDetails()
     {
         var response = await _client.PostAsync("/api/auth/refresh", content: null);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
     }
 }
