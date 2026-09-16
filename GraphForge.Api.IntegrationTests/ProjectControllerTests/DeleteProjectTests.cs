@@ -45,15 +45,11 @@ public sealed class DeleteProjectTests : IClassFixture<ApiPostgresTestFactory>
     [Fact]
     public async Task DeleteProject_WhenProjectBelongsToOtherUser_Returns404ProblemDetails()
     {
-        (HttpClient client, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
+        (_, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-        HttpClient otherclient = await _apiTestFactory.CreateAuthorizedClientAsync();
-
-
-        HttpResponseMessage deleteResponse = await otherclient.DeleteAsync($"api/projects/{info.Id}");
-
-
-        await AssertProblemDetailsAsync(deleteResponse, HttpStatusCode.NotFound);
+        await AssertAccessOtherUserResourceReturnsNotFoundAsync(
+            _apiTestFactory,
+            client => client.DeleteAsync($"api/projects/{info.Id}"));
     }
 
     [Fact]
@@ -61,13 +57,9 @@ public sealed class DeleteProjectTests : IClassFixture<ApiPostgresTestFactory>
     {
         (_, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-        HttpClient client = _apiTestFactory.CreateClient();
-
-
-        HttpResponseMessage deleteResponse = await client.DeleteAsync($"api/projects/{info.Id}");
-
-
-        await AssertProblemDetailsAsync(deleteResponse, HttpStatusCode.Unauthorized);
+        await AssertUnauthorizedAsync(
+            _apiTestFactory,
+            client => client.DeleteAsync($"api/projects/{info.Id}"));
     }
 }
 

@@ -74,17 +74,15 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
             await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync(oldName, oldDescription);
 
 
-        HttpClient otherClient = await _apiTestFactory.CreateAuthorizedClientAsync();
-        HttpResponseMessage response = await otherClient.PutAsJsonAsync($"/api/projects/{createdProjectInfo.Id}", new
-        {
-            name = newName,
-            description = newDescription
-        });
+        await AssertAccessOtherUserResourceReturnsNotFoundAsync(
+            _apiTestFactory,
+            client => client.PutAsJsonAsync($"/api/projects/{createdProjectInfo.Id}", new
+            {
+                name = newName,
+                description = newDescription
+            }));
 
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
-
-        response = await ownerClient.GetAsync($"/api/projects/{createdProjectInfo.Id}");
+        HttpResponseMessage response = await ownerClient.GetAsync($"/api/projects/{createdProjectInfo.Id}");
         ProjectInfoResponse? getInfo = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
 
         Assert.NotNull(createdProjectInfo);
@@ -99,17 +97,13 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
         (_, ProjectInfoResponse info) =
             await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-        HttpClient client = _apiTestFactory.CreateClient();
-
-
-        HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{info.Id}", new
-        {
-            name = "name",
-            description = "description",
-        });
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
+        await AssertUnauthorizedAsync(
+            _apiTestFactory,
+            client => client.PutAsJsonAsync($"/api/projects/{info.Id}", new
+            {
+                name = "name",
+                description = "description",
+            }));
     }
 
 

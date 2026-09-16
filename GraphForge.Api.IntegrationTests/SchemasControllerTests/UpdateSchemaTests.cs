@@ -20,17 +20,13 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
     {
         (_, ProjectInfoResponse project, SchemaResponse schema) = await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync();
 
-        HttpClient client = _apiTestFactory.CreateClient();
-
-
-        HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{project.Id}/schemas/{schema.Id}", new
-        {
-            schemaTypeName = "ValidName",
-            fields = new List<SchemaFieldUpdateRequest>()
-        });
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
+        await AssertUnauthorizedAsync(
+            _apiTestFactory,
+            client => client.PutAsJsonAsync($"/api/projects/{project.Id}/schemas/{schema.Id}", new
+            {
+                schemaTypeName = "ValidName",
+                fields = new List<SchemaFieldUpdateRequest>()
+            }));
     }
 
 
@@ -76,19 +72,13 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
         (HttpClient ownerClient, ProjectInfoResponse project, SchemaResponse createdSchema) =
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync(fields: createdFields);
 
-        HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
-
-
-        HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{project.Id}/schemas/{createdSchema.Id}",
-            new
+        await AssertAccessOtherUserResourceReturnsNotFoundAsync(
+            _apiTestFactory,
+            client => client.PutAsJsonAsync($"/api/projects/{project.Id}/schemas/{createdSchema.Id}", new
             {
                 schemaTypeName = "ValidName",
                 fields = new List<SchemaFieldUpdateRequest>()
-            }
-            );
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
+            }));
 
         HttpResponseMessage getResponse = await ownerClient.GetAsync($"/api/projects/{project.Id}/schemas/{createdSchema.Id}");
 

@@ -39,13 +39,9 @@ public sealed class DeleteSchemaTests : IClassFixture<ApiPostgresTestFactory>
         (_, ProjectInfoResponse project, SchemaResponse schema) =
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync();
 
-        HttpClient client = _apiTestFactory.CreateClient();
-
-
-        HttpResponseMessage response = await client.DeleteAsync($"/api/projects/{project.Id}/schemas/{schema.Id}");
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
+        await AssertUnauthorizedAsync(
+            _apiTestFactory,
+            client => client.DeleteAsync($"/api/projects/{project.Id}/schemas/{schema.Id}"));
     }
 
 
@@ -82,13 +78,9 @@ public sealed class DeleteSchemaTests : IClassFixture<ApiPostgresTestFactory>
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync();
 
 
-        HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
-
-
-        HttpResponseMessage response = await client.DeleteAsync($"/api/projects/{project.Id}/schemas/{schema.Id}");
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
+        await AssertAccessOtherUserResourceReturnsNotFoundAsync(
+            _apiTestFactory,
+            client => client.DeleteAsync($"/api/projects/{project.Id}/schemas/{schema.Id}"));
 
         HttpResponseMessage getResponse = await ownerClient.GetAsync($"/api/projects/{project.Id}/schemas/{schema.Id}");
 

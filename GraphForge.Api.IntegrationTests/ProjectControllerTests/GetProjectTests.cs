@@ -59,15 +59,11 @@ public sealed class GetProjectTests : IClassFixture<ApiPostgresTestFactory>
     [MemberData(nameof(ProjectRandomData))]
     public async Task GetProject_WhenProjectBelongsToOtherUser_Returns404ProblemDetail(string name, string description)
     {
-        (HttpClient client, ProjectInfoResponse info) = 
+        (_, ProjectInfoResponse info) = 
             await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync(name, description);
 
-        client = await _apiTestFactory.CreateAuthorizedClientAsync();
-
-
-        var getResponse = await client.GetAsync($"/api/projects/{info.Id}");
-
-
-        await AssertProblemDetailsAsync(getResponse, HttpStatusCode.NotFound);
+        await AssertAccessOtherUserResourceReturnsNotFoundAsync(
+            _apiTestFactory,
+            client => client.GetAsync($"/api/projects/{info.Id}"));
     }
 }

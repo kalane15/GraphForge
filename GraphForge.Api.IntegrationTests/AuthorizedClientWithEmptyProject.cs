@@ -32,12 +32,4 @@ public static class SchemasTestClientExtensions
 
         return (client, info);
     }
-
-    public static async Task<(HttpClient, ProjectInfoResponse)> CreateUnauthorizedClientWithEmptyProjectAsync(
-    this ApiPostgresTestFactory factory, string? inputName = null, string? inputDescription = null)
-    {
-        (_, ProjectInfoResponse info) = await factory.CreateAuthorizedClientWithEmptyProjectAsync();
-
-        return (factory.CreateClient(), info);
-    }
 }

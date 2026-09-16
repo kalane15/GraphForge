@@ -74,17 +74,15 @@ public sealed class CreateSchemaTests : IClassFixture<ApiPostgresTestFactory>
     [InlineData(SchemaDefaultTypeName)]
     public async Task CreateSchema_WhenNotAuthorized_Returns401ProblemDetails(string schemaTypeName)
     {
-        (HttpClient client, ProjectInfoResponse info) = await _apiTestFactory.CreateUnauthorizedClientWithEmptyProjectAsync();
+        (_, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-
-        HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{info.Id}/schemas", new
-        {
-            schemaTypeName,
-            fields = RandomFieldsFactory.GetFieldsRandomValidData()
-        });
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
+        await AssertUnauthorizedAsync(
+            _apiTestFactory,
+            client => client.PostAsJsonAsync($"/api/projects/{info.Id}/schemas", new
+            {
+                schemaTypeName,
+                fields = RandomFieldsFactory.GetFieldsRandomValidData()
+            }));
     }
 
 
@@ -113,17 +111,13 @@ public sealed class CreateSchemaTests : IClassFixture<ApiPostgresTestFactory>
     {
         (_, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-        HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
-
-
-        HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{info.Id}/schemas", new
-        {
-            schemaTypeName,
-            fields = RandomFieldsFactory.GetFieldsRandomValidData()
-        });
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
+        await AssertAccessOtherUserResourceReturnsNotFoundAsync(
+            _apiTestFactory,
+            client => client.PostAsJsonAsync($"/api/projects/{info.Id}/schemas", new
+            {
+                schemaTypeName,
+                fields = RandomFieldsFactory.GetFieldsRandomValidData()
+            }));
     }
 
 

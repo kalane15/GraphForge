@@ -15,17 +15,13 @@ public class CreateProjectTests : IClassFixture<ApiPostgresTestFactory>
     [Fact]
     public async Task CreateProject_WhenUnauthorized_Returns401ProblemDetails()
     {
-        HttpClient client = _apiTestFactory.CreateClient();
-
-
-        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new
-        {
-            name = "name",
-            description = "description"
-        });
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
+        await AssertUnauthorizedAsync(
+            _apiTestFactory,
+            client => client.PostAsJsonAsync("/api/projects", new
+            {
+                name = "name",
+                description = "description"
+            }));
     }
 
     [Fact]

@@ -39,7 +39,7 @@ public class GraphsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetGraphs(Guid projectId)
+    public async Task<IActionResult> GetGraphsList(Guid projectId)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 

@@ -10,15 +10,14 @@ namespace GraphForge.Api.IntegrationTests;
 public static class GraphTestClientExtensions
 {
     /// <summary>
-    /// Created authorized client and creates project 
-    /// with name <paramref name="inputName"/> and description <paramref name="inputDescription"/>
+    /// Creates authorized client, project, schema and graph with valid base content.
     /// </summary>
-    /// <returns>Returns (HttpClient, Created project DTO)</returns>
     public static async Task<(HttpClient, ProjectInfoResponse, GraphInfoResponse)> CreateAuthorizedClientWithBaseGraphAsync(
-        this ApiPostgresTestFactory factory, string? inputName=null, string? inputDescription=null)
+        this ApiPostgresTestFactory factory,
+        string graphName = "GraphName")
     {
         (HttpClient client, ProjectInfoResponse project, SchemaResponse schema) =
-                   await factory.CreateAuthorizedClientWithSchemaAsync();
+            await factory.CreateAuthorizedClientWithSchemaAsync();
 
         string firstNodeId = Guid.NewGuid().ToString();
         string secondNodeId = Guid.NewGuid().ToString();
@@ -26,16 +25,29 @@ public static class GraphTestClientExtensions
         GraphDto validGraph = new GraphDtoBuilder()
             .WithNode(firstNodeId, schema.Id)
             .WithNode(secondNodeId, schema.Id)
-            .WithEdge(firstNodeId, secondNodeId)
+            .WithEdge(source: firstNodeId, target: secondNodeId)
             .Build();
 
         HttpResponseMessage response = await client.PostAsJsonAsync(
-            $"/api/projects/{project.Id}/graphs", validGraph);
+            $"/api/projects/{project.Id}/graphs",
+            new
+            {
+                name = graphName
+            });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         GraphInfoResponse? graph = await response.Content.ReadFromJsonAsync<GraphInfoResponse>();
         Assert.NotNull(graph);
+
+        response = await client.PutAsJsonAsync(
+            $"/api/projects/{project.Id}/graphs/{graph.Id}/content",
+            new
+            {
+                content = validGraph
+            });
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
         return (client, project, graph);
     }

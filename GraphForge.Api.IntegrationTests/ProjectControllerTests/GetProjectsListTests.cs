@@ -84,15 +84,8 @@ public sealed class GetProjectsListTests : IClassFixture<ApiPostgresTestFactory>
     [Fact]
     public async Task GetProjectsList_WhenUnauthorized_Returns401ProblemDetail()
     {
-        (_, _) =
-            await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync(); ;
-
-        HttpClient client = _apiTestFactory.CreateClient();
-
-
-        var response = await client.GetAsync("/api/projects");
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
+        await AssertUnauthorizedAsync(
+            _apiTestFactory,
+            client => client.GetAsync("/api/projects"));
     }    
 }

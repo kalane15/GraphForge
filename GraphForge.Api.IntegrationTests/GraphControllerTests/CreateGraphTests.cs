@@ -20,16 +20,12 @@ public sealed class CreateGraphTests : IClassFixture<ApiPostgresTestFactory>
     {
         (_, ProjectInfoResponse project) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-        HttpClient client = _apiTestFactory.CreateClient();
-
-
-        HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{project.Id}/graphs", new
-        {
-            name="name"
-        });
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
+        await AssertUnauthorizedAsync(
+            _apiTestFactory,
+            client => client.PostAsJsonAsync($"/api/projects/{project.Id}/graphs", new
+            {
+                name = "name"
+            }));
     }
 
 
@@ -54,16 +50,12 @@ public sealed class CreateGraphTests : IClassFixture<ApiPostgresTestFactory>
     {
         (_, ProjectInfoResponse project) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-        HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
-
-
-        HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{project.Id}/graphs", new
-        {
-            name = "name"
-        });
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
+        await AssertAccessOtherUserResourceReturnsNotFoundAsync(
+            _apiTestFactory,
+            client => client.PostAsJsonAsync($"/api/projects/{project.Id}/graphs", new
+            {
+                name = "name"
+            }));
     }
 
 

@@ -21,13 +21,9 @@ public sealed class GetSchemasListTests : IClassFixture<ApiPostgresTestFactory>
         (_, ProjectInfoResponse project) =
             await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-        HttpClient client = _apiTestFactory.CreateClient();
-
-
-        HttpResponseMessage response = await client.GetAsync($"/api/projects/{project.Id}/schemas");
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
+        await AssertUnauthorizedAsync(
+            _apiTestFactory,
+            client => client.GetAsync($"/api/projects/{project.Id}/schemas"));
     }
 
 
@@ -37,13 +33,9 @@ public sealed class GetSchemasListTests : IClassFixture<ApiPostgresTestFactory>
         (_, ProjectInfoResponse project) =
             await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-        HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
-
-
-        HttpResponseMessage response = await client.GetAsync($"/api/projects/{project.Id}/schemas");
-
-
-        await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
+        await AssertAccessOtherUserResourceReturnsNotFoundAsync(
+            _apiTestFactory,
+            client => client.GetAsync($"/api/projects/{project.Id}/schemas"));
     }
 
 
