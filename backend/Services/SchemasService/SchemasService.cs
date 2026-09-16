@@ -45,7 +45,9 @@ public class SchemasService : ISchemasService
     {
         await EnsureProjectBelongsToUser(userId, projectId);
 
-        var schema = await _db.Schemas.FirstOrDefaultAsync(
+        var schema = await _db.Schemas
+            .Include(schema => schema.Fields)
+            .FirstOrDefaultAsync(
             (schema) => 
                 schema.Id == schemaId &&
                 schema.ProjectId == projectId &&

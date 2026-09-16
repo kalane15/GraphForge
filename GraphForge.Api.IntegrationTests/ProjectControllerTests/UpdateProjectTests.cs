@@ -16,22 +16,10 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
     [Fact]
     public async Task UpdateProject_WhenNameEmpty_Returns400()
     {
-        HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
-
-        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new
-        {
-            name = "name",
-            description = "description",
-        });
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        ProjectInfoResponse? info = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
-        Assert.NotNull(info);
-        Guid createdProjectId = info.Id;
+        (HttpClient client, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
 
-        response = await client.PutAsJsonAsync($"/api/projects/{createdProjectId}", new
+        HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{info.Id}", new
         {
             name = "",
             description = "description",
@@ -45,25 +33,14 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
     [Fact]
     public async Task UpdateProject_WhenNameMissing_Returns400()
     {
-        HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
-
-        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new
-        {
-            name = "name",
-            description = "description",
-        });
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        ProjectInfoResponse? info = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
-        Assert.NotNull(info);
-        Guid createdProjectId = info.Id;
+        (HttpClient client, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
 
-        response = await client.PutAsJsonAsync($"/api/projects/{createdProjectId}", new
+        HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{info.Id}", new
         {
             description = "description",
         });
+
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
@@ -74,40 +51,31 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
         
+
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{Guid.NewGuid()}", new
         {
             name = "name",
             description = "description",
         });
 
+
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
 
     [Fact]
-    public async Task UpdateProject_WhenProjectBelongToOtherUser_Returns404ProblemDetails()
+    public async Task UpdateProject_WhenProjectBelongsToOtherUser_Returns404ProblemDetails()
     {
         string oldName = "oldName";
         string oldDescription = "oldDescription";
         string newName = "newName";
         string newDescription = "newDescription";
 
-        HttpClient ownerClient = await _apiTestFactory.CreateAuthorizedClientAsync();
-
-        HttpResponseMessage response = await ownerClient.PostAsJsonAsync("/api/projects", new
-        {
-            name = oldName,
-            description = oldDescription,
-        });
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        ProjectInfoResponse? info = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
-        Assert.NotNull(info);
-        Guid createdProjectId = info.Id;
+        (HttpClient ownerClient, ProjectInfoResponse createdProjectInfo) =
+            await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync(oldName, oldDescription);
 
 
         HttpClient otherClient = await _apiTestFactory.CreateAuthorizedClientAsync();
-        response = await otherClient.PutAsJsonAsync($"/api/projects/{createdProjectId}", new
+        HttpResponseMessage response = await otherClient.PutAsJsonAsync($"/api/projects/{createdProjectInfo.Id}", new
         {
             name = newName,
             description = newDescription
@@ -116,37 +84,30 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
 
-        response = await ownerClient.GetAsync($"/api/projects/{createdProjectId}");
-        info = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
-        Assert.NotNull(info);
-        Assert.Equal(oldName, info.Name);
-        Assert.Equal(oldDescription, info.Description);
+        response = await ownerClient.GetAsync($"/api/projects/{createdProjectInfo.Id}");
+        ProjectInfoResponse? getInfo = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
+
+        Assert.NotNull(createdProjectInfo);
+        Assert.Equal(oldName, createdProjectInfo.Name);
+        Assert.Equal(oldDescription, createdProjectInfo.Description);
     }
 
 
     [Fact]
     public async Task UpdateProject_WhenUnauthorized_Returns401ProblemDetails()
     {
-        HttpClient ownerClient = await _apiTestFactory.CreateAuthorizedClientAsync();
-
-        HttpResponseMessage response = await ownerClient.PostAsJsonAsync("/api/projects", new
-        {
-            name = "name",
-            description = "description",
-        });
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        ProjectInfoResponse? info = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
-        Assert.NotNull(info);
+        (var _, ProjectInfoResponse info) =
+            await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
         HttpClient client = _apiTestFactory.CreateClient();
 
-        response = await client.PutAsJsonAsync($"/api/projects/{info.Id}", new
+
+        HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{info.Id}", new
         {
             name = "name",
             description = "description",
         });
+
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
     }
@@ -159,35 +120,26 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
         string oldDescription = "oldDescription";
         string newName = "newName";
         string newDescription = "newDescription";
-        
-        HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
 
-        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new
-        {
-            name = oldName,
-            description = oldDescription,
-        });
+        (HttpClient client, ProjectInfoResponse createdProjectInfo) =
+            await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync(oldName, oldDescription); ;
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        ProjectInfoResponse? info = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
-        Assert.NotNull(info);
-        Guid createdProjectId = info.Id;
-
-        response = await client.PutAsJsonAsync($"/api/projects/{createdProjectId}", new
+        HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{createdProjectInfo.Id}", new
         {
             name = newName,
             description = newDescription,
         });
 
+
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        info = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
+        ProjectInfoResponse? info = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
         Assert.NotNull(info);
 
         Assert.Equal(newName, info.Name);
         Assert.Equal(newDescription, info.Description);
-        Assert.Equal(createdProjectId, info.Id);
+        Assert.Equal(createdProjectInfo.Id, info.Id);
     }
 
 
@@ -201,30 +153,22 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
         string oldName = "oldName";
         string newName = "newName";
 
-        HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
+        (HttpClient client, ProjectInfoResponse createdProjectInfo) =
+            await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync(oldName); ;
 
-        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new
+
+        HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{createdProjectInfo.Id}", new
         {
-            name = oldName
+            name = newName
         });
+
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         ProjectInfoResponse? info = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
         Assert.NotNull(info);
-        Guid createdProjectId = info.Id;
-
-        response = await client.PutAsJsonAsync($"/api/projects/{createdProjectId}", new
-        {
-            name = newName
-        });
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        info = await response.Content.ReadFromJsonAsync<ProjectInfoResponse>();
-        Assert.NotNull(info);
 
         Assert.Equal(newName, info.Name);
-        Assert.Equal(createdProjectId, info.Id);
+        Assert.Equal(createdProjectInfo.Id, info.Id);
     }
 }

@@ -7,6 +7,16 @@ namespace GraphForge.Api.IntegrationTests;
 
 public static class SchemaTestClientExtensions
 {
+    /// <summary>
+    /// Creates authorized client, then creates project. Then adds one schema with empty fields colection to the project
+    /// </summary>
+    /// <returns>
+    /// (
+    /// <see cref="HttpClient"/> AuthorizedClient, 
+    /// <see cref="ProjectInfoResponse"/> Project, 
+    /// <see cref="SchemaResponse "/>Schema
+    /// )
+    /// </returns>
     public static async Task<(HttpClient Client, ProjectInfoResponse Project, SchemaResponse Schema)>
         CreateAuthorizedClientWithSchemaAsync(
             this ApiPostgresTestFactory factory,

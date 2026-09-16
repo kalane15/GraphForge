@@ -40,7 +40,7 @@ public sealed class GetProjectsListTests : IClassFixture<ApiPostgresTestFactory>
                     description = $"Description {i}"
                 });
 
-            createResponse.EnsureSuccessStatusCode();
+            Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
         }
 
 
@@ -84,6 +84,9 @@ public sealed class GetProjectsListTests : IClassFixture<ApiPostgresTestFactory>
     [Fact]
     public async Task GetProjectsList_WhenUnauthorized_Returns401ProblemDetail()
     {
+        (var _, var _) =
+            await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync(); ;
+
         HttpClient client = _apiTestFactory.CreateClient();
 
 
