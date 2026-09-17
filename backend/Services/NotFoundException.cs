@@ -1,4 +1,4 @@
-﻿namespace GraphForge.Api.Services;
+namespace GraphForge.Api.Services;
 
 public sealed class NotFoundException : Exception
 {

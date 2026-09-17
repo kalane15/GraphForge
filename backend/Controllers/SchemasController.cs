@@ -1,11 +1,10 @@
-﻿using GraphForge.Api.DTOs.Schemas;
+using GraphForge.Api.DTOs.Schemas;
 using GraphForge.Api.Services.SchemasService;
 using GraphForge.Api.Services.UserIdentityProviderService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GraphForge.Api.Controllers;
-
 
 [Route("api/projects/{projectId}/schemas")]
 [ApiController]
@@ -21,7 +20,6 @@ public class SchemasController : ControllerBase
         _userIdentityProvider = userIdentityProvider;
     }
 
-
     [HttpGet]
     public async Task<IActionResult> GetSchemasList(Guid projectId)
     {
@@ -29,7 +27,6 @@ public class SchemasController : ControllerBase
         SchemasListResponse result = await _schemasService.GetSchemasList(userId, projectId);
         return Ok(result);
     }
-
 
     [HttpGet("{schemaId}")]
     public async Task<IActionResult> GetSchema(Guid projectId, Guid schemaId)
@@ -39,7 +36,6 @@ public class SchemasController : ControllerBase
         return Ok(result);
     }
 
-
     [HttpPost]
     public async Task<IActionResult> CreateSchema(Guid projectId, SchemaCreateRequest request)
     {
@@ -47,7 +43,6 @@ public class SchemasController : ControllerBase
         SchemaResponse result = await _schemasService.CreateSchema(userId, projectId, request);
         return Ok(result);
     }
-
 
     [HttpPut("{schemaId}")]
     public async Task<IActionResult> UpdateSchema(Guid projectId, Guid schemaId, SchemaEditDataRequest request)

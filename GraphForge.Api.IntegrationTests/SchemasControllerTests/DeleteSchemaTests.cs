@@ -1,7 +1,7 @@
-using GraphForge.Api.DTOs.Projects;
-using GraphForge.Api.DTOs.Schemas;
 using System.Net;
 using System.Net.Http.Json;
+using GraphForge.Api.DTOs.Projects;
+using GraphForge.Api.DTOs.Schemas;
 
 namespace GraphForge.Api.IntegrationTests.SchemasControllerTests;
 
@@ -14,16 +14,13 @@ public sealed class DeleteSchemaTests : IClassFixture<ApiPostgresTestFactory>
         _apiTestFactory = factory;
     }
 
-
     [Fact]
     public async Task DeleteSchema_WhenSchemaExists_Returns204AndGetReturns404()
     {
         (HttpClient client, ProjectInfoResponse project, SchemaResponse schema) =
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync();
 
-
         HttpResponseMessage response = await client.DeleteAsync($"/api/projects/{project.Id}/schemas/{schema.Id}");
-
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
@@ -31,7 +28,6 @@ public sealed class DeleteSchemaTests : IClassFixture<ApiPostgresTestFactory>
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
-
 
     [Fact]
     public async Task DeleteSchema_WhenUnauthorized_Returns401ProblemDetails()
@@ -44,39 +40,31 @@ public sealed class DeleteSchemaTests : IClassFixture<ApiPostgresTestFactory>
             client => client.DeleteAsync($"/api/projects/{project.Id}/schemas/{schema.Id}"));
     }
 
-
     [Fact]
     public async Task DeleteSchema_WhenProjectDoesNotExist_Returns404ProblemDetails()
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
 
-
         HttpResponseMessage response = await client.DeleteAsync($"/api/projects/{Guid.NewGuid()}/schemas/{Guid.NewGuid()}");
-
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
-
 
     [Fact]
     public async Task DeleteSchema_WhenSchemaDoesNotExist_Returns404ProblemDetails()
     {
         (HttpClient client, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-
         HttpResponseMessage response = await client.DeleteAsync($"/api/projects/{info.Id}/schemas/{Guid.NewGuid()}");
-
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
-
 
     [Fact]
     public async Task DeleteSchema_WhenSchemaBelongsToOtherUser_Returns404ProblemDetails()
     {
         (HttpClient ownerClient, ProjectInfoResponse project, SchemaResponse schema) =
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync();
-
 
         await AssertAccessOtherUserResourceReturnsNotFoundAsync(
             _apiTestFactory,

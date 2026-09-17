@@ -1,8 +1,8 @@
-using GraphForge.Api.DTOs.Projects;
 using System.Net;
-using System.Net.Http.Json;
+using GraphForge.Api.DTOs.Projects;
 
 namespace GraphForge.Api.IntegrationTests.ProjectControllerTests;
+
 public sealed class DeleteProjectTests : IClassFixture<ApiPostgresTestFactory>
 {
     private readonly ApiPostgresTestFactory _apiTestFactory;
@@ -11,28 +11,22 @@ public sealed class DeleteProjectTests : IClassFixture<ApiPostgresTestFactory>
         _apiTestFactory = factory;
     }
 
-
     [Fact]
     public async Task DeleteProject_WhenProjectDoesNotExist_Returns404ProblemDetails()
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
 
-
         HttpResponseMessage response = await client.DeleteAsync($"api/projects/{Guid.NewGuid()}");
-
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
-
 
     [Fact]
     public async Task DeleteProject_WhenProjectExist_Returns204AndGetReturns404()
     {
         (HttpClient client, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-
         HttpResponseMessage deleteResponse = await client.DeleteAsync($"api/projects/{info.Id}");
-
 
         Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
@@ -40,7 +34,6 @@ public sealed class DeleteProjectTests : IClassFixture<ApiPostgresTestFactory>
 
         Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
     }
-
 
     [Fact]
     public async Task DeleteProject_WhenProjectBelongsToOtherUser_Returns404ProblemDetails()

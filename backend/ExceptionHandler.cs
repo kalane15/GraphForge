@@ -1,4 +1,4 @@
-﻿using GraphForge.Api.Services;
+using GraphForge.Api.Services;
 using GraphForge.Api.Services.AuthService;
 using GraphForge.Api.Services.GraphService;
 using GraphForge.Api.Services.ProjectService;
@@ -11,7 +11,7 @@ namespace GraphForge.Api;
 
 public static class ExceptionHandler
 {
-    public async static Task Handler(HttpContext context)
+    public static async Task Handler(HttpContext context)
     {
         var exception = context.Features
             .Get<IExceptionHandlerFeature>()?
@@ -26,7 +26,7 @@ public static class ExceptionHandler
                 "Not found",
                 exception.Message),
 
-            GraphValidationException or 
+            GraphValidationException or
             SchemaValidationException or
             ProjectValidationException => CreateProblemDetails(
                 StatusCodes.Status400BadRequest,

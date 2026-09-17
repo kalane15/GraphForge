@@ -1,18 +1,10 @@
-﻿using GraphForge.Api.Database;
 using GraphForge.Api.DTOs.Graphs;
-using GraphForge.Api.Models;
-using GraphForge.Api.Services;
 using GraphForge.Api.Services.GraphService;
-using GraphForge.Api.Services.ProjectService;
 using GraphForge.Api.Services.UserIdentityProviderService;
-using GraphForge.Validation.GraphValidationService;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace GraphForge.Api.Controllers;
-
 
 [Route("api/projects/{projectId}/graphs")]
 [ApiController]
@@ -28,14 +20,13 @@ public class GraphsController : ControllerBase
         _graphsService = graphsService;
     }
 
-
     [HttpPost]
     public async Task<IActionResult> CreateGraph(Guid projectId, GraphCreationRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-        
+
         GraphInfoResponse result = await _graphsService.CreateUserGraphAsync(userId, projectId, request);
-        return Ok(result);             
+        return Ok(result);
     }
 
     [HttpGet]
@@ -65,9 +56,9 @@ public class GraphsController : ControllerBase
         [FromBody] GraphDataEditRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-        
+
         GraphDataResponse? result = await _graphsService.UpdateUserGraphAsync(userId, projectId, graphId, request);
-        return Ok(result);       
+        return Ok(result);
     }
 
     [HttpDelete("{graphId}")]
@@ -88,14 +79,12 @@ public class GraphsController : ControllerBase
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        
-        await _graphsService.UpdateUserGraphContentAsync
-            (
+        await _graphsService.UpdateUserGraphContentAsync(
             userId,
             projectId,
             graphId,
             request.Content
-            );       
+        );
 
         return NoContent();
     }

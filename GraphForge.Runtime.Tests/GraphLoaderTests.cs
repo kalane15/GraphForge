@@ -1,5 +1,3 @@
-using GraphForge.Runtime;
-
 namespace GraphForge.Runtime.Tests;
 
 public sealed class GraphLoaderTests

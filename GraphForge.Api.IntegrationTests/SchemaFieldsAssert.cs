@@ -25,7 +25,7 @@ internal static class SchemaFieldsAssert
     private static void AssertSchemaFieldsEqual(
         IEnumerable<(string Name, string Type)> expectedFields,
         IReadOnlyCollection<SchemaFieldDefinitionResponse> actualFields)
-    { 
+    {
         Assert.Equal(expectedFields.Count(), actualFields.Count);
 
         foreach ((string expectedName, string expectedType) in expectedFields)

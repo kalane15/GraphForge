@@ -1,8 +1,8 @@
-﻿using GraphForge.Api.Auth;
+using System.Text;
+using GraphForge.Api.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 namespace GraphForge.Api.Configuration;
 

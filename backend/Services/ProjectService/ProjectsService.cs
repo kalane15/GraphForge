@@ -1,4 +1,4 @@
-﻿using GraphForge.Api.Database;
+using GraphForge.Api.Database;
 using GraphForge.Api.DTOs.Graphs;
 using GraphForge.Api.DTOs.Projects;
 using GraphForge.Api.Models;
@@ -18,7 +18,6 @@ public class ProjectsService : IProjectsService
         _db = db;
         _graphsService = graphsService;
     }
-
 
     public async Task<ProjectInfoResponse> CreateUserProjectAsync(Guid userId, ProjectInfoEditRequest request)
     {
@@ -45,13 +44,13 @@ public class ProjectsService : IProjectsService
         List<ProjectInfoResponse> projects = await _db.Projects
             .Where(project => project.OwnerId == userId)
             .Select(project => ProjectMapper.ToInfoResponse(
-                project, 
-                _db.Graphs.Count(graph => graph.ProjectId == project.Id))
-            ).ToListAsync();
+                project,
+                _db.Graphs.Count(graph => graph.ProjectId == project.Id)
+            ))
+            .ToListAsync();
 
         return projects;
     }
-
 
     public async Task<ProjectDataResponse> GetUserProjectAsync(Guid userId, Guid projectId)
     {

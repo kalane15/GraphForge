@@ -1,7 +1,7 @@
-﻿using GraphForge.Api.DTOs.Graphs;
-using GraphForge.Api.DTOs.Projects;
 using System.Net;
 using System.Net.Http.Json;
+using GraphForge.Api.DTOs.Graphs;
+using GraphForge.Api.DTOs.Projects;
 
 namespace GraphForge.Api.IntegrationTests.GraphControllerTests;
 
@@ -13,7 +13,6 @@ public sealed class CreateGraphTests : IClassFixture<ApiPostgresTestFactory>
     {
         _apiTestFactory = factory;
     }
-
 
     [Fact]
     public async Task CreateGraph_WhenUnauthorized_Returns401ProblemDetails()
@@ -28,22 +27,18 @@ public sealed class CreateGraphTests : IClassFixture<ApiPostgresTestFactory>
             }));
     }
 
-
     [Fact]
     public async Task CreateGraph_WhenProjectDoesNotExist_Returns404ProblemDetails()
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
-
 
         HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{Guid.NewGuid()}/graphs", new
         {
             name = "name"
         });
 
-
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
-
 
     [Fact]
     public async Task CreateGraph_WhenProjectBelongsToOtherUser_Returns404ProblemDetails()
@@ -58,20 +53,17 @@ public sealed class CreateGraphTests : IClassFixture<ApiPostgresTestFactory>
             }));
     }
 
-
     [Fact]
     public async Task CreateGraph_WhenNameIsMissing_Returns400ProblemDetails()
     {
         (HttpClient client, ProjectInfoResponse project) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-
-        HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{project.Id}/graphs", new {});
-
+        HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{project.Id}/graphs", new
+        {
+        });
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
-
-
 
     [Fact]
     public async Task CreateGraph_WhenDataCorrect_Returns200WithCreatedData()
@@ -79,12 +71,10 @@ public sealed class CreateGraphTests : IClassFixture<ApiPostgresTestFactory>
         string name = "graph name";
         (HttpClient client, ProjectInfoResponse project) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-
-        HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{project.Id}/graphs", new 
+        HttpResponseMessage response = await client.PostAsJsonAsync($"/api/projects/{project.Id}/graphs", new
         {
             name
         });
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 

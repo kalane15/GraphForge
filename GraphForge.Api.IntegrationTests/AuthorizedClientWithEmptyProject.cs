@@ -1,6 +1,6 @@
-﻿using GraphForge.Api.DTOs.Projects;
 using System.Net;
 using System.Net.Http.Json;
+using GraphForge.Api.DTOs.Projects;
 
 namespace GraphForge.Api.IntegrationTests;
 
@@ -12,7 +12,7 @@ public static class SchemasTestClientExtensions
     /// </summary>
     /// <returns>Returns (HttpClient, Created project DTO)</returns>
     public static async Task<(HttpClient, ProjectInfoResponse)> CreateAuthorizedClientWithEmptyProjectAsync(
-        this ApiPostgresTestFactory factory, string? inputName=null, string? inputDescription=null)
+        this ApiPostgresTestFactory factory, string? inputName = null, string? inputDescription = null)
     {
         var client = await factory.CreateAuthorizedClientAsync();
 

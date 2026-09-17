@@ -1,7 +1,7 @@
-using GraphForge.Api.DTOs.Graphs;
-using GraphForge.Api.DTOs.Projects;
 using System.Net;
 using System.Net.Http.Json;
+using GraphForge.Api.DTOs.Graphs;
+using GraphForge.Api.DTOs.Projects;
 
 namespace GraphForge.Api.IntegrationTests.GraphControllerTests;
 
@@ -14,7 +14,6 @@ public sealed class GetGraphsListTests : IClassFixture<ApiPostgresTestFactory>
         _apiTestFactory = factory;
     }
 
-
     [Fact]
     public async Task GetGraphsList_WhenUnauthorized_Returns401ProblemDetails()
     {
@@ -26,19 +25,15 @@ public sealed class GetGraphsListTests : IClassFixture<ApiPostgresTestFactory>
             client => client.GetAsync($"/api/projects/{project.Id}/graphs"));
     }
 
-
     [Fact]
     public async Task GetGraphsList_WhenProjectDoesNotExist_Returns404ProblemDetails()
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
 
-
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{Guid.NewGuid()}/graphs");
-
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
-
 
     [Fact]
     public async Task GetGraphsList_WhenProjectBelongsToOtherUser_Returns404ProblemDetails()
@@ -51,16 +46,13 @@ public sealed class GetGraphsListTests : IClassFixture<ApiPostgresTestFactory>
             client => client.GetAsync($"/api/projects/{project.Id}/graphs"));
     }
 
-
     [Fact]
     public async Task GetGraphsList_WhenProjectEmpty_Returns200WithZeroGraphs()
     {
         (HttpClient client, ProjectInfoResponse project) =
             await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{project.Id}/graphs");
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -69,7 +61,6 @@ public sealed class GetGraphsListTests : IClassFixture<ApiPostgresTestFactory>
 
         Assert.Empty(graphsList.Graphs);
     }
-
 
     [Fact]
     public async Task GetGraphsList_WhenProjectContainsGraphs_Returns200WithSameGraphs()
@@ -92,9 +83,7 @@ public sealed class GetGraphsListTests : IClassFixture<ApiPostgresTestFactory>
             Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
         }
 
-
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{project.Id}/graphs");
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 

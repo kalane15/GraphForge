@@ -1,7 +1,7 @@
-using GraphForge.Api.DTOs.Projects;
-using GraphForge.Api.DTOs.Schemas;
 using System.Net;
 using System.Net.Http.Json;
+using GraphForge.Api.DTOs.Projects;
+using GraphForge.Api.DTOs.Schemas;
 
 namespace GraphForge.Api.IntegrationTests.SchemasControllerTests;
 
@@ -13,7 +13,6 @@ public sealed class GetSchemaTests : IClassFixture<ApiPostgresTestFactory>
     {
         _apiTestFactory = factory;
     }
-
 
     [Fact]
     public async Task GetSchema_WhenSchemaExistsAndAccessValid_Returns200WithCorrectData()
@@ -27,9 +26,7 @@ public sealed class GetSchemaTests : IClassFixture<ApiPostgresTestFactory>
         (HttpClient client, ProjectInfoResponse project, SchemaResponse schema) =
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync(fields: expectedFields);
 
-
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{project.Id}/schemas/{schema.Id}");
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -39,7 +36,6 @@ public sealed class GetSchemaTests : IClassFixture<ApiPostgresTestFactory>
         Assert.Equal(schema.SchemaTypeName, result.SchemaTypeName);
         AssertSchemaFieldsEqual(expectedFields, result.Fields);
     }
-
 
     [Fact]
     public async Task GetSchema_WhenUnauthorized_Returns401ProblemDetails()
@@ -52,19 +48,15 @@ public sealed class GetSchemaTests : IClassFixture<ApiPostgresTestFactory>
             client => client.GetAsync($"/api/projects/{project.Id}/schemas/{schema.Id}"));
     }
 
-
     [Fact]
     public async Task GetSchema_WhenProjectDoesNotExist_Returns404ProblemDetails()
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
 
-
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{Guid.NewGuid()}/schemas/{Guid.NewGuid()}");
-
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
-
 
     [Fact]
     public async Task GetSchema_WhenSchemaDoesNotExist_Returns404ProblemDetails()
@@ -72,13 +64,10 @@ public sealed class GetSchemaTests : IClassFixture<ApiPostgresTestFactory>
         (HttpClient client, ProjectInfoResponse project, SchemaResponse schema) =
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync();
 
-
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{project.Id}/schemas/{Guid.NewGuid()}");
-
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
-
 
     [Fact]
     public async Task GetSchema_WhenSchemaBelongsToOtherUser_Returns404ProblemDetails()

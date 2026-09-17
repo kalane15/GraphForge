@@ -1,10 +1,7 @@
-﻿using GraphForge.Api.DTOs.Auth;
-using Microsoft.AspNetCore.Mvc.Testing;
-using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Json;
-using System.Text;
+using GraphForge.Api.DTOs.Auth;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace GraphForge.Api.IntegrationTests.AuthTests;
 
@@ -20,13 +17,11 @@ public class AuthRefreshTests : IClassFixture<ApiPostgresTestFactory>
         });
     }
 
-
     [Fact]
     public async Task Refresh_WhenSignedIn_ReturnsNoContentAndKeepsUserAuthorized()
     {
         string login = Guid.NewGuid().ToString("N");
         string password = "123";
-
 
         var response = await _client.PostAsJsonAsync("/api/auth/signup", new
         {
@@ -36,7 +31,6 @@ public class AuthRefreshTests : IClassFixture<ApiPostgresTestFactory>
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-
         response = await _client.PostAsJsonAsync("/api/auth/signin", new
         {
             login,
@@ -45,11 +39,9 @@ public class AuthRefreshTests : IClassFixture<ApiPostgresTestFactory>
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-
         response = await _client.PostAsync("/api/auth/refresh", content: null);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-
 
         response = await _client.GetAsync("/api/auth/me");
 
@@ -59,7 +51,6 @@ public class AuthRefreshTests : IClassFixture<ApiPostgresTestFactory>
         Assert.NotNull(info);
         Assert.Equal(login, info.Login);
     }
-
 
     [Fact]
     public async Task Refresh_WhenNotSignedIn_Returns401ProblemDetails()

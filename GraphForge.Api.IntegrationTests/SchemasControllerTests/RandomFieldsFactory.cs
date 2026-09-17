@@ -1,8 +1,5 @@
-﻿using GraphForge.Api.DTOs.Schemas;
+using GraphForge.Api.DTOs.Schemas;
 using GraphForge.Validation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GraphForge.Api.IntegrationTests.SchemasControllerTests;
 

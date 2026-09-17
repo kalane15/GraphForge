@@ -1,6 +1,6 @@
-using GraphForge.Api.DTOs.Auth;
 using System.Net;
 using System.Net.Http.Json;
+using GraphForge.Api.DTOs.Auth;
 
 namespace GraphForge.Api.IntegrationTests.AuthTests;
 
@@ -48,13 +48,12 @@ public class AuthSignInSignUpTests : IClassFixture<ApiPostgresTestFactory>
             password
         });
 
-
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
         response = await _client.PostAsJsonAsync("/api/auth/signin", new
         {
             login,
-            password="some trash"
+            password = "some trash"
         });
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.Unauthorized);
@@ -77,7 +76,7 @@ public class AuthSignInSignUpTests : IClassFixture<ApiPostgresTestFactory>
         response = await _client.PostAsJsonAsync("/api/auth/signup", new
         {
             login,
-            password="1234"
+            password = "1234"
         });
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.Conflict);

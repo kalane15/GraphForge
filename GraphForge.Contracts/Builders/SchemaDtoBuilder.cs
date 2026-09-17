@@ -1,5 +1,3 @@
-using System;
-
 namespace GraphForge.Contracts;
 
 public sealed class SchemaDtoBuilder

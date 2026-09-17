@@ -1,13 +1,14 @@
-using GraphForge.Api.DTOs.Projects;
 using System.Net;
 using System.Net.Http.Json;
+using GraphForge.Api.DTOs.Projects;
 
 namespace GraphForge.Api.IntegrationTests.ProjectControllerTests;
 
 public sealed class GetProjectsListTests : IClassFixture<ApiPostgresTestFactory>
 {
     private readonly ApiPostgresTestFactory _apiTestFactory;
-    public GetProjectsListTests(ApiPostgresTestFactory factory) {
+    public GetProjectsListTests(ApiPostgresTestFactory factory)
+    {
         _apiTestFactory = factory;
     }
 
@@ -17,9 +18,8 @@ public sealed class GetProjectsListTests : IClassFixture<ApiPostgresTestFactory>
         {
             Guid.NewGuid().ToString("N"),
             Guid.NewGuid().ToString("N")
-        };        
+        };
     }
-
 
     [Fact]
     public async Task GetProjectsList_WhenProjectsExist_ReturnsAllProjects()
@@ -43,9 +43,7 @@ public sealed class GetProjectsListTests : IClassFixture<ApiPostgresTestFactory>
             Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
         }
 
-
         var response = await client.GetAsync("/api/projects");
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -61,15 +59,12 @@ public sealed class GetProjectsListTests : IClassFixture<ApiPostgresTestFactory>
         }
     }
 
-
     [Fact]
     public async Task GetProjectsList_WhenNoProjectsExist_ReturnsZeroProjects()
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
-       
 
         var response = await client.GetAsync("/api/projects");
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -80,12 +75,11 @@ public sealed class GetProjectsListTests : IClassFixture<ApiPostgresTestFactory>
         Assert.Empty(result.Projects);
     }
 
-
     [Fact]
     public async Task GetProjectsList_WhenUnauthorized_Returns401ProblemDetail()
     {
         await AssertUnauthorizedAsync(
             _apiTestFactory,
             client => client.GetAsync("/api/projects"));
-    }    
+    }
 }

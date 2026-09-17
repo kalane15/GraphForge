@@ -1,4 +1,4 @@
-﻿namespace GraphForge.Api.DTOs.Schemas;
+namespace GraphForge.Api.DTOs.Schemas;
 
 public sealed record SchemaFieldDefinitionResponse(
     Guid Id,

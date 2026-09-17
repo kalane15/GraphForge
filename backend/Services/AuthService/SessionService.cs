@@ -1,8 +1,8 @@
+using System.Security.Cryptography;
+using System.Text;
 using GraphForge.Api.Database;
 using GraphForge.Api.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace GraphForge.Api.Services.AuthService;
 

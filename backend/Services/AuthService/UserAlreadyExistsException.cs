@@ -1,4 +1,4 @@
-﻿namespace GraphForge.Api.Services.AuthService;
+namespace GraphForge.Api.Services.AuthService;
 
 public class UserAlreadyExistsException : Exception
 {

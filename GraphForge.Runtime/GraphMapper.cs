@@ -1,7 +1,5 @@
-﻿using GraphForge.Contracts;
-using System;
-using System.Collections.Generic;
 using System.Text.Json;
+using GraphForge.Contracts;
 
 namespace GraphForge.Runtime;
 
@@ -68,7 +66,7 @@ public static class GraphMapper
 
         foreach (GraphNode node in graph.Nodes)
         {
-            JsonElement properties = JsonSerializer.SerializeToElement (
+            JsonElement properties = JsonSerializer.SerializeToElement(
                 node,
                 node.GetType()
             );
@@ -86,7 +84,6 @@ public static class GraphMapper
                     Properties = properties
                 }
             };
-
 
             GraphNodeToIdMap[node] = nodeDto.Id;
 

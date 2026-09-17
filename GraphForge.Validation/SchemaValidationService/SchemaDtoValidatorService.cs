@@ -1,7 +1,6 @@
-using GraphForge.Contracts;
-using GraphForge.Validation.SchemaValidationService;
-using GraphForge.Validation.SchemaValidationService.Exceptions;
 using System.Text.RegularExpressions;
+using GraphForge.Contracts;
+using GraphForge.Validation.SchemaValidationService.Exceptions;
 
 namespace GraphForge.Validation;
 

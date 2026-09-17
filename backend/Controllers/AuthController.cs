@@ -1,4 +1,4 @@
-﻿using GraphForge.Api.DTOs.Auth;
+using GraphForge.Api.DTOs.Auth;
 using GraphForge.Api.Services.AuthService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,14 +16,12 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-
     [HttpPost("signin")]
     public async Task<IActionResult> SignIn(SignInRequest request)
     {
         await _authService.SignInAsync(request);
         return NoContent();
     }
-
 
     [HttpPost("signup")]
     public async Task<IActionResult> SignUp(SignUpRequest request)

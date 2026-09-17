@@ -1,6 +1,5 @@
-using GraphForge.Contracts;
-using System.Linq;
 using System.Text.Json;
+using GraphForge.Contracts;
 
 namespace GraphForge.Validation.GraphValidationService;
 
@@ -12,7 +11,6 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
         JsonValueKind.Undefined,
         JsonValueKind.Array
     };
-
 
     public void Validate(GraphDto graph, List<SchemaDto> schemas)
     {
@@ -134,7 +132,6 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
         }
     }
 
-
     private void ValidateNodeData(NodeDataDto data, SchemaDto schema)
     {
         if (data.Properties.ValueKind != JsonValueKind.Object)
@@ -148,7 +145,8 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
             properties = data.Properties
                 .Deserialize<Dictionary<string, JsonElement>>()
                 ?? new Dictionary<string, JsonElement>();
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             throw new GraphPropertiesJsonInvalidException($"Cannot parse properties json: {ex.Message}");
         }
@@ -183,7 +181,6 @@ public class GraphJsonValidatorService : IGraphJsonValidatorService
                         continue;
                     }
                 }
-
 
                 if (value.TryGetDouble(out double doubleValue))
                 {

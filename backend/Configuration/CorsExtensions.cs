@@ -1,4 +1,4 @@
-﻿namespace GraphForge.Api.Configuration;
+namespace GraphForge.Api.Configuration;
 
 internal static class CorsExtensions
 {

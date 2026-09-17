@@ -1,7 +1,7 @@
-﻿using GraphForge.Api.DTOs.Projects;
-using GraphForge.Api.DTOs.Schemas;
 using System.Net;
 using System.Net.Http.Json;
+using GraphForge.Api.DTOs.Projects;
+using GraphForge.Api.DTOs.Schemas;
 
 namespace GraphForge.Api.IntegrationTests.SchemasControllerTests;
 
@@ -14,7 +14,6 @@ public sealed class GetSchemasListTests : IClassFixture<ApiPostgresTestFactory>
         _apiTestFactory = factory;
     }
 
-
     [Fact]
     public async Task GetSchemasList_WhenUnauthorized_Returns401ProblemDetails()
     {
@@ -25,7 +24,6 @@ public sealed class GetSchemasListTests : IClassFixture<ApiPostgresTestFactory>
             _apiTestFactory,
             client => client.GetAsync($"/api/projects/{project.Id}/schemas"));
     }
-
 
     [Fact]
     public async Task GetSchemasList_WhenProjectBelongsToOtherUser_Returns404ProblemDetails()
@@ -38,29 +36,23 @@ public sealed class GetSchemasListTests : IClassFixture<ApiPostgresTestFactory>
             client => client.GetAsync($"/api/projects/{project.Id}/schemas"));
     }
 
-
     [Fact]
     public async Task GetSchemasList_WhenProjectDoesNotExist_Returns404ProblemDetails()
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
 
-
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{Guid.NewGuid()}/schemas");
-
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
 
-
     [Fact]
     public async Task GetSchemasList_WhenProjectEmpty_Returns200WithZeroSchemas()
     {
-        (HttpClient client, ProjectInfoResponse project) 
+        (HttpClient client, ProjectInfoResponse project)
             = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{project.Id}/schemas");
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -69,8 +61,6 @@ public sealed class GetSchemasListTests : IClassFixture<ApiPostgresTestFactory>
 
         Assert.Empty(schemasList.Schemas);
     }
-
-
 
     [Fact]
     public async Task GetSchemasList_WhenProjectContainsSchemas_Returns200WithSameSchemas()
@@ -91,9 +81,7 @@ public sealed class GetSchemasListTests : IClassFixture<ApiPostgresTestFactory>
             Assert.Equal(HttpStatusCode.OK, createResponse.StatusCode);
         }
 
-
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{project.Id}/schemas");
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -110,6 +98,6 @@ public sealed class GetSchemasListTests : IClassFixture<ApiPostgresTestFactory>
 
             Assert.NotNull(actualSchema);
             AssertSchemaFieldsEqual(expectedSchema.Fields, actualSchema.Fields);
-        }        
+        }
     }
 }

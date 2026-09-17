@@ -1,6 +1,6 @@
-using GraphForge.Api.DTOs.Projects;
 using System.Net;
 using System.Net.Http.Json;
+using GraphForge.Api.DTOs.Projects;
 
 namespace GraphForge.Api.IntegrationTests.ProjectControllerTests;
 
@@ -29,9 +29,10 @@ public class CreateProjectTests : IClassFixture<ApiPostgresTestFactory>
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
 
-
-        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new { description = "desc" });
-
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new
+        {
+            description = "desc"
+        });
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
@@ -47,9 +48,10 @@ public class CreateProjectTests : IClassFixture<ApiPostgresTestFactory>
 
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
 
-
-        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new { name = newName });
-
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new
+        {
+            name = newName
+        });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -59,37 +61,33 @@ public class CreateProjectTests : IClassFixture<ApiPostgresTestFactory>
         Assert.Equal(info.Name, newName);
     }
 
-
     [Fact]
     public async Task CreateProject_WhenNameIsWhiteSpace_Returns400ProblemDetails()
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
 
-
-        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new {
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new
+        {
             name = "    ",
             description = "desc"
         });
 
-
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
-
 
     [Fact]
     public async Task CreateProject_WhenDataCorrect_Returns200()
     {
-        string name= "123";
+        string name = "123";
         string description = "123456";
 
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
 
-
-        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new {
-            name, 
+        HttpResponseMessage response = await client.PostAsJsonAsync("/api/projects", new
+        {
+            name,
             description
         });
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 

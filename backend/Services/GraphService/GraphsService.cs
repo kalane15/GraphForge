@@ -1,4 +1,4 @@
-﻿using GraphForge.Api.Database;
+using GraphForge.Api.Database;
 using GraphForge.Api.DTOs.Graphs;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.GraphService.Mappers;
@@ -7,7 +7,6 @@ using GraphForge.Contracts;
 using GraphForge.Validation.GraphValidationService;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace GraphForge.Api.Services.GraphService;
 
 public class GraphsService : IGraphsService
@@ -15,14 +14,13 @@ public class GraphsService : IGraphsService
     private readonly AppDbContext _db;
     private readonly IGraphJsonValidatorService _graphJsonValidatorService;
 
-
     public GraphsService(AppDbContext db, IGraphJsonValidatorService graphJsonValidatorService)
     {
         _db = db;
         _graphJsonValidatorService = graphJsonValidatorService;
     }
 
-    async public Task<GraphInfoResponse> CreateUserGraphAsync(Guid userId, Guid projectId, GraphCreationRequest request)
+    public async Task<GraphInfoResponse> CreateUserGraphAsync(Guid userId, Guid projectId, GraphCreationRequest request)
     {
         string graphName = ValidateGraphName(request.Name);
         await EnsureProjectBelongsToUser(userId, projectId);

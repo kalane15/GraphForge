@@ -1,8 +1,8 @@
+using System.Net;
+using System.Net.Http.Json;
 using GraphForge.Api.DTOs.Graphs;
 using GraphForge.Api.DTOs.Projects;
 using GraphForge.Api.DTOs.Schemas;
-using System.Net;
-using System.Net.Http.Json;
 
 namespace GraphForge.Api.IntegrationTests;
 

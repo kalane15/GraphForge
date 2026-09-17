@@ -1,4 +1,4 @@
-﻿using GraphForge.Api.Database;
+using GraphForge.Api.Database;
 using GraphForge.Api.DTOs.Schemas;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.GraphService;
@@ -77,7 +77,6 @@ public class SchemasService : ISchemasService
 
         SchemaDto dto = SchemaRequestMapper.ToDto(schemaId, request);
         _schemaDtoValidator.ValidateSchema(dto);
-
 
         Schema schema = await GetUserSchemaOrThrowAsync(userId, projectId, schemaId);
 

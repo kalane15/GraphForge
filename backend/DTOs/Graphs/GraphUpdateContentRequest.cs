@@ -1,5 +1,5 @@
-﻿using GraphForge.Contracts;
 using System.ComponentModel.DataAnnotations;
+using GraphForge.Contracts;
 
 namespace GraphForge.Api.DTOs.Graphs;
 

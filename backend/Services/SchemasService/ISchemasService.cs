@@ -1,4 +1,4 @@
-﻿using GraphForge.Api.DTOs.Schemas;
+using GraphForge.Api.DTOs.Schemas;
 
 namespace GraphForge.Api.Services.SchemasService;
 

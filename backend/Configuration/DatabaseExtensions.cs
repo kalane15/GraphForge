@@ -1,4 +1,4 @@
-﻿using GraphForge.Api.Database;
+using GraphForge.Api.Database;
 using Microsoft.EntityFrameworkCore;
 
 namespace GraphForge.Api.Configuration;

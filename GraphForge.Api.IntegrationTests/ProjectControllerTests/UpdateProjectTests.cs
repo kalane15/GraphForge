@@ -1,6 +1,6 @@
-using GraphForge.Api.DTOs.Projects;
 using System.Net;
 using System.Net.Http.Json;
+using GraphForge.Api.DTOs.Projects;
 
 namespace GraphForge.Api.IntegrationTests.ProjectControllerTests;
 
@@ -18,46 +18,38 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
     {
         (HttpClient client, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{info.Id}", new
         {
             name = "",
             description = "description",
         });
 
-
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
-
 
     [Fact]
     public async Task UpdateProject_WhenNameMissing_Returns400()
     {
         (HttpClient client, ProjectInfoResponse info) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{info.Id}", new
         {
             description = "description",
         });
 
-
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
-
 
     [Fact]
     public async Task UpdateProject_WhenProjectDoesNotExist_Returns404ProblemDetails()
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
-        
 
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{Guid.NewGuid()}", new
         {
             name = "name",
             description = "description",
         });
-
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
@@ -72,7 +64,6 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
 
         (HttpClient ownerClient, ProjectInfoResponse createdProjectInfo) =
             await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync(oldName, oldDescription);
-
 
         await AssertAccessOtherUserResourceReturnsNotFoundAsync(
             _apiTestFactory,
@@ -90,7 +81,6 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
         Assert.Equal(oldDescription, createdProjectInfo.Description);
     }
 
-
     [Fact]
     public async Task UpdateProject_WhenUnauthorized_Returns401ProblemDetails()
     {
@@ -106,7 +96,6 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
             }));
     }
 
-
     [Fact]
     public async Task UpdateProject_WhenDataCorrect_Returns200WithNewData()
     {
@@ -116,15 +105,14 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
         string newDescription = "newDescription";
 
         (HttpClient client, ProjectInfoResponse createdProjectInfo) =
-            await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync(oldName, oldDescription); ;
-
+            await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync(oldName, oldDescription);
+        ;
 
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{createdProjectInfo.Id}", new
         {
             name = newName,
             description = newDescription,
         });
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -135,7 +123,6 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
         Assert.Equal(newDescription, info.Description);
         Assert.Equal(createdProjectInfo.Id, info.Id);
     }
-
 
     /// <summary>
     /// Returns 200 because description is optional
@@ -148,14 +135,13 @@ public sealed class UpdateProjectTests : IClassFixture<ApiPostgresTestFactory>
         string newName = "newName";
 
         (HttpClient client, ProjectInfoResponse createdProjectInfo) =
-            await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync(oldName); ;
-
+            await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync(oldName);
+        ;
 
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{createdProjectInfo.Id}", new
         {
             name = newName
         });
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 

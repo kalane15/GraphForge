@@ -1,8 +1,8 @@
+using System.Net;
+using System.Net.Http.Json;
 using GraphForge.Api.DTOs.Graphs;
 using GraphForge.Api.DTOs.Projects;
 using GraphForge.Contracts;
-using System.Net;
-using System.Net.Http.Json;
 
 namespace GraphForge.Api.IntegrationTests.GraphControllerTests;
 
@@ -15,16 +15,13 @@ public sealed class GetGraphTests : IClassFixture<ApiPostgresTestFactory>
         _apiTestFactory = factory;
     }
 
-
     [Fact]
     public async Task GetGraph_WhenGraphExistsAndAccessValid_Returns200WithCorrectData()
     {
         (HttpClient client, ProjectInfoResponse project, GraphInfoResponse graph, GraphDto expectedContent) =
             await _apiTestFactory.CreateAuthorizedClientWithBaseGraphContentAsync();
 
-
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{project.Id}/graphs/{graph.Id}");
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -37,7 +34,6 @@ public sealed class GetGraphTests : IClassFixture<ApiPostgresTestFactory>
         AssertGraphDtoEqual(expectedContent, result.Content);
     }
 
-
     [Fact]
     public async Task GetGraph_WhenUnauthorized_Returns401ProblemDetails()
     {
@@ -49,19 +45,15 @@ public sealed class GetGraphTests : IClassFixture<ApiPostgresTestFactory>
             client => client.GetAsync($"/api/projects/{project.Id}/graphs/{graph.Id}"));
     }
 
-
     [Fact]
     public async Task GetGraph_WhenProjectDoesNotExist_Returns404ProblemDetails()
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
 
-
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{Guid.NewGuid()}/graphs/{Guid.NewGuid()}");
-
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
-
 
     [Fact]
     public async Task GetGraph_WhenGraphDoesNotExist_Returns404ProblemDetails()
@@ -69,13 +61,10 @@ public sealed class GetGraphTests : IClassFixture<ApiPostgresTestFactory>
         (HttpClient client, ProjectInfoResponse project) =
             await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
 
-
         HttpResponseMessage response = await client.GetAsync($"/api/projects/{project.Id}/graphs/{Guid.NewGuid()}");
-
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
-
 
     [Fact]
     public async Task GetGraph_WhenGraphBelongsToOtherUser_Returns404ProblemDetails()

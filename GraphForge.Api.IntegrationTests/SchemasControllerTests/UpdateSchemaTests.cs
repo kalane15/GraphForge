@@ -1,7 +1,7 @@
-﻿using GraphForge.Api.DTOs.Projects;
-using GraphForge.Api.DTOs.Schemas;
-using System.Net.Http.Json;
 using System.Net;
+using System.Net.Http.Json;
+using GraphForge.Api.DTOs.Projects;
+using GraphForge.Api.DTOs.Schemas;
 
 namespace GraphForge.Api.IntegrationTests.SchemasControllerTests;
 
@@ -13,7 +13,6 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
     {
         _apiTestFactory = factory;
     }
-
 
     [Fact]
     public async Task UpdateSchema_WhenUnauthorized_Returns401ProblemDetails()
@@ -29,12 +28,10 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
             }));
     }
 
-
     [Fact]
     public async Task UpdateSchema_WhenSchemaDoesNotExist_Returns404ProblemDetails()
     {
         (HttpClient client, ProjectInfoResponse project) = await _apiTestFactory.CreateAuthorizedClientWithEmptyProjectAsync();
-
 
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{project.Id}/schemas/{Guid.NewGuid()}", new
         {
@@ -42,16 +39,13 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
             fields = new List<SchemaFieldUpdateRequest>()
         });
 
-
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
-
 
     [Fact]
     public async Task UpdateSchema_WhenProjectDoesNotExist_Returns404ProblemDetails()
     {
         HttpClient client = await _apiTestFactory.CreateAuthorizedClientAsync();
-
 
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{Guid.NewGuid()}/schemas/{Guid.NewGuid()}", new
         {
@@ -59,10 +53,8 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
             fields = new List<SchemaFieldUpdateRequest>()
         });
 
-
         await AssertProblemDetailsAsync(response, HttpStatusCode.NotFound);
     }
-
 
     [Fact]
     public async Task UpdateSchema_WhenProjectBelongsToOtherUser_Returns404ProblemDetails()
@@ -91,7 +83,6 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
         AssertSchemaFieldsEqual(createdFields, actualSchema.Fields);
     }
 
-
     [Fact]
     public async Task UpdateSchema_WhenDataCorrect_Returns200WithNewData()
     {
@@ -105,7 +96,6 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
             ).ToList();
         newFields.RemoveAt(0);
         newFields.Add(new SchemaFieldUpdateRequest(null, "newField", "string"));
-        
 
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{project.Id}/schemas/{createdSchema.Id}",
             new
@@ -114,7 +104,6 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
                 fields = newFields
             }
             );
-
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -126,13 +115,11 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
         AssertSchemaFieldsEqual(newFields, actualSchema.Fields);
     }
 
-
     [Fact]
     public async Task UpdateSchema_WhenNameIsMissing_Returns400ProblemDetails()
     {
         (HttpClient client, ProjectInfoResponse project, SchemaResponse createdSchema) =
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync();
-
 
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{project.Id}/schemas/{createdSchema.Id}",
             new
@@ -144,13 +131,11 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
 
-
     [Fact]
     public async Task UpdateSchema_WhenFieldsAreNull_Returns400ProblemDetails()
     {
         (HttpClient client, ProjectInfoResponse project, SchemaResponse createdSchema) =
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync();
-
 
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{project.Id}/schemas/{createdSchema.Id}",
             new
@@ -163,24 +148,21 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
 
-
     [Fact]
     public async Task UpdateSchema_WhenFieldsAreMissing_Returns400ProblemDetails()
     {
         (HttpClient client, ProjectInfoResponse project, SchemaResponse createdSchema) =
             await _apiTestFactory.CreateAuthorizedClientWithSchemaAsync();
 
-
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{project.Id}/schemas/{createdSchema.Id}",
             new
             {
-                schemaTypeName="Name"                
+                schemaTypeName = "Name"
             }
             );
 
         await AssertProblemDetailsAsync(response, HttpStatusCode.BadRequest);
     }
-
 
     [Fact]
     public async Task UpdateSchema_WhenSchemaWithSameNameExists_Returns400ProblemDetails()
@@ -198,7 +180,6 @@ public sealed class UpdateSchemaTests : IClassFixture<ApiPostgresTestFactory>
 
         SchemaResponse? secondSchema = await createResponse.Content.ReadFromJsonAsync<SchemaResponse>();
         Assert.NotNull(secondSchema);
-
 
         HttpResponseMessage response = await client.PutAsJsonAsync($"/api/projects/{project.Id}/schemas/{secondSchema.Id}",
             new

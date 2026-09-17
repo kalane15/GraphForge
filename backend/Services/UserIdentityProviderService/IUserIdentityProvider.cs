@@ -1,7 +1,6 @@
-﻿namespace GraphForge.Api.Services.UserIdentityProviderService
+namespace GraphForge.Api.Services.UserIdentityProviderService;
+
+public interface IUserIdentityProvider
 {
-    public interface IUserIdentityProvider
-    {
-        Guid GetCurrentUserId();
-    }
+    Guid GetCurrentUserId();
 }

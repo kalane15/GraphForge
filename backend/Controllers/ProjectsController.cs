@@ -1,10 +1,8 @@
-﻿using GraphForge.Api.DTOs.Projects;
-using GraphForge.Api.Services.AuthService;
+using GraphForge.Api.DTOs.Projects;
 using GraphForge.Api.Services.ProjectService;
 using GraphForge.Api.Services.UserIdentityProviderService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.NetworkInformation;
 
 namespace GraphForge.Api.Controllers;
 
@@ -16,9 +14,7 @@ public class ProjectsController : ControllerBase
     private readonly IProjectsService _projectsService;
     private readonly IUserIdentityProvider _userIdentityProvider;
 
-
     public ProjectsController(
-        IAuthService authService,
         IProjectsService projectsService,
         IUserIdentityProvider userIdentityProvider)
     {
@@ -30,9 +26,9 @@ public class ProjectsController : ControllerBase
     public async Task<IActionResult> CreateProject(ProjectInfoEditRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-        
+
         ProjectInfoResponse result = await _projectsService.CreateUserProjectAsync(userId, request);
-        return Ok(result);        
+        return Ok(result);
     }
 
     [HttpGet]
@@ -61,10 +57,10 @@ public class ProjectsController : ControllerBase
         [FromBody] ProjectInfoEditRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-       
+
         ProjectInfoResponse result = await _projectsService.UpdateUserProjectAsync(userId, projectId, request);
 
-        return Ok(result);        
+        return Ok(result);
     }
 
     [HttpDelete("{projectId}")]
