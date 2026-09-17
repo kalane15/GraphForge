@@ -1,4 +1,4 @@
-﻿using GraphForge.Api.DTOs.Graphs;
+using GraphForge.Api.DTOs.Graphs;
 
 namespace GraphForge.Api.DTOs.Projects;
 

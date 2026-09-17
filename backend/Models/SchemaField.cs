@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GraphForge.Api.Models;
 
@@ -8,6 +8,6 @@ public class SchemaField
     public Guid Id { get; set; }
     public Guid SchemaId { get; set; }
     public string Name { get; set; } = string.Empty;
-    public string Type { get; set; } = "string";
+    public string Type { get; set; } = string.Empty;
     public Schema Schema { get; set; } = null!;
 }

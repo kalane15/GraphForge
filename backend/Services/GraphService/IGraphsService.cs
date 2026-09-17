@@ -1,16 +1,14 @@
-﻿using GraphForge.Api.DTOs.Graphs;
-using System.Text.Json;
+using GraphForge.Api.DTOs.Graphs;
 
-namespace GraphForge.Api.Services.GraphService
+namespace GraphForge.Api.Services.GraphService;
+
+public interface IGraphsService
 {
-    public interface IGraphsService
-    {
-        Task<GraphInfoResponse> CreateUserGraphAsync(Guid userId, Guid projectId, GraphCreationRequest request);
-        Task<List<GraphInfoResponse>> GetUserProjectsGraphsAsync(Guid userId, Guid projectId);
-        Task<GraphDataResponse> GetUserGraphAsync(Guid userId, Guid projectId, Guid graphId);
-        Task<GraphDataResponse> UpdateUserGraphAsync(Guid userId, Guid projectId, Guid graphId, GraphDataEditRequest request);
-        Task DeleteUserGraphAsync(Guid userId, Guid projectId, Guid graphId);
+    Task<GraphInfoResponse> CreateUserGraphAsync(Guid userId, Guid projectId, GraphCreationRequest request);
+    Task<List<GraphInfoResponse>> GetUserProjectsGraphsAsync(Guid userId, Guid projectId);
+    Task<GraphDataResponse> GetUserGraphAsync(Guid userId, Guid projectId, Guid graphId);
+    Task<GraphDataResponse> UpdateUserGraphAsync(Guid userId, Guid projectId, Guid graphId, GraphDataEditRequest request);
+    Task DeleteUserGraphAsync(Guid userId, Guid projectId, Guid graphId);
 
-        Task UpdateUserGraphContentAsync(Guid userId, Guid projectId, Guid graphId, GraphForge.Contracts.GraphDto content);
-    }
+    Task UpdateUserGraphContentAsync(Guid userId, Guid projectId, Guid graphId, GraphForge.Contracts.GraphDto content);
 }

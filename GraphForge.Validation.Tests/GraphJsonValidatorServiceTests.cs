@@ -1,6 +1,6 @@
-using GraphForge.Contracts;
-using GraphForge.Validation.Tests.TestData;
 using System.Text.Json;
+using GraphForge.Contracts;
+using GraphForge.Validation.GraphValidationService;
 
 namespace GraphForge.Validation.Tests;
 
@@ -34,11 +34,11 @@ public class GraphJsonValidatorServiceTests
         var schemaId = Guid.NewGuid();
 
         var graph = new GraphDtoBuilder()
-            .WithNode( 
+            .WithNode(
                 new NodeDto()
                 {
-                    Id="node",
-                    Data=new NodeDataDto()
+                    Id = "node",
+                    Data = new NodeDataDto()
                     {
                         Title = "Node",
                         SchemaId = schemaId,
@@ -135,7 +135,6 @@ public class GraphJsonValidatorServiceTests
 
         Assert.Throws<DuplicateEdgeIdException>(() => validator.Validate(graph, schemas));
     }
-
 
     [Fact]
     public void Validate_WhenNodeIdIsEmpty_ThrowsNodeIdRequiredException()
@@ -355,7 +354,6 @@ public class GraphJsonValidatorServiceTests
 
         Assert.Throws<InvalidEdgeNodeReferenceException>(() => validator.Validate(graph, schemas));
     }
-
 
     [Fact]
     public void Validate_WhenNodeReferencesMissingSchema_ThrowsSchemaNotFoundException()

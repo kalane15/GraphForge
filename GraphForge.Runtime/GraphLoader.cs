@@ -1,7 +1,5 @@
-﻿using GraphForge.Contracts;
-using System;
-using System.IO;
 using System.Text.Json;
+using GraphForge.Contracts;
 
 namespace GraphForge.Runtime;
 
@@ -37,8 +35,8 @@ public static class GraphLoader
         {
             WriteIndented = true
         });
-        File.WriteAllText(path, json);       
+        File.WriteAllText(path, json);
 
-        return ;
+        return;
     }
 }

@@ -1,4 +1,4 @@
-﻿using GraphForge.Api.Models;
+using GraphForge.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GraphForge.Api.Database;
@@ -17,35 +17,41 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        //This code is redundant because of the EF conventions, but I will leave it here for clarity
-
-        modelBuilder.Entity<Project>()
-            .HasOne(project => project.Owner)
-            .WithMany()
-            .HasForeignKey(project => project.OwnerId);
-
-        modelBuilder.Entity<Graph>()
-            .HasOne(graph => graph.Project)
-            .WithMany(project => project.Graphs)
-            .HasForeignKey(graph => graph.ProjectId);
-
         modelBuilder.Entity<Graph>()
             .Property(graph => graph.Content)
             .HasColumnType("jsonb")
             .HasDefaultValueSql("""'{"nodes":[],"edges":[]}'::jsonb""");
 
         modelBuilder.Entity<Schema>()
-            .HasOne(schema => schema.Project)
-            .WithMany(project => project.Schemas)
-            .HasForeignKey(schema => schema.ProjectId);
+            .HasIndex(schema => new { schema.ProjectId, schema.Id })
+            .IsUnique();
 
-        modelBuilder.Entity<SchemaField>()
-            .HasOne(schemaField => schemaField.Schema)
-            .WithMany(schema => schema.Fields)
-            .HasForeignKey(schemaField => schemaField.SchemaId);
+        modelBuilder.Entity<User>()
+            .HasIndex(user => user.Login)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .Property(user => user.CreatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         modelBuilder.Entity<Schema>()
-            .Property(schema => schema.SchemaTypeName)
-            .HasColumnName("schema_type_name");
+            .HasIndex(schema => new { schema.ProjectId, schema.SchemaTypeName })
+            .IsUnique();
+
+        modelBuilder.Entity<Project>()
+            .Property(project => project.CreatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        modelBuilder.Entity<Project>()
+            .Property(project => project.UpdatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        modelBuilder.Entity<Graph>()
+            .Property(graph => graph.CreatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        modelBuilder.Entity<Graph>()
+            .Property(graph => graph.UpdatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
     }
 }

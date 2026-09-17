@@ -1,30 +1,27 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 
-namespace GraphForge.Api.Services.UserIdentityProviderService
+namespace GraphForge.Api.Services.UserIdentityProviderService;
+
+public class UserIdentityProvider : IUserIdentityProvider
 {
-    public class UserIdentityProvider : IUserIdentityProvider
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public UserIdentityProvider(IHttpContextAccessor httpContextAccessor)
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        _httpContextAccessor = httpContextAccessor;
+    }
 
+    public Guid GetCurrentUserId()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
 
-        public UserIdentityProvider(IHttpContextAccessor httpContextAccessor)
+        var claim = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(claim, out var userId))
         {
-            _httpContextAccessor = httpContextAccessor;
+            throw new InvalidOperationException("User ID claim is missing or invalid.");
         }
 
-
-        public Guid GetCurrentUserId()
-        {
-            var user = _httpContextAccessor.HttpContext?.User;
-
-            var claim = user?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (!Guid.TryParse(claim, out var userId))
-            {
-                throw new InvalidOperationException("User ID claim is missing or invalid.");
-            }
-
-            return userId;
-        }
+        return userId;
     }
 }

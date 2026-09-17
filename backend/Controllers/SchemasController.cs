@@ -1,11 +1,10 @@
-﻿using GraphForge.Api.DTOs.Schemas;
+using GraphForge.Api.DTOs.Schemas;
 using GraphForge.Api.Services.SchemasService;
 using GraphForge.Api.Services.UserIdentityProviderService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GraphForge.Api.Controllers;
-
 
 [Route("api/projects/{projectId}/schemas")]
 [ApiController]
@@ -21,12 +20,19 @@ public class SchemasController : ControllerBase
         _userIdentityProvider = userIdentityProvider;
     }
 
-
     [HttpGet]
-    public async Task<IActionResult> GetSchemas(Guid projectId)
+    public async Task<IActionResult> GetSchemasList(Guid projectId)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
         SchemasListResponse result = await _schemasService.GetSchemasList(userId, projectId);
+        return Ok(result);
+    }
+
+    [HttpGet("{schemaId}")]
+    public async Task<IActionResult> GetSchema(Guid projectId, Guid schemaId)
+    {
+        Guid userId = _userIdentityProvider.GetCurrentUserId();
+        SchemaResponse result = await _schemasService.GetSchema(userId, projectId, schemaId);
         return Ok(result);
     }
 
@@ -38,13 +44,12 @@ public class SchemasController : ControllerBase
         return Ok(result);
     }
 
-
     [HttpPut("{schemaId}")]
-    public async Task<IActionResult> UpdateSchema(Guid projectId, Guid schemaId, SchemaDataRequest request)
+    public async Task<IActionResult> UpdateSchema(Guid projectId, Guid schemaId, SchemaEditDataRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-        await _schemasService.UpdateSchema(userId, projectId, schemaId, request);
-        return NoContent();
+        SchemaResponse result = await _schemasService.UpdateSchema(userId, projectId, schemaId, request);
+        return Ok(result);
     }
 
     [HttpDelete("{schemaId}")]

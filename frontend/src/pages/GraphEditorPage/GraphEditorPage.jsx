@@ -1,13 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import Flow from "./Flow"
 import { useNavigate, useParams } from "react-router"
 import { ReactFlowProvider } from "@xyflow/react";
-import { createGraphSavePayload } from "@/helpers/createGraphSavePayload";
-import { updateGraphContentRequest, getGraphRequest } from "@/api/graphsApi";
-import { getSchemasRequest } from "@/api/schemasApi";
-import { downloadJsonFile } from "@/helpers/downloadJsonFile";
-import { mapSchemaToViewModel } from "@/helpers/schemaMappers";
 import GraphEditorToolbar from "./GraphEditorToolbar";
+import { useSaveGraph } from "./useSaveGraph"
+import { useImportExportGraph } from "./useImportExportGraph";
+import { useGraphLoad } from "./useGraphLoad";
 
 
 function GraphEditorPage() {
@@ -17,100 +15,44 @@ function GraphEditorPage() {
     const [schemas, setSchemas] = useState([]);
     const [nodes, setNodes] = useState(() => []);
     const [edges, setEdges] = useState([]);
-    const [message, setMessage] = useState(null);
-    const messageTimeoutRef = useRef(null);
+    const [saveStatusMessage, setSaveStatusMessage] = useState(null);
 
+    const isGraphLoaded = useGraphLoad({
+        projectId,
+        graphId,
+        setSchemas,
+        setNodes,
+        setEdges
+    });
 
-    useEffect(() => {
-        async function loadSchemas() {
-            const data = await getSchemasRequest(projectId);
-            const loadedSchemas = data?.schemas ?? [];
+    const saveGraph = useSaveGraph(
+        nodes,
+        edges,
+        projectId,
+        graphId,
+        setSaveStatusMessage,
+        schemas,
+        isGraphLoaded
+    );
 
-            setSchemas(loadedSchemas.map(mapSchemaToViewModel));
-        }        
-
-        async function loadGraph() {
-            await loadSchemas();
-
-            const graph = await getGraphRequest(graphId, projectId);
-
-            setNodes(graph.content.nodes);
-            setEdges(graph.content.edges);
-        }
-
-        loadGraph();
-    }, [projectId, graphId]);
-
-    useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            saveGraph();
-        }, 1000);
-
-        return () => clearTimeout(timeoutId);
-    }, [nodes, edges]);
-
-    useEffect(() => {
-        return () => {
-            if (messageTimeoutRef.current) {
-                clearTimeout(messageTimeoutRef.current);
-            }
-        };
-    }, []);
-
-    function showMessage(text, type = "success") {
-        setMessage({ text, type });
-
-        if (messageTimeoutRef.current) {
-            clearTimeout(messageTimeoutRef.current);
-        }
-
-        messageTimeoutRef.current = setTimeout(() => {
-            setMessage(null);
-            messageTimeoutRef.current = null;
-        }, 3000);
-    }
+    const { importGraph, exportGraph } = useImportExportGraph({
+        saveGraph,
+        graphId,
+        projectId,
+        schemas,
+        setNodes,
+        setEdges
+    });
 
     async function returnToProjectPage() {
         await saveGraph();
         navigate(`/projects/${projectId}`);
-    }
-
-    async function saveGraph() {
-        try {
-            const content = createGraphSavePayload(nodes, edges, schemas);
-            await updateGraphContentRequest(graphId, projectId, content);
-            showMessage("Successfully saved", "success");
-        } catch (ex) {
-            showMessage(`Error during saving: ${ex.message}`, "error");
-        }
-    }
+    }    
 
     async function goToSchemas() {
         await saveGraph();
         navigate(`/projects/${projectId}/schemas`);
-    }
-
-    async function exportGraph() {
-        await saveGraph();
-
-        const graph = await getGraphRequest(graphId, projectId);
-        downloadJsonFile("graph.json", graph.content);
-    }
-
-    async function importGraph(event) {
-        const file = event.target.files[0];
-
-        if (!file) {
-            return;
-        }
-
-        const text = await file.text();
-        const graph = JSON.parse(text);
-
-        setNodes(graph.nodes);
-        setEdges(graph.edges);
-    };
-    
+    }    
 
     return (
         <div className="graph-editor-page">
@@ -120,7 +62,7 @@ function GraphEditorPage() {
                 saveGraph={saveGraph}
                 exportGraph={exportGraph}
                 importGraph={importGraph}
-                message={message}
+                message={saveStatusMessage}
             />
 
             <div className="graph-editor-shell">

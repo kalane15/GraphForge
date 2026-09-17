@@ -1,189 +1,131 @@
-﻿using GraphForge.Api.Auth;
 using GraphForge.Api.Database;
+using GraphForge.Api.DTOs.Auth;
 using GraphForge.Api.Models;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
+using GraphForge.Api.Services.UserIdentityProviderService;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace GraphForge.Api.Services.AuthService
+namespace GraphForge.Api.Services.AuthService;
+
+public class AuthService : IAuthService
 {
-    public class AuthService : IAuthService
+    private readonly AppDbContext _db;
+    private readonly IPasswordHasher<User> _passwordHasher;
+    private readonly IUserIdentityProvider _userIdentityProvider;
+    private readonly IJwtTokenService _jwtTokenService;
+    private readonly ISessionService _sessionService;
+    private readonly IAuthCookieService _authCookieService;
+
+    public AuthService(
+        AppDbContext db,
+        IPasswordHasher<User> hasher,
+        IUserIdentityProvider userIdentityProvider,
+        IJwtTokenService jwtTokenService,
+        ISessionService sessionService,
+        IAuthCookieService authCookieService)
     {
-        private const int AccessTokenExpirationTimeMinutes = 15;
-        private const int RefreshTokenExpirationTimeMinutes = 30 * 24 * 60;
+        _db = db;
+        _passwordHasher = hasher;
+        _userIdentityProvider = userIdentityProvider;
+        _jwtTokenService = jwtTokenService;
+        _sessionService = sessionService;
+        _authCookieService = authCookieService;
+    }
 
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly AppDbContext _db;
-        private readonly AuthOptions _authOptions;
+    public async Task SignInAsync(SignInRequest request)
+    {
+        User? user = await _db.Users
+            .FirstOrDefaultAsync(u => u.Login == request.Login);
 
-
-        public AuthService(
-            AppDbContext db,
-            AuthOptions authOptions,
-            IHttpContextAccessor httpContextAccessor)
+        if (user is null)
         {
-            _authOptions = authOptions;
-            _db = db;
-            _httpContextAccessor = httpContextAccessor;
+            throw new UnauthorizedUserException("User does not exist");
         }
 
-        private async Task<string> CreateAccessTokenAsync(User user)
+        PasswordVerificationResult verifyPasswordResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+        bool isCorrectPassword = verifyPasswordResult != PasswordVerificationResult.Failed;
+
+        if (!isCorrectPassword)
         {
-
-            var claims = new List<Claim> {
-                new Claim(ClaimTypes.Name, user.Login),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Role, "user"),
-            };
-
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_authOptions.Key)
-            );
-
-            JwtSecurityToken jwtToken = new JwtSecurityToken(
-                    issuer: _authOptions.Issuer,
-                    audience: _authOptions.Audience,
-                    claims: claims,
-                    expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(AccessTokenExpirationTimeMinutes)),
-                    signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-            );
-
-            string token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
-            return token;
+            throw new UnauthorizedUserException("Incorrect password");
         }
 
-        public async Task ProvideAccessTokenAsync(User user)
+        await StartSessionAsync(user);
+    }
+
+    public async Task SignUpAsync(SignUpRequest request)
+    {
+        bool userExists = await _db.Users
+            .AnyAsync(user => user.Login == request.Login);
+
+        if (userExists)
         {
-            string token = await CreateAccessTokenAsync(user);
-            HttpResponse response = _httpContextAccessor.HttpContext!.Response;
-            response.Cookies.Append("access_token", token, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTimeOffset.UtcNow.AddMinutes(AccessTokenExpirationTimeMinutes)
-            });
+            throw new UserAlreadyExistsException("User already exists");
         }
 
-        private async Task CreateSessionAsync(Guid userId, string token)
+        var user = new User
         {
-            var session = new Session
-            {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(RefreshTokenExpirationTimeMinutes),
-                RefreshTokenHash = HashRefreshToken(token)
-            };
+            Id = Guid.NewGuid(),
+            Login = request.Login,
+            CreatedAt = DateTimeOffset.UtcNow
+        };
 
-            _db.Sessions.Add(session);
+        user.PasswordHash =
+            _passwordHasher.HashPassword(user, request.Password);
 
-            await _db.SaveChangesAsync();
+        _db.Users.Add(user);
+        await _db.SaveChangesAsync();
+
+        await StartSessionAsync(user);
+    }
+
+    public async Task LogOutAsync()
+    {
+        string? refreshToken = _authCookieService.GetRefreshToken();
+
+        if (refreshToken is not null)
+        {
+            await _sessionService.DeleteSessionByRefreshTokenAsync(refreshToken);
         }
 
-        private string CreateRefreshToken()
+        _authCookieService.ClearAuthCookies();
+    }
+
+    public async Task RefreshTokenAsync()
+    {
+        string? refreshToken = _authCookieService.GetRefreshToken();
+
+        if (refreshToken is null)
         {
-            byte[] bytes = RandomNumberGenerator.GetBytes(64);
-            string token = Convert.ToBase64String(bytes);
-            return token;
+            throw new UnauthorizedUserException("Failed to get refresh token");
         }
 
-        private string HashRefreshToken(string token)
+        Session session = await _sessionService.GetValidSessionByRefreshTokenAsync(refreshToken);
+
+        string accessToken = _jwtTokenService.CreateAccessToken(session.User);
+        _authCookieService.SetAccessToken(accessToken);
+    }
+
+    public async Task<CurrentUserInfoResponse> Me()
+    {
+        Guid userId = _userIdentityProvider.GetCurrentUserId();
+
+        User? user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
         {
-            byte[] tokenHash = SHA256.HashData(
-               Encoding.UTF8.GetBytes(token)
-           );
-            string hashedToken = Convert.ToHexString(tokenHash);
-            return hashedToken;
+            throw new UnauthorizedUserException("User not found");
         }
 
-        public async Task ProvideSessionAsync(User user)
-        {
-            string refreshToken = CreateRefreshToken();
-            HttpResponse response = _httpContextAccessor.HttpContext!.Response;
-            response.Cookies.Append(
-                "refresh_token",
-                refreshToken,
-                new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Lax,
-                    Expires = DateTimeOffset.UtcNow.AddMinutes(RefreshTokenExpirationTimeMinutes)
-                }
-            );
-            await CreateSessionAsync(user.Id, refreshToken);
-        }
+        return new CurrentUserInfoResponse(user.Login, user.CreatedAt);
+    }
 
-        public async Task EndCurrentSessionAsync()
-        {
-            HttpRequest request = _httpContextAccessor.HttpContext!.Request;
-            HttpResponse response = _httpContextAccessor.HttpContext!.Response;
+    private async Task StartSessionAsync(User user)
+    {
+        string accessToken = _jwtTokenService.CreateAccessToken(user);
+        string refreshToken = await _sessionService.CreateSessionAsync(user);
 
-            string? refreshToken = request.Cookies["refresh_token"];
-
-            if (refreshToken is not null)
-            {
-                string hash = HashRefreshToken(refreshToken);
-
-                Session? session = await _db.Sessions.FirstOrDefaultAsync(s => s.RefreshTokenHash == hash);
-
-                if (session is not null)
-                {
-                    _db.Sessions.Remove(session);
-                    await _db.SaveChangesAsync();
-                }
-            }
-
-            response.Cookies.Delete("access_token");
-            response.Cookies.Delete("refresh_token");
-        }
-
-        public async Task<bool> RefreshAccessTokenAsync()
-        {
-            HttpRequest request = _httpContextAccessor.HttpContext!.Request;
-
-            string? refreshToken = request.Cookies["refresh_token"];
-
-            if (refreshToken is null)
-            {
-                return false;
-            }
-
-            string hash = HashRefreshToken(refreshToken);
-
-            Session? session = await _db.Sessions
-                .FirstOrDefaultAsync(s => s.RefreshTokenHash == hash);
-
-            if (session is null)
-            {
-                return false;
-            }
-
-            if (session.ExpiresAt <= DateTimeOffset.UtcNow)
-            {
-                _db.Sessions.Remove(session);
-                await _db.SaveChangesAsync();
-
-                return false;
-            }
-
-            User? user = await _db.Users
-                .FirstOrDefaultAsync(u => u.Id == session.UserId);
-
-            if (user is null)
-            {
-                _db.Sessions.Remove(session);
-                await _db.SaveChangesAsync();
-
-                return false;
-            }
-
-            await ProvideAccessTokenAsync(user);
-
-            return true;
-        }
+        _authCookieService.SetAccessToken(accessToken);
+        _authCookieService.SetRefreshToken(refreshToken);
     }
 }

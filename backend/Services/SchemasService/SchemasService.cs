@@ -1,7 +1,11 @@
-﻿using GraphForge.Api.Database;
+using GraphForge.Api.Database;
 using GraphForge.Api.DTOs.Schemas;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.GraphService;
+using GraphForge.Api.Services.SchemasService.Mappers;
+using GraphForge.Contracts;
+using GraphForge.Validation;
+using GraphForge.Validation.SchemaValidationService.Exceptions;
 using Microsoft.EntityFrameworkCore;
 
 namespace GraphForge.Api.Services.SchemasService;
@@ -9,38 +13,45 @@ namespace GraphForge.Api.Services.SchemasService;
 public class SchemasService : ISchemasService
 {
     private readonly AppDbContext _db;
+    private readonly ISchemaDtoValidatorService _schemaDtoValidator;
 
-    public SchemasService(AppDbContext db)
+    public SchemasService(AppDbContext db, ISchemaDtoValidatorService validator)
     {
         _db = db;
+        _schemaDtoValidator = validator;
     }
 
     public async Task<SchemasListResponse> GetSchemasList(Guid userId, Guid projectId)
     {
         await EnsureProjectBelongsToUser(userId, projectId);
 
-        var schemas = await _db.Schemas
-            .Where(s => s.ProjectId == projectId)
-            .OrderBy(s => s.SchemaTypeName)
-            .Select(s => new SchemaResponse
-                (
-                s.Id,
-                s.SchemaTypeName,
-                s.Fields
-                .Select(f => new SchemaFieldDefinitionResponse(f.Id, f.Name, f.Type))
-                .ToList()
-                )
-            )
+        List<Schema> schemaModels = await _db.Schemas
+            .Where(schema => schema.ProjectId == projectId)
+            .Include(schema => schema.Fields)
+            .OrderBy(schema => schema.SchemaTypeName)
             .ToListAsync();
 
+        List<SchemaResponse> schemas = schemaModels
+            .Select(SchemaMapper.ToResponse)
+            .ToList();
+
         return new SchemasListResponse(schemas);
+    }
+
+    public async Task<SchemaResponse> GetSchema(Guid userId, Guid projectId, Guid schemaId)
+    {
+        Schema schema = await GetUserSchemaOrThrowAsync(userId, projectId, schemaId);
+
+        return SchemaMapper.ToResponse(schema);
     }
 
     public async Task<SchemaResponse> CreateSchema(Guid userId, Guid projectId, SchemaCreateRequest request)
     {
         await EnsureProjectBelongsToUser(userId, projectId);
+        await EnsureSchemaTypeNameUniqueInsideProject(projectId, request.SchemaTypeName);
 
-        var schemaId = Guid.NewGuid();
+        SchemaDto dto = SchemaRequestMapper.ToDto(request);
+        _schemaDtoValidator.ValidateSchema(dto);
 
         var schema = new Schema
         {
@@ -56,29 +67,18 @@ public class SchemasService : ISchemasService
         _db.Schemas.Add(schema);
         await _db.SaveChangesAsync();
 
-        List <SchemaFieldDefinitionResponse> fieldsDefinions = schema.Fields
-            .Select(f => new SchemaFieldDefinitionResponse(f.Id, f.Name, f.Type)).ToList();
-
-        return new SchemaResponse(schema.Id, schema.SchemaTypeName, fieldsDefinions);
+        return SchemaMapper.ToResponse(schema);
     }
 
-    public async Task UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaDataRequest request)
+    public async Task<SchemaResponse> UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaEditDataRequest request)
     {
         await EnsureProjectBelongsToUser(userId, projectId);
+        await EnsureSchemaTypeNameUniqueInsideProject(projectId, request.SchemaTypeName, schemaId);
 
-        Schema? schema = await _db.Schemas
-            .Include(schema => schema.Fields)
-            .FirstOrDefaultAsync(
-            (schema) =>
-                schema.Id == schemaId &&
-                schema.ProjectId == projectId &&
-                schema.Project.OwnerId == userId
-            );
+        SchemaDto dto = SchemaRequestMapper.ToDto(schemaId, request);
+        _schemaDtoValidator.ValidateSchema(dto);
 
-        if (schema is null)
-        {
-            throw new NotFoundException("Schema not found");
-        }
+        Schema schema = await GetUserSchemaOrThrowAsync(userId, projectId, schemaId);
 
         // Synchronize the stored fields with the full field list from the update request, in which some fields may have been added or removed
 
@@ -109,24 +109,35 @@ public class SchemasService : ISchemasService
         }
 
         await _db.SaveChangesAsync();
+
+        return SchemaMapper.ToResponse(schema);
     }
 
     public async Task DeleteSchema(Guid userId, Guid projectId, Guid schemaId)
     {
-        Schema? schema = await _db.Schemas.FirstOrDefaultAsync(
-            (schema) =>
-                schema.Id == schemaId &&
-                schema.ProjectId == projectId &&
-                schema.Project.OwnerId == userId
-        );
+        Schema schema = await GetUserSchemaOrThrowAsync(userId, projectId, schemaId);
+
+        _db.Schemas.Remove(schema);
+        await _db.SaveChangesAsync();
+    }
+
+    private async Task<Schema> GetUserSchemaOrThrowAsync(Guid userId, Guid projectId, Guid schemaId)
+    {
+        Schema? schema = await _db.Schemas
+            .Include(schema => schema.Fields)
+            .FirstOrDefaultAsync(
+                schema =>
+                    schema.Id == schemaId &&
+                    schema.ProjectId == projectId &&
+                    schema.Project.OwnerId == userId
+            );
 
         if (schema is null)
         {
             throw new NotFoundException("Schema not found");
         }
 
-        _db.Schemas.Remove(schema);
-        await _db.SaveChangesAsync();
+        return schema;
     }
 
     private async Task EnsureProjectBelongsToUser(Guid userId, Guid projectId)
@@ -139,6 +150,25 @@ public class SchemasService : ISchemasService
         if (!isProjectBelongsToUser)
         {
             throw new IncorrectProjectOwnerException("Project does not belong to the user");
+        }
+    }
+
+    private async Task EnsureSchemaTypeNameUniqueInsideProject(
+        Guid projectId,
+        string schemaTypeName,
+        Guid? exceptSchemaId = null)
+    {
+        bool exists = await _db.Schemas.AnyAsync(schema =>
+            schema.ProjectId == projectId &&
+            schema.SchemaTypeName == schemaTypeName &&
+            schema.Id != exceptSchemaId
+        );
+
+        if (exists)
+        {
+            throw new SchemaValidationException(
+                $"Schema with name '{schemaTypeName}' already exists."
+            );
         }
     }
 }

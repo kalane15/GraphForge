@@ -1,12 +1,12 @@
-﻿using GraphForge.Api.Models;
+using GraphForge.Api.DTOs.Auth;
 
-namespace GraphForge.Api.Services.AuthService
+namespace GraphForge.Api.Services.AuthService;
+
+public interface IAuthService
 {
-    public interface IAuthService
-    {
-        Task ProvideAccessTokenAsync(User user);
-        Task ProvideSessionAsync(User user);
-        Task EndCurrentSessionAsync();
-        Task<bool> RefreshAccessTokenAsync();
-    }
+    Task SignInAsync(SignInRequest request);
+    Task SignUpAsync(SignUpRequest request);
+    Task LogOutAsync();
+    Task RefreshTokenAsync();
+    Task<CurrentUserInfoResponse> Me();
 }

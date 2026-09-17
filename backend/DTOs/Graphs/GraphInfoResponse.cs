@@ -1,5 +1,3 @@
-﻿using System.Text.Json;
-
 namespace GraphForge.Api.DTOs.Graphs;
 
 public record GraphInfoResponse(

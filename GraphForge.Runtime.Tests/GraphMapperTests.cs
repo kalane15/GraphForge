@@ -1,6 +1,6 @@
+using System.Text.Json;
 using GraphForge.Contracts;
 using GraphForge.Generated;
-using System.Text.Json;
 
 namespace GraphForge.Runtime.Tests;
 
@@ -94,7 +94,7 @@ public sealed class GraphMapperTests
         Assert.Equal("Alice", dialogueNode.Speaker);
 
         Assert.False(string.IsNullOrWhiteSpace(edge.Id));
-        
+
         Assert.Equal("edge-1", edge.Id);
 
         Assert.Equal("node-1", edge.Source);

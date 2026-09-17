@@ -1,4 +1,4 @@
-﻿namespace GraphForge.Runtime;
+namespace GraphForge.Runtime;
 
 public class GraphNode
 {

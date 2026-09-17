@@ -1,18 +1,10 @@
-﻿using GraphForge.Api.Database;
 using GraphForge.Api.DTOs.Graphs;
-using GraphForge.Api.Models;
-using GraphForge.Api.Services;
 using GraphForge.Api.Services.GraphService;
-using GraphForge.Api.Services.ProjectService;
 using GraphForge.Api.Services.UserIdentityProviderService;
-using GraphForge.Validation;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace GraphForge.Api.Controllers;
-
 
 [Route("api/projects/{projectId}/graphs")]
 [ApiController]
@@ -28,41 +20,17 @@ public class GraphsController : ControllerBase
         _graphsService = graphsService;
     }
 
-
     [HttpPost]
     public async Task<IActionResult> CreateGraph(Guid projectId, GraphCreationRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-        
-        try
-        {
-            GraphInfoResponse result = await _graphsService.CreateUserGraphAsync(userId, projectId, request);
-            return Ok(result);
-        }
-        catch (GraphValidationException exception)
-        {
-            return BadRequest(new ProblemDetails()
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Bad request",
-                    Detail = exception.Message
-                }
-            );
-        }
-        catch (IncorrectProjectOwnerException exception)
-        {
-            return BadRequest(new ProblemDetails()
-            {
-                Status = StatusCodes.Status400BadRequest,
-                Title = "Incorrect project owner",
-                Detail = exception.Message
-            }
-            );
-        }        
+
+        GraphInfoResponse result = await _graphsService.CreateUserGraphAsync(userId, projectId, request);
+        return Ok(result);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetGraphs(Guid projectId)
+    public async Task<IActionResult> GetGraphsList(Guid projectId)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 
@@ -89,32 +57,8 @@ public class GraphsController : ControllerBase
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        try
-        {
-            GraphDataResponse? result = await _graphsService.UpdateUserGraphAsync(userId, projectId, graphId, request);
-
-            return Ok(result);
-        }
-        catch (GraphValidationException exception)
-        {
-            return BadRequest(new ProblemDetails()
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Bad request",
-                    Detail = exception.Message
-                }
-            );
-        }
-        catch (IncorrectProjectOwnerException exception)
-        {
-            return BadRequest(new ProblemDetails()
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Incorrect project owner",
-                    Detail = exception.Message
-                }
-            );
-        }
+        GraphDataResponse? result = await _graphsService.UpdateUserGraphAsync(userId, projectId, graphId, request);
+        return Ok(result);
     }
 
     [HttpDelete("{graphId}")]
@@ -135,24 +79,12 @@ public class GraphsController : ControllerBase
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        try
-        {
-            await _graphsService.UpdateUserGraphContentAsync(
-                userId,
-                projectId,
-                graphId,
-                request.Content);
-        }
-        catch (GraphValidationException exception)
-        {
-            return BadRequest(new ProblemDetails()
-                {
-                    Status = StatusCodes.Status400BadRequest,
-                    Title = "Bad request",
-                    Detail = exception.Message
-                }
-            );
-        }
+        await _graphsService.UpdateUserGraphContentAsync(
+            userId,
+            projectId,
+            graphId,
+            request.Content
+        );
 
         return NoContent();
     }

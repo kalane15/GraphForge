@@ -1,7 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace GraphForge.Contracts;
 
 public sealed class SchemaDto
@@ -16,4 +12,16 @@ public sealed record SchemaFieldDto
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty;
+
+    public SchemaFieldDto(Guid id, string name, string type)
+    {
+        Id = id;
+        Name = name;
+        Type = type;
+    }
+
+    public SchemaFieldDto()
+    {
+
+    }
 }

@@ -1,7 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace GraphForge.Runtime;
 
 public class GraphEdge
@@ -10,7 +6,7 @@ public class GraphEdge
     public GraphNode SourceNode;
     public GraphNode TargetNode;
 
-    public GraphEdge (GraphNode source, GraphNode target)
+    public GraphEdge(GraphNode source, GraphNode target)
     {
         SourceNode = source;
         TargetNode = target;

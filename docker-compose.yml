@@ -42,6 +42,16 @@ services:
       - postgres_data:/var/lib/postgresql
       - ./database/init:/docker-entrypoint-initdb.d
 
+  migrations:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.migrations
+    env_file:
+      - .env
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+    depends_on:
+      - postgres
 
 volumes:
   postgres_data:
