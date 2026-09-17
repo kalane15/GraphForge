@@ -38,7 +38,7 @@ public class GraphsService : IGraphsService
         _db.Graphs.Add(newGraph);
         await _db.SaveChangesAsync();
 
-        return GraphEfModelMapper.ToInfoResponse(newGraph);
+        return GraphMapper.ToInfoResponse(newGraph);
     }
 
     public async Task DeleteUserGraphAsync(Guid userId, Guid projectId, Guid graphId)
@@ -53,7 +53,7 @@ public class GraphsService : IGraphsService
     {
         Graph graph = await GetUserGraphOrThrowAsync(userId, projectId, graphId);
 
-        return GraphEfModelMapper.ToDataResponse(graph);
+        return GraphMapper.ToDataResponse(graph);
     }
 
     public async Task<List<GraphInfoResponse>> GetUserProjectsGraphsAsync(Guid userId, Guid projectId)
@@ -65,7 +65,7 @@ public class GraphsService : IGraphsService
             .ToListAsync();
 
         return graphs
-            .Select(GraphEfModelMapper.ToInfoResponse)
+            .Select(GraphMapper.ToInfoResponse)
             .ToList();
     }
 
@@ -82,7 +82,7 @@ public class GraphsService : IGraphsService
         graph.UpdatedAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync();
 
-        return GraphEfModelMapper.ToDataResponse(graph, request.Content);
+        return GraphMapper.ToDataResponse(graph, request.Content);
     }
 
     public async Task UpdateUserGraphContentAsync(Guid userId, Guid projectId, Guid graphId, GraphForge.Contracts.GraphDto content)
@@ -145,7 +145,7 @@ public class GraphsService : IGraphsService
             .ToListAsync();
 
         List<SchemaDto> schemaDtos = schemas
-            .Select(SchemaEFModelToDtoMapper.ToDto)
+            .Select(SchemaMapper.ToDto)
             .ToList();
 
         return schemaDtos;

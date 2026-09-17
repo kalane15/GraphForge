@@ -1,10 +1,20 @@
-﻿using GraphForge.Api.Models;
+using GraphForge.Api.DTOs.Schemas;
+using GraphForge.Api.Models;
 using GraphForge.Contracts;
 
 namespace GraphForge.Api.Services.SchemasService.Mappers;
 
-public static class SchemaEFModelToDtoMapper
+internal static class SchemaMapper
 {
+    public static SchemaResponse ToResponse(Schema schema)
+    {
+        List<SchemaFieldDefinitionResponse> fields = schema.Fields
+            .Select(field => new SchemaFieldDefinitionResponse(field.Id, field.Name, field.Type))
+            .ToList();
+
+        return new SchemaResponse(schema.Id, schema.SchemaTypeName, fields);
+    }
+
     public static SchemaDto ToDto(Schema schema)
     {
         return new SchemaDto
@@ -17,7 +27,7 @@ public static class SchemaEFModelToDtoMapper
         };
     }
 
-    public static SchemaFieldDto ToDto(SchemaField field)
+    private static SchemaFieldDto ToDto(SchemaField field)
     {
         return new SchemaFieldDto
         {

@@ -37,14 +37,14 @@ public class ProjectsService : IProjectsService
         _db.Projects.Add(newProject);
         await _db.SaveChangesAsync();
 
-        return ProjectEFModelToDtoMapper.ToInfoResponse(newProject, 0);
+        return ProjectMapper.ToInfoResponse(newProject, 0);
     }
 
     public async Task<List<ProjectInfoResponse>> GetUserProjectsListAsync(Guid userId)
     {
         List<ProjectInfoResponse> projects = await _db.Projects
             .Where(project => project.OwnerId == userId)
-            .Select(project => ProjectEFModelToDtoMapper.ToInfoResponse(
+            .Select(project => ProjectMapper.ToInfoResponse(
                 project, 
                 _db.Graphs.Count(graph => graph.ProjectId == project.Id))
             ).ToListAsync();
@@ -59,7 +59,7 @@ public class ProjectsService : IProjectsService
 
         List<GraphInfoResponse> graphs = await _graphsService.GetUserProjectsGraphsAsync(userId, projectId);
 
-        var result = ProjectEFModelToDtoMapper.ToDataResponse(project, graphs);
+        var result = ProjectMapper.ToDataResponse(project, graphs);
 
         return result;
     }
@@ -78,7 +78,7 @@ public class ProjectsService : IProjectsService
 
         int graphCount = await _db.Graphs.CountAsync(graph => graph.ProjectId == project.Id);
 
-        ProjectInfoResponse result = ProjectEFModelToDtoMapper.ToInfoResponse(project, graphCount);
+        ProjectInfoResponse result = ProjectMapper.ToInfoResponse(project, graphCount);
 
         return result;
     }

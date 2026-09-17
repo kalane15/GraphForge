@@ -4,7 +4,7 @@ using GraphForge.Contracts;
 
 namespace GraphForge.Api.Services.GraphService.Mappers;
 
-internal static class GraphEfModelMapper
+internal static class GraphMapper
 {
     public static GraphInfoResponse ToInfoResponse(Graph graph)
     {

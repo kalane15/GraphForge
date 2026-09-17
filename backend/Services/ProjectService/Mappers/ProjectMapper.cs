@@ -1,10 +1,10 @@
-﻿using GraphForge.Api.DTOs.Graphs;
+using GraphForge.Api.DTOs.Graphs;
 using GraphForge.Api.DTOs.Projects;
 using GraphForge.Api.Models;
 
 namespace GraphForge.Api.Services.ProjectService.Mappers;
 
-internal class ProjectEFModelToResponseDtoMapper
+internal static class ProjectMapper
 {
     public static ProjectInfoResponse ToInfoResponse(Project project, int graphCount)
     {

@@ -1,9 +1,9 @@
-﻿using GraphForge.Api.DTOs.Schemas;
+using GraphForge.Api.DTOs.Schemas;
 using GraphForge.Contracts;
 
-namespace GraphForge.Api.Services.SchemasService;
+namespace GraphForge.Api.Services.SchemasService.Mappers;
 
-public static class SchemaRequestToDtoMapper
+internal static class SchemaRequestMapper
 {
     public static SchemaDto ToDto(SchemaCreateRequest request)
     {

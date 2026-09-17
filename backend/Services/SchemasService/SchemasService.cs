@@ -32,7 +32,7 @@ public class SchemasService : ISchemasService
             .ToListAsync();
 
         List<SchemaResponse> schemas = schemaModels
-            .Select(SchemaEFModelToResponseDtoMapper.ToSchemaResponse)
+            .Select(SchemaMapper.ToResponse)
             .ToList();
 
         return new SchemasListResponse(schemas);
@@ -42,7 +42,7 @@ public class SchemasService : ISchemasService
     {
         Schema schema = await GetUserSchemaOrThrowAsync(userId, projectId, schemaId);
 
-        return SchemaEFModelToResponseDtoMapper.ToSchemaResponse(schema);
+        return SchemaMapper.ToResponse(schema);
     }
 
     public async Task<SchemaResponse> CreateSchema(Guid userId, Guid projectId, SchemaCreateRequest request)
@@ -50,7 +50,7 @@ public class SchemasService : ISchemasService
         await EnsureProjectBelongsToUser(userId, projectId);
         await EnsureSchemaTypeNameUniqueInsideProject(projectId, request.SchemaTypeName);
 
-        SchemaDto dto = SchemaRequestToDtoMapper.ToDto(request);
+        SchemaDto dto = SchemaRequestMapper.ToDto(request);
         _schemaDtoValidator.ValidateSchema(dto);
 
         var schema = new Schema
@@ -67,7 +67,7 @@ public class SchemasService : ISchemasService
         _db.Schemas.Add(schema);
         await _db.SaveChangesAsync();
 
-        return SchemaEFModelToResponseDtoMapper.ToSchemaResponse(schema);
+        return SchemaMapper.ToResponse(schema);
     }
 
     public async Task<SchemaResponse> UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaEditDataRequest request)
@@ -75,7 +75,7 @@ public class SchemasService : ISchemasService
         await EnsureProjectBelongsToUser(userId, projectId);
         await EnsureSchemaTypeNameUniqueInsideProject(projectId, request.SchemaTypeName, schemaId);
 
-        SchemaDto dto = SchemaRequestToDtoMapper.ToDto(schemaId, request);
+        SchemaDto dto = SchemaRequestMapper.ToDto(schemaId, request);
         _schemaDtoValidator.ValidateSchema(dto);
 
 
@@ -111,7 +111,7 @@ public class SchemasService : ISchemasService
 
         await _db.SaveChangesAsync();
 
-        return SchemaEFModelToResponseDtoMapper.ToSchemaResponse(schema);
+        return SchemaMapper.ToResponse(schema);
     }
 
     public async Task DeleteSchema(Guid userId, Guid projectId, Guid schemaId)
