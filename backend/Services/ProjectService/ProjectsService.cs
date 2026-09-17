@@ -1,7 +1,9 @@
 ﻿using GraphForge.Api.Database;
+using GraphForge.Api.DTOs.Graphs;
 using GraphForge.Api.DTOs.Projects;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.GraphService;
+using GraphForge.Api.Services.ProjectService.Mappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace GraphForge.Api.Services.ProjectService;
@@ -35,24 +37,16 @@ public class ProjectsService : IProjectsService
         _db.Projects.Add(newProject);
         await _db.SaveChangesAsync();
 
-        return new ProjectInfoResponse(
-                newProject.Id,
-                newProject.Name,
-                newProject.Description,
-                0
-            );
+        return ProjectEFModelToDtoMapper.ToInfoResponse(newProject, 0);
     }
 
     public async Task<List<ProjectInfoResponse>> GetUserProjectsListAsync(Guid userId)
     {
         List<ProjectInfoResponse> projects = await _db.Projects
             .Where(project => project.OwnerId == userId)
-            .Select(project => new ProjectInfoResponse(
-                project.Id,
-                project.Name,
-                project.Description,
-                _db.Graphs.Count(graph => graph.ProjectId == project.Id)
-                )
+            .Select(project => ProjectEFModelToDtoMapper.ToInfoResponse(
+                project, 
+                _db.Graphs.Count(graph => graph.ProjectId == project.Id))
             ).ToListAsync();
 
         return projects;
@@ -63,15 +57,9 @@ public class ProjectsService : IProjectsService
     {
         Project project = await EnsureProject(userId, projectId);
 
-        var result = new ProjectDataResponse(
-            project.Id,
-            project.OwnerId,
-            project.Name,
-            project.Description,
-            project.CreatedAt,
-            project.UpdatedAt,
-            await _graphsService.GetUserProjectsGraphsAsync(userId, projectId)
-        );
+        List<GraphInfoResponse> graphs = await _graphsService.GetUserProjectsGraphsAsync(userId, projectId);
+
+        var result = ProjectEFModelToDtoMapper.ToDataResponse(project, graphs);
 
         return result;
     }
@@ -90,12 +78,7 @@ public class ProjectsService : IProjectsService
 
         int graphCount = await _db.Graphs.CountAsync(graph => graph.ProjectId == project.Id);
 
-        var result = new ProjectInfoResponse(
-            project.Id,
-            project.Name,
-            project.Description,
-            graphCount
-        );
+        ProjectInfoResponse result = ProjectEFModelToDtoMapper.ToInfoResponse(project, graphCount);
 
         return result;
     }
@@ -127,6 +110,7 @@ public class ProjectsService : IProjectsService
         {
             throw new NotFoundException("Project not found");
         }
+
         return project;
     }
 }

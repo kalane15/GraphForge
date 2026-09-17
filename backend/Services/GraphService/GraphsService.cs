@@ -1,15 +1,11 @@
 ﻿using GraphForge.Api.Database;
 using GraphForge.Api.DTOs.Graphs;
-using GraphForge.Api.Mappers;
 using GraphForge.Api.Models;
-using GraphForge.Api.Services.ProjectService;
+using GraphForge.Api.Services.GraphService.Mappers;
+using GraphForge.Api.Services.SchemasService.Mappers;
 using GraphForge.Contracts;
 using GraphForge.Validation.GraphValidationService;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using System.Net;
-using System.Text.Json;
 
 
 namespace GraphForge.Api.Services.GraphService;
@@ -42,16 +38,7 @@ public class GraphsService : IGraphsService
         _db.Graphs.Add(newGraph);
         await _db.SaveChangesAsync();
 
-        var result = new GraphInfoResponse
-        (
-            newGraph.Id,
-            newGraph.ProjectId,
-            newGraph.Name,
-            newGraph.CreatedAt,
-            newGraph.UpdatedAt
-        );
-
-        return result;
+        return GraphEfModelMapper.ToInfoResponse(newGraph);
     }
 
     public async Task DeleteUserGraphAsync(Guid userId, Guid projectId, Guid graphId)
@@ -66,32 +53,20 @@ public class GraphsService : IGraphsService
     {
         Graph graph = await GetUserGraphOrThrowAsync(userId, projectId, graphId);
 
-        var result = new GraphDataResponse(
-            graph.Id,
-            graph.ProjectId,
-            graph.Name,
-            DeserializeGraphContent(graph.Content)
-        );
-
-        return result;
+        return GraphEfModelMapper.ToDataResponse(graph);
     }
 
     public async Task<List<GraphInfoResponse>> GetUserProjectsGraphsAsync(Guid userId, Guid projectId)
     {
         await EnsureProjectBelongsToUser(userId, projectId);
 
-        var graphs = await _db.Graphs.Where(
+        List<Graph> graphs = await _db.Graphs.Where(
             (g) => g.ProjectId == projectId && g.Project.OwnerId == userId)
-            .Select(graph => new GraphInfoResponse(
-                graph.Id,
-                graph.ProjectId,
-                graph.Name,
-                graph.CreatedAt,
-                graph.UpdatedAt
-                )
-        ).ToListAsync();
+            .ToListAsync();
 
-        return graphs;
+        return graphs
+            .Select(GraphEfModelMapper.ToInfoResponse)
+            .ToList();
     }
 
     public async Task<GraphDataResponse> UpdateUserGraphAsync(Guid userId, Guid projectId, Guid graphId, GraphDataEditRequest request)
@@ -103,18 +78,11 @@ public class GraphsService : IGraphsService
         _graphJsonValidatorService.Validate(request.Content, schemas);
 
         graph.Name = graphName;
-        graph.Content = JsonSerializer.SerializeToDocument(request.Content);
+        graph.Content = GraphContentMapper.ToJsonDocument(request.Content);
         graph.UpdatedAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync();
 
-        var result = new GraphDataResponse(
-            graph.Id,
-            graph.ProjectId,
-            graph.Name,
-            request.Content
-        );
-
-        return result;
+        return GraphEfModelMapper.ToDataResponse(graph, request.Content);
     }
 
     public async Task UpdateUserGraphContentAsync(Guid userId, Guid projectId, Guid graphId, GraphForge.Contracts.GraphDto content)
@@ -124,7 +92,7 @@ public class GraphsService : IGraphsService
         List<SchemaDto> schemas = await LoadProjectSchemas(projectId);
         _graphJsonValidatorService.Validate(content, schemas);
 
-        graph.Content = JsonSerializer.SerializeToDocument(content);
+        graph.Content = GraphContentMapper.ToJsonDocument(content);
         graph.UpdatedAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync();
     }
@@ -137,18 +105,6 @@ public class GraphsService : IGraphsService
         }
 
         return name.Trim();
-    }
-
-    private static GraphDto DeserializeGraphContent(JsonDocument content)
-    {
-        GraphDto? graphDto = content.RootElement.Deserialize<GraphDto>();
-
-        if (graphDto is null)
-        {
-            throw new GraphValidationException("Graph content is invalid");
-        }
-
-        return graphDto;
     }
 
     private async Task<Graph> GetUserGraphOrThrowAsync(Guid userId, Guid projectId, Guid graphId)
@@ -189,7 +145,7 @@ public class GraphsService : IGraphsService
             .ToListAsync();
 
         List<SchemaDto> schemaDtos = schemas
-            .Select(SchemaMapper.ToDto)
+            .Select(SchemaEFModelToDtoMapper.ToDto)
             .ToList();
 
         return schemaDtos;

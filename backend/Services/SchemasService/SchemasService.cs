@@ -2,6 +2,7 @@
 using GraphForge.Api.DTOs.Schemas;
 using GraphForge.Api.Models;
 using GraphForge.Api.Services.GraphService;
+using GraphForge.Api.Services.SchemasService.Mappers;
 using GraphForge.Contracts;
 using GraphForge.Validation;
 using GraphForge.Validation.SchemaValidationService.Exceptions;
@@ -24,19 +25,15 @@ public class SchemasService : ISchemasService
     {
         await EnsureProjectBelongsToUser(userId, projectId);
 
-        var schemas = await _db.Schemas
-            .Where(s => s.ProjectId == projectId)
-            .OrderBy(s => s.SchemaTypeName)
-            .Select(s => new SchemaResponse
-                (
-                s.Id,
-                s.SchemaTypeName,
-                s.Fields
-                .Select(f => new SchemaFieldDefinitionResponse(f.Id, f.Name, f.Type))
-                .ToList()
-                )
-            )
+        List<Schema> schemaModels = await _db.Schemas
+            .Where(schema => schema.ProjectId == projectId)
+            .Include(schema => schema.Fields)
+            .OrderBy(schema => schema.SchemaTypeName)
             .ToListAsync();
+
+        List<SchemaResponse> schemas = schemaModels
+            .Select(SchemaEFModelToResponseDtoMapper.ToSchemaResponse)
+            .ToList();
 
         return new SchemasListResponse(schemas);
     }
@@ -45,10 +42,7 @@ public class SchemasService : ISchemasService
     {
         Schema schema = await GetUserSchemaOrThrowAsync(userId, projectId, schemaId);
 
-        List<SchemaFieldDefinitionResponse> fieldsDefinions = schema.Fields
-            .Select(f => new SchemaFieldDefinitionResponse(f.Id, f.Name, f.Type)).ToList();
-
-        return new SchemaResponse(schema.Id, schema.SchemaTypeName, fieldsDefinions);
+        return SchemaEFModelToResponseDtoMapper.ToSchemaResponse(schema);
     }
 
     public async Task<SchemaResponse> CreateSchema(Guid userId, Guid projectId, SchemaCreateRequest request)
@@ -73,10 +67,7 @@ public class SchemasService : ISchemasService
         _db.Schemas.Add(schema);
         await _db.SaveChangesAsync();
 
-        List <SchemaFieldDefinitionResponse> fieldsDefinions = schema.Fields
-            .Select(f => new SchemaFieldDefinitionResponse(f.Id, f.Name, f.Type)).ToList();
-
-        return new SchemaResponse(schema.Id, schema.SchemaTypeName, fieldsDefinions);
+        return SchemaEFModelToResponseDtoMapper.ToSchemaResponse(schema);
     }
 
     public async Task<SchemaResponse> UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaEditDataRequest request)
@@ -120,11 +111,7 @@ public class SchemasService : ISchemasService
 
         await _db.SaveChangesAsync();
 
-        var fields = schema.Fields
-            .Select(field => new SchemaFieldDefinitionResponse(field.Id, field.Name, field.Type))
-            .ToList();
-
-        return new SchemaResponse(schema.Id, schema.SchemaTypeName, fields);
+        return SchemaEFModelToResponseDtoMapper.ToSchemaResponse(schema);
     }
 
     public async Task DeleteSchema(Guid userId, Guid projectId, Guid schemaId)

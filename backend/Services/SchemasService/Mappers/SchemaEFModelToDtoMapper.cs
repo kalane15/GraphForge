@@ -1,9 +1,9 @@
 ﻿using GraphForge.Api.Models;
 using GraphForge.Contracts;
 
-namespace GraphForge.Api.Mappers;
+namespace GraphForge.Api.Services.SchemasService.Mappers;
 
-public static class SchemaMapper
+public static class SchemaEFModelToDtoMapper
 {
     public static SchemaDto ToDto(Schema schema)
     {
