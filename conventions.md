@@ -13,5 +13,6 @@
 - Keep one blank line between class members and logical blocks; avoid repeated blank lines.
 - When splitting a long call, keep `(` on the method-name line, put each argument on its own line, and align the closing `)` with the beginning of the call. Put chained LINQ operations on separate lines.
 - Keep unused imports and unused injected constructor dependencies out of the code.
-- Run `dotnet format GraphForge.sln --no-restore` after restoring packages. Generated code and EF migrations are excluded from manual style cleanup.
+- After a fresh checkout or clean, run `dotnet restore GraphForge.sln` and `dotnet build GraphForge.sln --no-restore` before formatting. The formatter needs the compiled source generator to resolve generated node types; otherwise it can incorrectly flag `using GraphForge.Generated` as unused.
+- Run `dotnet format GraphForge.sln --no-restore` to apply formatting. Generated code and EF migrations are excluded from manual style cleanup.
 - Verify with `dotnet format GraphForge.sln --verify-no-changes --no-restore`; the same check runs in CI. The formatter does not enforce every manual line-wrapping choice above.
