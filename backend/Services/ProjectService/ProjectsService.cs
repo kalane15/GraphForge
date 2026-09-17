@@ -23,14 +23,15 @@ public class ProjectsService : IProjectsService
     {
         string projectName = ValidateProjectName(request);
 
+        var now = DateTimeOffset.UtcNow;
         var newProject = new Project
         {
             Id = Guid.NewGuid(),
             Name = projectName,
             Description = request.Description,
             OwnerId = userId,
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow
+            CreatedAt = now,
+            UpdatedAt = now
         };
 
         _db.Projects.Add(newProject);

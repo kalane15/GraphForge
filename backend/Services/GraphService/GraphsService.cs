@@ -25,12 +25,13 @@ public class GraphsService : IGraphsService
         string graphName = ValidateGraphName(request.Name);
         await EnsureProjectBelongsToUser(userId, projectId);
 
+        var now = DateTimeOffset.UtcNow;
         var newGraph = new Graph
         {
             Name = graphName,
             ProjectId = projectId,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            CreatedAt = now,
+            UpdatedAt = now
         };
 
         _db.Graphs.Add(newGraph);
