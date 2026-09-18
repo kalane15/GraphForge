@@ -21,9 +21,9 @@ public class SchemasService : ISchemasService
         _schemaDtoValidator = validator;
     }
 
-    public async Task<SchemasListResponse> GetSchemasList(Guid userId, Guid projectId)
+    public async Task<SchemasListResponse> GetSchemasListAsync(Guid userId, Guid projectId)
     {
-        await EnsureProjectBelongsToUser(userId, projectId);
+        await EnsureProjectBelongsToUserAsync(userId, projectId);
 
         List<Schema> schemaModels = await _db.Schemas
             .Where(schema => schema.ProjectId == projectId)
@@ -38,17 +38,17 @@ public class SchemasService : ISchemasService
         return new SchemasListResponse(schemas);
     }
 
-    public async Task<SchemaResponse> GetSchema(Guid userId, Guid projectId, Guid schemaId)
+    public async Task<SchemaResponse> GetSchemaAsync(Guid userId, Guid projectId, Guid schemaId)
     {
         Schema schema = await GetUserSchemaOrThrowAsync(userId, projectId, schemaId);
 
         return SchemaMapper.ToResponse(schema);
     }
 
-    public async Task<SchemaResponse> CreateSchema(Guid userId, Guid projectId, SchemaCreateRequest request)
+    public async Task<SchemaResponse> CreateSchemaAsync(Guid userId, Guid projectId, SchemaCreateRequest request)
     {
-        await EnsureProjectBelongsToUser(userId, projectId);
-        await EnsureSchemaTypeNameUniqueInsideProject(projectId, request.SchemaTypeName);
+        await EnsureProjectBelongsToUserAsync(userId, projectId);
+        await EnsureSchemaTypeNameUniqueInsideProjectAsync(projectId, request.SchemaTypeName);
 
         SchemaDto dto = SchemaRequestMapper.ToDto(request);
         _schemaDtoValidator.ValidateSchema(dto);
@@ -70,10 +70,10 @@ public class SchemasService : ISchemasService
         return SchemaMapper.ToResponse(schema);
     }
 
-    public async Task<SchemaResponse> UpdateSchema(Guid userId, Guid projectId, Guid schemaId, SchemaEditDataRequest request)
+    public async Task<SchemaResponse> UpdateSchemaAsync(Guid userId, Guid projectId, Guid schemaId, SchemaEditDataRequest request)
     {
-        await EnsureProjectBelongsToUser(userId, projectId);
-        await EnsureSchemaTypeNameUniqueInsideProject(projectId, request.SchemaTypeName, schemaId);
+        await EnsureProjectBelongsToUserAsync(userId, projectId);
+        await EnsureSchemaTypeNameUniqueInsideProjectAsync(projectId, request.SchemaTypeName, schemaId);
 
         SchemaDto dto = SchemaRequestMapper.ToDto(schemaId, request);
         _schemaDtoValidator.ValidateSchema(dto);
@@ -113,7 +113,7 @@ public class SchemasService : ISchemasService
         return SchemaMapper.ToResponse(schema);
     }
 
-    public async Task DeleteSchema(Guid userId, Guid projectId, Guid schemaId)
+    public async Task DeleteSchemaAsync(Guid userId, Guid projectId, Guid schemaId)
     {
         Schema schema = await GetUserSchemaOrThrowAsync(userId, projectId, schemaId);
 
@@ -140,7 +140,7 @@ public class SchemasService : ISchemasService
         return schema;
     }
 
-    private async Task EnsureProjectBelongsToUser(Guid userId, Guid projectId)
+    private async Task EnsureProjectBelongsToUserAsync(Guid userId, Guid projectId)
     {
         bool isProjectBelongsToUser = await _db.Projects.AnyAsync((project) =>
             project.Id == projectId &&
@@ -153,7 +153,7 @@ public class SchemasService : ISchemasService
         }
     }
 
-    private async Task EnsureSchemaTypeNameUniqueInsideProject(
+    private async Task EnsureSchemaTypeNameUniqueInsideProjectAsync(
         Guid projectId,
         string schemaTypeName,
         Guid? exceptSchemaId = null)

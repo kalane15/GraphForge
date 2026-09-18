@@ -55,9 +55,9 @@ public class ProjectsService : IProjectsService
 
     public async Task<ProjectDataResponse> GetUserProjectAsync(Guid userId, Guid projectId)
     {
-        Project project = await EnsureProject(userId, projectId);
+        Project project = await GetUserProjectOrThrowAsync(userId, projectId);
 
-        List<GraphInfoResponse> graphs = await _graphsService.GetUserProjectsGraphsAsync(userId, projectId);
+        List<GraphInfoResponse> graphs = await _graphsService.GetUserProjectGraphsAsync(userId, projectId);
 
         var result = ProjectMapper.ToDataResponse(project, graphs);
 
@@ -68,7 +68,7 @@ public class ProjectsService : IProjectsService
     {
         string projectName = ValidateProjectName(request);
 
-        Project project = await EnsureProject(userId, projectId);
+        Project project = await GetUserProjectOrThrowAsync(userId, projectId);
 
         project.Name = projectName;
         project.Description = request.Description;
@@ -85,7 +85,7 @@ public class ProjectsService : IProjectsService
 
     public async Task DeleteUserProjectAsync(Guid userId, Guid projectId)
     {
-        Project project = await EnsureProject(userId, projectId);
+        Project project = await GetUserProjectOrThrowAsync(userId, projectId);
 
         _db.Projects.Remove(project);
         await _db.SaveChangesAsync();
@@ -101,7 +101,7 @@ public class ProjectsService : IProjectsService
         return request.Name.Trim();
     }
 
-    private async Task<Project> EnsureProject(Guid userId, Guid projectId)
+    private async Task<Project> GetUserProjectOrThrowAsync(Guid userId, Guid projectId)
     {
         var project = await _db.Projects
             .FirstOrDefaultAsync(p => p.Id == projectId && p.OwnerId == userId);

@@ -24,7 +24,7 @@ public class SchemasController : ControllerBase
     public async Task<IActionResult> GetSchemasList(Guid projectId)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-        SchemasListResponse result = await _schemasService.GetSchemasList(userId, projectId);
+        SchemasListResponse result = await _schemasService.GetSchemasListAsync(userId, projectId);
         return Ok(result);
     }
 
@@ -32,7 +32,7 @@ public class SchemasController : ControllerBase
     public async Task<IActionResult> GetSchema(Guid projectId, Guid schemaId)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-        SchemaResponse result = await _schemasService.GetSchema(userId, projectId, schemaId);
+        SchemaResponse result = await _schemasService.GetSchemaAsync(userId, projectId, schemaId);
         return Ok(result);
     }
 
@@ -40,7 +40,7 @@ public class SchemasController : ControllerBase
     public async Task<IActionResult> CreateSchema(Guid projectId, SchemaCreateRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-        SchemaResponse result = await _schemasService.CreateSchema(userId, projectId, request);
+        SchemaResponse result = await _schemasService.CreateSchemaAsync(userId, projectId, request);
         return Ok(result);
     }
 
@@ -48,7 +48,7 @@ public class SchemasController : ControllerBase
     public async Task<IActionResult> UpdateSchema(Guid projectId, Guid schemaId, SchemaEditDataRequest request)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-        SchemaResponse result = await _schemasService.UpdateSchema(userId, projectId, schemaId, request);
+        SchemaResponse result = await _schemasService.UpdateSchemaAsync(userId, projectId, schemaId, request);
         return Ok(result);
     }
 
@@ -56,7 +56,7 @@ public class SchemasController : ControllerBase
     public async Task<IActionResult> DeleteSchema(Guid projectId, Guid schemaId)
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
-        await _schemasService.DeleteSchema(userId, projectId, schemaId);
+        await _schemasService.DeleteSchemaAsync(userId, projectId, schemaId);
         return NoContent();
     }
 }

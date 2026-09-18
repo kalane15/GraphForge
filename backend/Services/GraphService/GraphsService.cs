@@ -23,7 +23,7 @@ public class GraphsService : IGraphsService
     public async Task<GraphInfoResponse> CreateUserGraphAsync(Guid userId, Guid projectId, GraphCreationRequest request)
     {
         string graphName = ValidateGraphName(request.Name);
-        await EnsureProjectBelongsToUser(userId, projectId);
+        await EnsureProjectBelongsToUserAsync(userId, projectId);
 
         var now = DateTimeOffset.UtcNow;
         var newGraph = new Graph
@@ -55,9 +55,9 @@ public class GraphsService : IGraphsService
         return GraphMapper.ToDataResponse(graph);
     }
 
-    public async Task<List<GraphInfoResponse>> GetUserProjectsGraphsAsync(Guid userId, Guid projectId)
+    public async Task<List<GraphInfoResponse>> GetUserProjectGraphsAsync(Guid userId, Guid projectId)
     {
-        await EnsureProjectBelongsToUser(userId, projectId);
+        await EnsureProjectBelongsToUserAsync(userId, projectId);
 
         List<Graph> graphs = await _db.Graphs.Where(
             (g) => g.ProjectId == projectId && g.Project.OwnerId == userId)
@@ -73,7 +73,7 @@ public class GraphsService : IGraphsService
         string graphName = ValidateGraphName(request.Name);
         Graph graph = await GetUserGraphOrThrowAsync(userId, projectId, graphId);
 
-        List<SchemaDto> schemas = await LoadProjectSchemas(projectId);
+        List<SchemaDto> schemas = await LoadProjectSchemasAsync(projectId);
         _graphJsonValidatorService.Validate(request.Content, schemas);
 
         graph.Name = graphName;
@@ -88,7 +88,7 @@ public class GraphsService : IGraphsService
     {
         Graph graph = await GetUserGraphOrThrowAsync(userId, projectId, graphId);
 
-        List<SchemaDto> schemas = await LoadProjectSchemas(projectId);
+        List<SchemaDto> schemas = await LoadProjectSchemasAsync(projectId);
         _graphJsonValidatorService.Validate(content, schemas);
 
         graph.Content = GraphContentMapper.ToJsonDocument(content);
@@ -123,7 +123,7 @@ public class GraphsService : IGraphsService
         return graph;
     }
 
-    private async Task EnsureProjectBelongsToUser(Guid userId, Guid projectId)
+    private async Task EnsureProjectBelongsToUserAsync(Guid userId, Guid projectId)
     {
         bool isProjectBelongsToUser = await _db.Projects.AnyAsync(project =>
             project.Id == projectId &&
@@ -136,7 +136,7 @@ public class GraphsService : IGraphsService
         }
     }
 
-    private async Task<List<SchemaDto>> LoadProjectSchemas(Guid projectId)
+    private async Task<List<SchemaDto>> LoadProjectSchemasAsync(Guid projectId)
     {
         List<Schema> schemas = await _db.Schemas
             .Where(schema => schema.ProjectId == projectId)
