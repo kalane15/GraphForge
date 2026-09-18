@@ -106,7 +106,7 @@ public class AuthService : IAuthService
         _authCookieService.SetAccessToken(accessToken);
     }
 
-    public async Task<CurrentUserInfoResponse> Me()
+    public async Task<CurrentUserInfoResponse> GetCurrentUserAsync()
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 

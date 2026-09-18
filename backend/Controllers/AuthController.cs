@@ -50,7 +50,7 @@ public class AuthController : ControllerBase
     [HttpGet("me")]
     public async Task<IActionResult> Me()
     {
-        CurrentUserInfoResponse result = await _authService.Me();
+        CurrentUserInfoResponse result = await _authService.GetCurrentUserAsync();
 
         return Ok(result);
     }

@@ -8,5 +8,5 @@ public interface IAuthService
     Task SignUpAsync(SignUpRequest request);
     Task LogOutAsync();
     Task RefreshTokenAsync();
-    Task<CurrentUserInfoResponse> Me();
+    Task<CurrentUserInfoResponse> GetCurrentUserAsync();
 }

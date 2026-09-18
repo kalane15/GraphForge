@@ -34,7 +34,7 @@ public class GraphsController : ControllerBase
     {
         Guid userId = _userIdentityProvider.GetCurrentUserId();
 
-        List<GraphInfoResponse> graphs = await _graphsService.GetUserProjectsGraphsAsync(userId, projectId);
+        List<GraphInfoResponse> graphs = await _graphsService.GetUserProjectGraphsAsync(userId, projectId);
 
         return Ok(new GraphsListResponse(graphs));
     }
