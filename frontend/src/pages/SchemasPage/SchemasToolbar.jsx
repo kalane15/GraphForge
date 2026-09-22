@@ -1,13 +1,11 @@
 import { useRef } from "react";
-import { useNavigate } from "react-router";
 
 
-function SchemasToolbar({ addNewSchema, exportSchemas, importSchemas, projectId }) {
+function SchemasToolbar({ addNewSchema, exportSchemas, importSchemas, returnToGraphs, saveSchemas, disabled, isSaving }) {
     const inputRef = useRef(null);
-    const navigate = useNavigate();
 
     return (
-        <div>
+        <fieldset className="schemas-page__toolbar" disabled={disabled}>
             <button onClick={addNewSchema} >Add new schema</button>
             <button onClick={exportSchemas} >Export</button>
 
@@ -23,10 +21,14 @@ function SchemasToolbar({ addNewSchema, exportSchemas, importSchemas, projectId 
                 onChange={importSchemas}
             />
 
-            <button onClick={() => navigate(`/projects/${projectId}`)}>
+            <button onClick={returnToGraphs}>
                 Graphs
             </button>
-        </div>
+
+            <button onClick={() => saveSchemas()} disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save schemas"}
+            </button>
+        </fieldset>
     );
 }
 

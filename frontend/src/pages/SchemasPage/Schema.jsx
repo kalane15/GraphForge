@@ -3,7 +3,7 @@ import {
     changeSchemaFieldType,
     deleteSchemaField,
     renameSchemaField
-} from "@/helpers/schemaFields";
+} from "@/helpers/schema/schemaFields";
 import SchemaFieldRow from "./SchemaFieldRow";
 
 

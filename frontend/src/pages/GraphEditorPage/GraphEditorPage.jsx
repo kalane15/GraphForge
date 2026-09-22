@@ -45,13 +45,17 @@ function GraphEditorPage() {
     });
 
     async function returnToProjectPage() {
-        await saveGraph();
-        navigate(`/projects/${projectId}`);
+        const isSuccess = await saveGraph();
+        if (isSuccess) {
+            navigate(`/projects/${projectId}`);
+        }
     }    
 
     async function goToSchemas() {
-        await saveGraph();
-        navigate(`/projects/${projectId}/schemas`);
+        const isSuccess = await saveGraph();
+        if (isSuccess) {
+            navigate(`/projects/${projectId}/schemas`);
+        }
     }    
 
     return (

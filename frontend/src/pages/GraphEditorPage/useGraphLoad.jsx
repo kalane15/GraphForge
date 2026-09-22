@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getGraphRequest } from "@/api/graphsApi";
 import { getSchemasRequest } from "@/api/schemasApi";
-import { mapSchemaToViewModel } from "@/helpers/schemaMappers";
+import { mapSchemaToViewModel } from "@/helpers/schema/schemaMappers";
 import { resolveGraphSchemaReferences } from "./resolveGraphSchemaReferences";
 
 export function useGraphLoad({ projectId, graphId, setSchemas, setNodes, setEdges }) {

@@ -1,0 +1,31 @@
+.schemas-page__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    border: 0;
+    margin: 0;
+    padding: 8px 0;
+    min-width: 0;
+}
+
+.schemas-page__schema {
+    border: 0;
+    margin: 0;
+    padding: 8px 0;
+    min-width: 0;
+}
+
+.schemas-page__message {
+    padding: 8px 12px;
+    overflow-wrap: anywhere;
+}
+
+.schemas-page__message--error {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+.schemas-page__message--success {
+    color: #166534;
+    background: #dcfce7;
+}

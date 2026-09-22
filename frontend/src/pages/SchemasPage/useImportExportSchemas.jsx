@@ -1,8 +1,8 @@
 import { createSchemaRequest } from "@/api/schemasApi";
 import { downloadJsonFile } from "@/helpers/downloadJsonFile";
-import { mapSchemaToViewModel } from "@/helpers/schemaMappers";
+import { mapSchemaToViewModel } from "@/helpers/schema/schemaMappers";
 
-export function useImportExportSchemas({ projectId, schemas, setSchemas }) {
+export function useImportExportSchemas({ projectId, schemas, onSchemasImported }) {
     function exportSchemas() {
         const exportData = {
             schemas: schemas.map((schema) => ({
@@ -18,33 +18,35 @@ export function useImportExportSchemas({ projectId, schemas, setSchemas }) {
     }
 
     async function importSchemas(event) {
-        const file = event.target.files[0];
+        const input = event.target;
+        const file = input.files[0];
 
         if (!file) {
             return;
         }
 
-        const text = await file.text();
-        const parsedFile = JSON.parse(text);
-        let importedSchemas = Array.isArray(parsedFile)
-            ? parsedFile
-            : parsedFile?.schemas ?? [];
+        try {
+            const parsedFile = JSON.parse(await file.text());
+            const schemasToImport = Array.isArray(parsedFile) ? parsedFile : parsedFile?.schemas;
+            if (!Array.isArray(schemasToImport)) {
+                throw new Error("Expected a schemas array");
+            }
 
-        importedSchemas = await Promise.all(
-            importedSchemas.map((schema) =>
-                createSchemaRequest(
-                    projectId,
-                    schema.schemaTypeName,
-                    schema.fields
-                )
-            )
-        );
+            const results = await Promise.allSettled(schemasToImport.map(async (schema) =>
+                createSchemaRequest(projectId, schema.schemaTypeName, schema.fields)
+            ));
+            const importedSchemas = results
+                .filter((result) => result.status === "fulfilled")
+                .map((result) => mapSchemaToViewModel(result.value));
+            onSchemasImported(importedSchemas);
 
-        importedSchemas = importedSchemas.map(mapSchemaToViewModel);
-
-        setSchemas((schemas) => ([...schemas, ...importedSchemas]));
-
-        event.target.value = "";
+            const failures = results.filter((result) => result.status === "rejected");
+            if (failures.length > 0) {
+                throw new Error(`${failures.length} schema(s) failed: ${failures.map((result) => result.reason.message).join("; ")}`);
+            }
+        } finally {
+            input.value = "";
+        }
     }
 
     return { exportSchemas, importSchemas };

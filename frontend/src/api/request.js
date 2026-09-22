@@ -1,3 +1,5 @@
+import { ApiRequestProblemDetails } from "./ApiRequestProblemDetails";
+
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 
@@ -15,7 +17,7 @@ export async function request(path, options = {}) {
         const errorData = await response.json();
         const message = errorData.detail;
 
-        throw new Error(message);
+        throw new ApiRequestProblemDetails(errorData);
     }
 
     if (response.status === 204) {
