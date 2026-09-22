@@ -1,38 +1,75 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Flow from "./Flow"
 import { useNavigate, useParams } from "react-router"
 import { ReactFlowProvider } from "@xyflow/react";
 import GraphEditorToolbar from "./GraphEditorToolbar";
-import { useSaveGraph } from "./useSaveGraph"
 import { useImportExportGraph } from "./useImportExportGraph";
-import { useGraphLoad } from "./useGraphLoad";
+import { createGraphEditorItemAdapter } from "./graphEditorItemAdapter";
+import { useGraphOperations } from "./useGraphOperations";
 
+const emptyGraph = {
+    nodes: [],
+    edges: [],
+    schemas: [],
+};
 
 function GraphEditorPage() {
     const { projectId, graphId } = useParams();
+    return <ProjectGraphEditor key={`${projectId}:${graphId}`} projectId={projectId} graphId={graphId} />;
+}
+
+function ProjectGraphEditor({ projectId, graphId }) {
     const navigate = useNavigate();
+    const [graphs, setGraphs] = useState([]);
+    const [message, setMessage] = useState(null);
+    const adapter = useMemo(() => createGraphEditorItemAdapter(), []);
 
-    const [schemas, setSchemas] = useState([]);
-    const [nodes, setNodes] = useState(() => []);
-    const [edges, setEdges] = useState([]);
-    const [saveStatusMessage, setSaveStatusMessage] = useState(null);
-
-    const isGraphLoaded = useGraphLoad({
+    const {
+        saveGraph,
+        loadStatus,
+        isSaving,
+        reload,
+    } = useGraphOperations({
         projectId,
         graphId,
-        setSchemas,
-        setNodes,
-        setEdges
+        graphs,
+        setGraphs,
+        setMessage,
+        adapter,
     });
 
-    const saveGraph = useSaveGraph(
-        nodes,
-        edges,
-        projectId,
-        graphId,
-        setSaveStatusMessage,
-        schemas,
-        isGraphLoaded
+    const graph = graphs[0] ?? emptyGraph;
+    const { nodes, edges, schemas } = graph;
+
+    const updateGraphPart = useCallback((part, valueOrUpdater) => {
+        setGraphs((current) => {
+            const currentGraph = current[0];
+            if (!currentGraph) {
+                return current;
+            }
+
+            const nextValue = typeof valueOrUpdater === "function"
+                ? valueOrUpdater(currentGraph[part])
+                : valueOrUpdater;
+
+            if (nextValue === currentGraph[part]) {
+                return current;
+            }
+
+            return [
+                { ...currentGraph, [part]: nextValue },
+                ...current.slice(1),
+            ];
+        });
+    }, []);
+
+    const setNodes = useCallback(
+        (valueOrUpdater) => updateGraphPart("nodes", valueOrUpdater),
+        [updateGraphPart]
+    );
+    const setEdges = useCallback(
+        (valueOrUpdater) => updateGraphPart("edges", valueOrUpdater),
+        [updateGraphPart]
     );
 
     const { importGraph, exportGraph } = useImportExportGraph({
@@ -41,7 +78,7 @@ function GraphEditorPage() {
         projectId,
         schemas,
         setNodes,
-        setEdges
+        setEdges,
     });
 
     async function returnToProjectPage() {
@@ -66,21 +103,26 @@ function GraphEditorPage() {
                 saveGraph={saveGraph}
                 exportGraph={exportGraph}
                 importGraph={importGraph}
-                message={saveStatusMessage}
+                message={message}
+                disabled={loadStatus !== "ready"}
+                isSaving={isSaving}
             />
 
-            <div className="graph-editor-shell">
-                <ReactFlowProvider>
-                    <Flow
-                        nodes={nodes}
-                        edges={edges}
-                        setNodes={setNodes}
-                        setEdges={setEdges}
-                        projectId={projectId}
-                        schemas={schemas}                        
-                    />
-                </ReactFlowProvider>
-            </div>
+            {loadStatus === "loading" && <p role="status">Loading graph...</p>}
+            {loadStatus === "error" && <button onClick={reload}>Retry</button>}
+            {loadStatus === "ready" && (
+                <div className="graph-editor-shell">
+                    <ReactFlowProvider>
+                        <Flow
+                            nodes={nodes}
+                            edges={edges}
+                            setNodes={setNodes}
+                            setEdges={setEdges}
+                            schemas={schemas}
+                        />
+                    </ReactFlowProvider>
+                </div>
+            )}
         </div>
     )
 }

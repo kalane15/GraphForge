@@ -22,7 +22,7 @@ const nodeTypes = {
     editableNode: EditableNode
 };
 
-function Flow({ nodes, edges, setNodes, setEdges, projectId, schemas }) {
+function Flow({ nodes, edges, setNodes, setEdges, schemas }) {
     const { screenToFlowPosition } = useReactFlow();
     const cursorPositionRef = useRef({ x: 0, y: 0 });
 
